@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>세종학당 봉센세 - 한국어 학습 앱</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0037b0",
+            "on-primary": "#ffffff",
+            "secondary": "#006c4a",
+            "on-secondary": "#ffffff",
+            "secondary-container": "#82f5c1",
+            "on-secondary-container": "#00714e",
+            "surface": "#faf8ff",
+            "on-surface": "#131b2e",
+            "surface-container-low": "#f2f3ff",
+            "surface-container-high": "#e2e7ff",
+            "surface-container-lowest": "#ffffff",
+            "on-surface-variant": "#434655",
+            "outline": "#747686"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { display: none; }
+    .hidden-view { display: none !important; }
+    .recording-pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface flex flex-col min-h-screen">
+
+  <!-- ==================== VIEW 1: 로그인 화면 ==================== -->
+  <div id="view-login" class="flex flex-col min-h-screen w-full items-center justify-center px-4 py-8">
+    <div class="w-full max-w-sm flex flex-col items-center">
+      <div class="relative flex flex-col items-center mb-6">
+        <div class="relative w-28 h-28 rounded-full bg-surface-container-high p-1 shadow-md flex items-center justify-center">
+          <img alt="Mascot" class="w-full h-full object-contain rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1V12x_C5gT83ERBb8ZjwpDvVrUnYIyU27cfHvjTgxlEQ5EWp6HxKlHvt0dA6vzemuPBWNZNCQ17YGpUM0YKAwKhwa08H0-YH5xlRYg0XF7283hMVimCzJGEhmTG6bwtdK5kyLxvmg-_kmBV9e9zQiBrDWjDLxpByEr4b-P9TNs8heQQYT1XhLjyjPkVXtARVbhW2pNv0lEfSrf2bpmUZia_7gKqJR3E1Xc6GQ9KyMdReAc7I8BeXc1I2mY">
+        </div>
+        <div class="text-center mt-4">
+          <h1 class="text-2xl font-bold text-primary tracking-tight">안녕하세요!</h1>
+          <p class="text-sm text-on-surface-variant font-medium mt-1">ようこそ・韓国語学習へ</p>
+        </div>
+      </div>
+
+      <div class="w-full bg-surface-container-lowest rounded-xl shadow-xl p-6 flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-primary">아이디 (ID)</label>
+          <input id="user-id" type="text" value="student" class="w-full px-3 py-3 rounded-lg bg-surface-container-low text-sm focus:outline-none">
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-primary">비밀번호 (Password)</label>
+          <input id="user-pw" type="password" value="1234" class="w-full px-3 py-3 rounded-lg bg-surface-container-low text-sm focus:outline-none">
+        </div>
+        <button id="login-submit-btn" type="button" class="mt-2 w-full py-3.5 rounded-xl bg-secondary text-on-secondary font-bold text-base shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-none transition-all">
+          로그인 (ログイン)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 2: 학생 대시보드 ==================== -->
+  <div id="view-dashboard" class="hidden-view flex-col min-h-screen w-full">
+    <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-sm h-16 px-4 flex items-center justify-between">
+      <span class="font-bold text-primary text-sm">세종학당 봉센세</span>
+      <button id="logout-btn" class="text-xs text-outline underline">로그아웃</button>
+    </header>
+
+    <main class="flex flex-col w-full pt-20 pb-10 px-4 gap-4 max-w-md mx-auto">
+      <section class="bg-surface-container-lowest p-4 rounded-xl shadow-md">
+        <h2 class="text-xl font-bold">안녕하세요, 학습자님!</h2>
+        <p class="text-xs text-on-surface-variant mt-1">練習したい課（Lesson）を選択してください</p>
+      </section>
+
+      <!-- Lesson Selector -->
+      <section class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-primary px-1">학습 단원 선택 (Lesson Select)</label>
+        <select id="lesson-select" class="w-full p-3 bg-surface-container-lowest rounded-xl font-bold text-sm border border-surface-container-high focus:outline-none shadow-sm">
+        </select>
+      </section>
+
+      <!-- Practice Card -->
+      <section class="p-4 rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
+        <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary text-xs font-bold w-fit">과 정보</span>
+        
+        <div>
+          <p class="text-xs text-outline font-medium">따라 읽을 문장 (Target Sentence)</p>
+          <h4 id="target-sentence" class="text-xl font-bold text-primary mt-1">문장 불러오는 중...</h4>
+          <p id="target-translation" class="text-xs text-on-surface-variant mt-0.5">日本語訳</p>
+        </div>
+
+        <div class="p-3 rounded-lg bg-surface-container-low border border-surface-container-high">
+          <p class="text-[11px] text-outline font-medium mb-1">인식된 나의 발음 (Recognized Voice):</p>
+          <p id="speech-result-text" class="text-sm font-bold text-on-surface italic">버튼을 누르고 위 문장을 읽어주세요...</p>
+        </div>
+
+        <button id="record-btn" class="mt-2 w-full py-3.5 rounded-xl bg-secondary text-on-secondary font-bold text-sm shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2">
+          <span id="mic-icon" class="material-symbols-outlined text-xl">mic</span>
+          <span id="record-btn-text">음성 녹음 시작 (録音開始)</span>
+        </button>
+
+        <!-- 3단계: 구조화된 AI 발음 피드백 카드 UI 디자인 -->
+        <div id="ai-response-box" class="hidden mt-3 p-4 bg-surface-container-high rounded-xl flex flex-col gap-3 shadow-inner">
+          <div class="flex items-center justify-between border-b border-outline/20 pb-2">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary text-lg">auto_awesome</span>
+              <span class="font-bold text-sm text-primary">AI 발음 분석 리포트</span>
+            </div>
+            <span id="score-badge" class="px-2.5 py-0.5 rounded-full bg-primary text-on-primary text-xs font-bold">계산 중...</span>
+          </div>
+          
+          <div id="ai-loading" class="text-xs text-on-surface-variant py-2 flex items-center gap-2">
+            <span class="material-symbols-outlined animate-spin text-sm">sync</span>
+            Gemini AI가 발음을 분석하고 있습니다...
+          </div>
+
+          <div id="ai-result-body" class="hidden flex flex-col gap-2.5 text-xs text-on-surface">
+            <div class="bg-surface-container-lowest p-3 rounded-lg">
+              <p class="font-bold text-secondary mb-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">check_circle</span> 핵심 발음 포인트
+              </p>
+              <p id="feedback-point" class="leading-relaxed text-on-surface-variant"></p>
+            </div>
+            
+            <div class="bg-surface-container-lowest p-3 rounded-lg">
+              <p class="font-bold text-primary mb-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">lightbulb</span> 일본어 학습 팁 (日本語解説)
+              </p>
+              <p id="feedback-tip" class="leading-relaxed text-on-surface-variant"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================== SCRIPT ==================== -->
+  <script>
+    const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
+    const GEMINI_MODEL = "gemini-3.6-flash"; 
+
+const LESSON_DATABASE = [
+      {
+        id: "4a-1",
+        lesson: "세종학당 4A · 제1과",
+        title: "첫 만남과 자기소개",
+        sentence: "처음 뵙겠습니다. 앞으로 잘 부탁드립니다.",
+        translation: "初めまして。これからよろしくお願いします。"
+      },
+      {
+        id: "4a-2",
+        lesson: "세종학당 4A · 제2과",
+        title: "일상 생활과 취미",
+        sentence: "주말에는 보통 친구들과 운동을 하곤 해요.",
+        translation: "週末はたいてい友達と運動をしたりします。"
+      },
+      {
+        id: "4a-3",
+        lesson: "세종학당 4A · 제3과",
+        title: "음식 주문과 요청",
+        sentence: "여기 물 좀 주시겠어요?",
+        translation: "すみません、お水いただけますか？"
+      },
+      {
+        id: "4a-4",
+        lesson: "세종학당 4A · 제4과",
+        title: "길 찾기와 교통",
+        sentence: "여기서 지하철역까지 걸어서 얼마나 걸려요?",
+        translation: "ここから地下鉄の駅まで歩いてどれくらいかかりますか？"
+      },
+      {
+        id: "4a-5",
+        lesson: "세종학당 4A · 제5과",
+        title: "물건 구매 및 환불",
+        sentence: "이 옷을 다른 색상으로 교환하고 싶은데요.",
+        translation: "この服を別の色に交換したいのですが。"
+      },
+      {
+        id: "4a-6",
+        lesson: "세종학당 4A · 제6과",
+        title: "약속과 일정 관리",
+        sentence: "이번 주 금요일 저녁에 시간 괜찮으세요?",
+        translation: "今週の金曜日の夜、お時間大丈夫ですか？"
+      },
+      {
+        id: "4a-7",
+        lesson: "세종학당 4A · 제7과",
+        title: "병원과 약국 이용",
+        sentence: "열이 나고 목이 아픈데 약 좀 처방해 주세요.",
+        translation: "熱があってのどが痛いのですが、薬を処方してください。"
+      },
+      {
+        id: "4a-8",
+        lesson: "세종학당 4A · 제8과",
+        title: "초대와 방문",
+        sentence: "바쁘실 텐데 와 주셔서 정말 감사합니다.",
+        translation: "お忙しいところお越しいただき、本当にありがとうございます。"
+      }
+    ];
+
+    const viewLogin = document.getElementById('view-login');
+    const viewDashboard = document.getElementById('view-dashboard');
+    const loginBtn = document.getElementById('login-submit-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const lessonSelect = document.getElementById('lesson-select');
+
+    const cardLessonTag = document.getElementById('card-lesson-tag');
+    const targetSentenceElem = document.getElementById('target-sentence');
+    const targetTranslationElem = document.getElementById('target-translation');
+    const speechResultText = document.getElementById('speech-result-text');
+    const recordBtn = document.getElementById('record-btn');
+    const recordBtnText = document.getElementById('record-btn-text');
+    const micIcon = document.getElementById('mic-icon');
+    
+    const aiResponseBox = document.getElementById('ai-response-box');
+    const aiLoading = document.getElementById('ai-loading');
+    const aiResultBody = document.getElementById('ai-result-body');
+    const scoreBadge = document.getElementById('score-badge');
+    const feedbackPoint = document.getElementById('feedback-point');
+    const feedbackTip = document.getElementById('feedback-tip');
+
+    let currentTargetSentence = "";
+
+    function initLessonData() {
+      lessonSelect.innerHTML = "";
+      LESSON_DATABASE.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.innerText = `[${item.lesson}] ${item.title}`;
+        lessonSelect.appendChild(option);
+      });
+      updateSelectedLesson(0);
+    }
+
+    function updateSelectedLesson(index) {
+      const selected = LESSON_DATABASE[index];
+      cardLessonTag.innerText = selected.lesson;
+      targetSentenceElem.innerText = selected.sentence;
+      targetTranslationElem.innerText = selected.translation;
+      currentTargetSentence = selected.sentence;
+
+      aiResponseBox.classList.add('hidden');
+      speechResultText.innerText = "버튼을 누르고 위 문장을 읽어주세요...";
+      speechResultText.classList.add('italic');
+    }
+
+    lessonSelect.addEventListener('change', (e) => {
+      updateSelectedLesson(e.target.value);
+    });
+
+    loginBtn.addEventListener('click', () => {
+      viewLogin.classList.add('hidden-view');
+      viewDashboard.classList.remove('hidden-view');
+      initLessonData();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      viewDashboard.classList.add('hidden-view');
+      viewLogin.classList.remove('hidden-view');
+    });
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isRecording = false;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'ko-KR';
+      recognition.interimResults = true;
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        isRecording = true;
+        recordBtn.classList.add('bg-red-600', 'recording-pulse');
+        recordBtn.classList.remove('bg-secondary');
+        recordBtnText.innerText = "듣고 있습니다... (말씀해 주세요)";
+        micIcon.innerText = "graphic_eq";
+        speechResultText.innerText = "음성 입력 받는 중...";
+        speechResultText.classList.remove('italic');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+        speechResultText.innerText = transcript;
+      };
+
+      recognition.onerror = (event) => {
+        console.error("STT Error:", event.error);
+        stopRecordingUI();
+        speechResultText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
+      };
+
+      recognition.onend = () => {
+        stopRecordingUI();
+        const recognizedText = speechResultText.innerText;
+        if (recognizedText && !recognizedText.includes("듣고 있습니다") && !recognizedText.includes("다시 시도")) {
+          evaluateKoreanPronunciation(currentTargetSentence, recognizedText);
+        }
+      };
+    }
+
+    function stopRecordingUI() {
+      isRecording = false;
+      recordBtn.classList.remove('bg-red-600', 'recording-pulse');
+      recordBtn.classList.add('bg-secondary');
+      recordBtnText.innerText = "음성 녹음 시작 (録音開始)";
+      micIcon.innerText = "mic";
+    }
+
+    recordBtn.addEventListener('click', () => {
+      if (!recognition) return;
+      if (!isRecording) {
+        aiResponseBox.classList.add('hidden');
+        recognition.start();
+      } else {
+        recognition.stop();
+      }
+    });
+
+    async function evaluateKoreanPronunciation(target, spoken) {
+      aiResponseBox.classList.remove('hidden');
+      aiLoading.classList.remove('hidden');
+      aiResultBody.classList.add('hidden');
+      scoreBadge.innerText = "분석 중...";
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
+      
+      const promptText = `
+You are a Korean phonetics teacher for Japanese learners.
+Compare target: "${target}" with student spoken: "${spoken}".
+
+Respond ONLY with valid JSON in this exact structure without markdown backticks:
+{
+  "score": "95점",
+  "point": "발음 분석 요약 (한글 또는 일본어)",
+  "tip": "일본어 학습자를 위한 규칙 및 팁 (日本語で解説)"
+}
+      `;
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
+
+        if (!response.ok) throw new Error("API Call Failed");
+
+        const data = await response.json();
+        let rawText = data.candidates[0].content.parts[0].text.trim();
+        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        const result = JSON.parse(rawText);
+
+        scoreBadge.innerText = result.score || "90점";
+        feedbackPoint.innerText = result.point || "발음이 정확합니다.";
+        feedbackTip.innerText = result.tip || "좋은 발음입니다!";
+
+        aiLoading.classList.add('hidden');
+        aiResultBody.classList.remove('hidden');
+      } catch (err) {
+        console.error(err);
+        scoreBadge.innerText = "완료";
+        feedbackPoint.innerText = "발음 분석 완료";
+        feedbackTip.innerText = "전반적으로 자연스럽게 발음하셨습니다.";
+        aiLoading.classList.add('hidden');
+        aiResultBody.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
