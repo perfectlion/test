@@ -431,39 +431,50 @@
       viewLogin.classList.remove('hidden-view');
     });
 
-    // 4. 셀렉터 초기화
+// 4. 셀렉터 초기화 (1번 항목 및 첫 번째 데이터 자동 선택 보장)
     function initLessonSelector(userLessonId) {
       lessonSelect.innerHTML = "";
-      curriculumData.forEach((curr) => {
+      
+      if (!curriculumData || curriculumData.length === 0) return;
+
+      curriculumData.forEach((curr, index) => {
         const option = document.createElement('option');
-        const lId = curr.lesson_id ?? curr.id;
+        // ID가 없거나 유효하지 않을 경우 인덱스 기반(index + 1)으로 fallback 처리
+        const lId = curr.lesson_id ?? curr.id ?? (index + 1);
         const bookName = curr.book || curr.textbook || "교재";
-        const lessonNum = curr.lesson_number || "";
+        const lessonNum = curr.lesson_number || `${index + 1}과`;
         const titleText = curr.title || curr.chapter_title || "";
 
         option.value = lId;
         option.innerText = `[${bookName}] ${lessonNum} ${titleText}`.trim();
         
-        if (Number(lId) === Number(userLessonId)) option.selected = true;
+        // 사용자 지정 lesson_id와 매칭하거나, 매칭 실패 시 첫 번째(1번) 항목 선택
+        if (String(lId) === String(userLessonId)) {
+          option.selected = true;
+        }
         lessonSelect.appendChild(option);
       });
 
-      renderLessonContent(userLessonId);
+      // 만약 선택된 값이 없으면 목록의 첫 번째(1번) 과를 기본으로 로드
+      const initialLessonId = lessonSelect.value || (curriculumData[0].lesson_id ?? curriculumData[0].id ?? 1);
+      renderLessonContent(initialLessonId);
     }
 
-    // 5. 단원 콘텐츠 렌더링
+    // 5. 단원 콘텐츠 렌더링 (데이터 매칭 안정화)
     function renderLessonContent(lessonId) {
-      currentLessonId = parseInt(lessonId);
+      currentLessonId = lessonId;
 
-      const curr = curriculumData.find(c => Number(c.lesson_id ?? c.id) === currentLessonId) || {};
-      const lesson = lessonsData.find(l => Number(l.lesson_id ?? l.id ?? l.Lesson_ID) === currentLessonId) || {};
+      // 문자열/숫자 타입 차이로 인한 매칭 오류 방지를 위해 String()으로 비교
+      const curr = curriculumData.find(c => String(c.lesson_id ?? c.id) === String(lessonId)) || curriculumData[0] || {};
+      const lesson = lessonsData.find(l => String(l.lesson_id ?? l.id ?? l.Lesson_ID) === String(lessonId)) || lessonsData[0] || {};
 
       const bookName = curr.book || curr.textbook || "";
       const lessonNum = curr.lesson_number || "";
       const titleText = curr.title || curr.chapter_title || "";
 
-      cardLessonTag.innerText = `${bookName} · ${lessonNum} ${titleText}`.trim();
+      cardLessonTag.innerText = `${bookName} ${lessonNum} ${titleText}`.trim();
 
+      // 문장 배열 유효성 체크 및 1번 문장 세팅
       if (Array.isArray(curr.sentences) && curr.sentences.length > 0) {
         currentSentences = curr.sentences;
       } else if (Array.isArray(curr.sentence) && curr.sentence.length > 0) {
@@ -474,15 +485,17 @@
         currentSentences = ["등록된 문장이 없습니다."];
       }
 
-      currentSentenceIndex = 0;
+      currentSentenceIndex = 0; // 항상 1번 문장(인덱스 0)부터 시작
       updateSentenceDisplay();
 
-      const currentIndex = curriculumData.findIndex(c => Number(c.lesson_id ?? c.id) === currentLessonId);
-      const percent = curriculumData.length > 0 ? Math.round(((currentIndex + 1) / curriculumData.length) * 100) : 0;
+      // 진도율 계산
+      const currentIndex = curriculumData.findIndex(c => String(c.lesson_id ?? c.id) === String(lessonId));
+      const validIndex = currentIndex >= 0 ? currentIndex : 0;
+      const percent = curriculumData.length > 0 ? Math.round(((validIndex + 1) / curriculumData.length) * 100) : 0;
       progressBar.style.width = `${percent}%`;
       progressPercent.innerText = `${percent}%`;
 
-      // 어휘 및 예문
+      // 어휘 및 예문 출력 (1번 단어부터 순회)
       vocabListContainer.innerHTML = '';
       const vocabArray = lesson.vocabulary || lesson.Vocabulary || lesson.words || lesson.vocab_list || [];
       
