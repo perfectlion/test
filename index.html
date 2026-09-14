@@ -60,19 +60,21 @@
         </div>
       </div>
 
-      <div class="w-full bg-surface-container-lowest rounded-xl shadow-xl p-6 flex flex-col gap-4">
+      <form id="login-form" class="w-full bg-surface-container-lowest rounded-xl shadow-xl p-6 flex flex-col gap-4">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold text-primary">아이디 (ID)</label>
-          <input id="user-id" type="text" value="student" class="w-full px-3 py-3 rounded-lg bg-surface-container-low text-sm focus:outline-none">
+          <input id="user-id" type="text" placeholder="구글 시트에 등록된 ID" required class="w-full px-3 py-3 rounded-lg bg-surface-container-low text-sm focus:outline-none">
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-bold text-primary">비밀번호 (Password)</label>
-          <input id="user-pw" type="password" value="1234" class="w-full px-3 py-3 rounded-lg bg-surface-container-low text-sm focus:outline-none">
+          <input id="user-pw" type="password" required class="w-full px-3 py-3 rounded-lg bg-surface-container-low text-sm focus:outline-none">
         </div>
-        <button id="login-submit-btn" type="button" class="mt-2 w-full py-3.5 rounded-xl bg-secondary text-on-secondary font-bold text-base shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-none transition-all">
-          로그인 (ログイン)
+        <p id="login-error-msg" class="text-xs text-red-600 font-bold hidden">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+        <button id="login-submit-btn" type="submit" class="mt-2 w-full py-3.5 rounded-xl bg-secondary text-on-secondary font-bold text-base shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2">
+          <span id="login-spinner" class="material-symbols-outlined animate-spin text-sm hidden">sync</span>
+          <span>로그인 (ログイン)</span>
         </button>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -80,13 +82,30 @@
   <div id="view-dashboard" class="hidden-view flex-col min-h-screen w-full">
     <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-sm h-16 px-4 flex items-center justify-between">
       <span class="font-bold text-primary text-sm">세종학당 봉센세</span>
-      <button id="logout-btn" class="text-xs text-outline underline">로그아웃</button>
+      <div class="flex items-center gap-2">
+        <span id="header-user-id" class="text-xs font-bold text-primary bg-surface-container-high px-2 py-1 rounded-md"></span>
+        <button id="logout-btn" class="text-xs text-outline underline">로그아웃</button>
+      </div>
     </header>
 
     <main class="flex flex-col w-full pt-20 pb-10 px-4 gap-4 max-w-md mx-auto">
-      <section class="bg-surface-container-lowest p-4 rounded-xl shadow-md">
-        <h2 class="text-xl font-bold">안녕하세요, 학습자님!</h2>
-        <p class="text-xs text-on-surface-variant mt-1">練習したい課（Lesson）を選択してください</p>
+      <section class="bg-surface-container-lowest p-4 rounded-xl shadow-md flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 id="welcome-msg" class="text-lg font-bold">안녕하세요!</h2>
+            <p class="text-xs text-on-surface-variant mt-0.5">現在進行中の学習コース</p>
+          </div>
+        </div>
+
+        <div class="border-t border-surface-container-high pt-2">
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="font-bold text-primary">구글 시트 연동 학습 진도율</span>
+            <span id="progress-percent" class="font-bold text-primary">0%</span>
+          </div>
+          <div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+            <div id="progress-bar" class="bg-primary h-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
       </section>
 
       <!-- Lesson Selector -->
@@ -100,9 +119,15 @@
       <section class="p-4 rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
         <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary text-xs font-bold w-fit">과 정보</span>
         
-        <div>
+	<div>
           <p class="text-xs text-outline font-medium">따라 읽을 문장 (Target Sentence)</p>
-          <h4 id="target-sentence" class="text-xl font-bold text-primary mt-1">문장 불러오는 중...</h4>
+          <div class="flex items-center gap-2 mt-1">
+            <h4 id="target-sentence" class="text-xl font-bold text-primary">문장 불러오는 중...</h4>
+            <!-- TTS 음성 재생 버튼 -->
+            <button id="tts-btn" type="button" class="p-2 rounded-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center shadow-sm" title="발음 듣기">
+              <span class="material-symbols-outlined text-xl">volume_up</span>
+            </button>
+          </div>
           <p id="target-translation" class="text-xs text-on-surface-variant mt-0.5">日本語訳</p>
         </div>
 
@@ -116,7 +141,7 @@
           <span id="record-btn-text">음성 녹음 시작 (録音開始)</span>
         </button>
 
-        <!-- 3단계: 구조화된 AI 발음 피드백 카드 UI 디자인 -->
+        <!-- AI 발음 피드백 카드 UI -->
         <div id="ai-response-box" class="hidden mt-3 p-4 bg-surface-container-high rounded-xl flex flex-col gap-3 shadow-inner">
           <div class="flex items-center justify-between border-b border-outline/20 pb-2">
             <div class="flex items-center gap-1.5">
@@ -155,70 +180,34 @@
   <script>
     const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
     const GEMINI_MODEL = "gemini-3.6-flash"; 
+    
+    // ⚠️ 발급받으신 Google Apps Script 웹 앱 URL을 여기에 넣으세요
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys0WgtJTDarr6OWaGRJSevWJws_TyBdHMeRlEnapUGcSA26dZ581S1AWBFEJhDVnCppg/exec";
 
-const LESSON_DATABASE = [
-      {
-        id: "4a-1",
-        lesson: "세종학당 4A · 제1과",
-        title: "첫 만남과 자기소개",
-        sentence: "처음 뵙겠습니다. 앞으로 잘 부탁드립니다.",
-        translation: "初めまして。これからよろしくお願いします。"
-      },
-      {
-        id: "4a-2",
-        lesson: "세종학당 4A · 제2과",
-        title: "일상 생활과 취미",
-        sentence: "주말에는 보통 친구들과 운동을 하곤 해요.",
-        translation: "週末はたいてい友達と運動をしたりします。"
-      },
-      {
-        id: "4a-3",
-        lesson: "세종학당 4A · 제3과",
-        title: "음식 주문과 요청",
-        sentence: "여기 물 좀 주시겠어요?",
-        translation: "すみません、お水いただけますか？"
-      },
-      {
-        id: "4a-4",
-        lesson: "세종학당 4A · 제4과",
-        title: "길 찾기와 교통",
-        sentence: "여기서 지하철역까지 걸어서 얼마나 걸려요?",
-        translation: "ここから地下鉄の駅まで歩いてどれくらいかかりますか？"
-      },
-      {
-        id: "4a-5",
-        lesson: "세종학당 4A · 제5과",
-        title: "물건 구매 및 환불",
-        sentence: "이 옷을 다른 색상으로 교환하고 싶은데요.",
-        translation: "この服を別の色に交換したいのですが。"
-      },
-      {
-        id: "4a-6",
-        lesson: "세종학당 4A · 제6과",
-        title: "약속과 일정 관리",
-        sentence: "이번 주 금요일 저녁에 시간 괜찮으세요?",
-        translation: "今週の金曜日の夜、お時間大丈夫ですか？"
-      },
-      {
-        id: "4a-7",
-        lesson: "세종학당 4A · 제7과",
-        title: "병원과 약국 이용",
-        sentence: "열이 나고 목이 아픈데 약 좀 처방해 주세요.",
-        translation: "熱があってのどが痛いのですが、薬を処方してください。"
-      },
-      {
-        id: "4a-8",
-        lesson: "세종학당 4A · 제8과",
-        title: "초대와 방문",
-        sentence: "바쁘실 텐데 와 주셔서 정말 감사합니다.",
-        translation: "お忙しいところお越しいただき、本当にありがとうございます。"
-      }
+    const LESSON_DATABASE = [
+      { id: "4a-1", lesson: "세종학당 4A · 제1과", title: "첫 만남과 자기소개", sentence: "처음 뵙겠습니다. 앞으로 잘 부탁드립니다.", translation: "初めまして。これからよろしくお願いします。" },
+      { id: "4a-2", lesson: "세종학당 4A · 제2과", title: "일상 생활과 취미", sentence: "주말에는 보통 친구들과 운동을 하곤 해요.", translation: "週末はたいてい友達と運動をしたりします。" },
+      { id: "4a-3", lesson: "세종학당 4A · 제3과", title: "음식 주문과 요청", sentence: "여기 물 좀 주시겠어요?", translation: "すみません、お水いただけますか？" },
+      { id: "4a-4", lesson: "세종학당 4A · 제4과", title: "길 찾기와 교통", sentence: "여기서 지하철역까지 걸어서 얼마나 걸려요?", translation: "ここから地下鉄の駅まで歩いてどれくらいかかりますか？" }
     ];
+
+    let currentUser = null;
+    let currentUserInfo = null;
+    let currentLessonIndex = 0;
 
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
-    const loginBtn = document.getElementById('login-submit-btn');
+    const loginForm = document.getElementById('login-form');
+    const userIdInput = document.getElementById('user-id');
+    const userPwInput = document.getElementById('user-pw');
+    const loginErrorMsg = document.getElementById('login-error-msg');
+    const loginSpinner = document.getElementById('login-spinner');
+    
     const logoutBtn = document.getElementById('logout-btn');
+    const headerUserId = document.getElementById('header-user-id');
+    const welcomeMsg = document.getElementById('welcome-msg');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
     const lessonSelect = document.getElementById('lesson-select');
 
     const cardLessonTag = document.getElementById('card-lesson-tag');
@@ -238,7 +227,48 @@ const LESSON_DATABASE = [
 
     let currentTargetSentence = "";
 
-    function initLessonData() {
+    // --- Google Sheets Auth & Fetch ---
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = userIdInput.value.trim();
+      const pw = userPwInput.value.trim();
+
+      loginSpinner.classList.remove('hidden');
+      loginErrorMsg.classList.add('hidden');
+
+      try {
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getUsers`);
+        const users = await response.json();
+
+        if (users[id] && users[id].pw === pw) {
+          currentUser = id;
+          currentUserInfo = users[id];
+
+          headerUserId.innerText = currentUserInfo.name;
+          welcomeMsg.innerText = `안녕하세요, ${currentUserInfo.name}님!`;
+          
+          viewLogin.classList.add('hidden-view');
+          viewDashboard.classList.remove('hidden-view');
+
+          initLessonData(currentUserInfo.currentLesson || 0);
+        } else {
+          loginErrorMsg.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error(err);
+        alert("구글 시트 데이터를 불러오지 못했습니다. URL을 확인해 주세요.");
+      } finally {
+        loginSpinner.classList.add('hidden');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      currentUser = null;
+      viewDashboard.classList.add('hidden-view');
+      viewLogin.classList.remove('hidden-view');
+    });
+
+    function initLessonData(savedLesson) {
       lessonSelect.innerHTML = "";
       LESSON_DATABASE.forEach((item, index) => {
         const option = document.createElement('option');
@@ -246,11 +276,14 @@ const LESSON_DATABASE = [
         option.innerText = `[${item.lesson}] ${item.title}`;
         lessonSelect.appendChild(option);
       });
-      updateSelectedLesson(0);
+
+      lessonSelect.value = savedLesson;
+      updateSelectedLesson(savedLesson);
     }
 
     function updateSelectedLesson(index) {
-      const selected = LESSON_DATABASE[index];
+      currentLessonIndex = parseInt(index);
+      const selected = LESSON_DATABASE[currentLessonIndex];
       cardLessonTag.innerText = selected.lesson;
       targetSentenceElem.innerText = selected.sentence;
       targetTranslationElem.innerText = selected.translation;
@@ -259,23 +292,17 @@ const LESSON_DATABASE = [
       aiResponseBox.classList.add('hidden');
       speechResultText.innerText = "버튼을 누르고 위 문장을 읽어주세요...";
       speechResultText.classList.add('italic');
+
+      const percent = Math.round(((currentLessonIndex + 1) / LESSON_DATABASE.length) * 100);
+      progressBar.style.width = `${percent}%`;
+      progressPercent.innerText = `${percent}%`;
     }
 
     lessonSelect.addEventListener('change', (e) => {
       updateSelectedLesson(e.target.value);
     });
 
-    loginBtn.addEventListener('click', () => {
-      viewLogin.classList.add('hidden-view');
-      viewDashboard.classList.remove('hidden-view');
-      initLessonData();
-    });
-
-    logoutBtn.addEventListener('click', () => {
-      viewDashboard.classList.add('hidden-view');
-      viewLogin.classList.remove('hidden-view');
-    });
-
+    // --- STT & Gemini API ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let isRecording = false;
@@ -297,23 +324,15 @@ const LESSON_DATABASE = [
       };
 
       recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0])
-          .map(result => result.transcript)
-          .join('');
+        const transcript = Array.from(event.results).map(r => r[0]).map(r => r.transcript).join('');
         speechResultText.innerText = transcript;
       };
 
-      recognition.onerror = (event) => {
-        console.error("STT Error:", event.error);
-        stopRecordingUI();
-        speechResultText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
-      };
-
+      recognition.onerror = () => stopRecordingUI();
       recognition.onend = () => {
         stopRecordingUI();
         const recognizedText = speechResultText.innerText;
-        if (recognizedText && !recognizedText.includes("듣고 있습니다") && !recognizedText.includes("다시 시도")) {
+        if (recognizedText && !recognizedText.includes("듣고 있습니다")) {
           evaluateKoreanPronunciation(currentTargetSentence, recognizedText);
         }
       };
@@ -344,7 +363,6 @@ const LESSON_DATABASE = [
       scoreBadge.innerText = "분석 중...";
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
-      
       const promptText = `
 You are a Korean phonetics teacher for Japanese learners.
 Compare target: "${target}" with student spoken: "${spoken}".
@@ -361,17 +379,11 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
 
-        if (!response.ok) throw new Error("API Call Failed");
-
         const data = await response.json();
-        let rawText = data.candidates[0].content.parts[0].text.trim();
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        
+        let rawText = data.candidates[0].content.parts[0].text.trim().replace(/```json/g, '').replace(/```/g, '').trim();
         const result = JSON.parse(rawText);
 
         scoreBadge.innerText = result.score || "90점";
@@ -380,14 +392,55 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
 
         aiLoading.classList.add('hidden');
         aiResultBody.classList.remove('hidden');
+
+        // 구글 시트로 학습 기록 및 현재 진도 전송 (Post)
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "saveHistory",
+            date: new Date().toLocaleString(),
+            userId: currentUser,
+            target: target,
+            spoken: spoken,
+            score: result.score,
+            point: result.point,
+            tip: result.tip,
+            currentLesson: currentLessonIndex
+          })
+        });
+
       } catch (err) {
         console.error(err);
-        scoreBadge.innerText = "완료";
-        feedbackPoint.innerText = "발음 분석 완료";
-        feedbackTip.innerText = "전반적으로 자연스럽게 발음하셨습니다.";
         aiLoading.classList.add('hidden');
         aiResultBody.classList.remove('hidden');
       }
+    }
+// ==================== TTS (발음 듣기) 로직 ====================
+    const ttsBtn = document.getElementById('tts-btn');
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) {
+        alert("이 브라우저는 음성 재생(TTS)을 지원하지 않습니다.");
+        return;
+      }
+
+      window.speechSynthesis.cancel(); // 이전 재생 중단
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 0.85; // 학습용으로 살짝 천천히 읽기
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    if (ttsBtn) {
+      ttsBtn.addEventListener('click', () => {
+        if (currentTargetSentence) {
+          speakText(currentTargetSentence);
+        }
+      });
     }
   </script>
 </body>
