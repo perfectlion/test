@@ -249,12 +249,37 @@
     loadJsonDatabase();
 
     // 로그인 처리
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const inputId = userIdInput.value.trim();
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const inputId = userIdInput.value.trim();
+  const inputPw = userPwInput.value.trim();
 
-      loginSpinner.classList.remove('hidden');
-      loginErrorMsg.classList.add('hidden');
+  loginSpinner.classList.remove('hidden');
+  loginErrorMsg.classList.add('hidden');
+
+  // JSON의 대문자 키(ID, PW) 조건 처리
+  const user = usersData.find(u => {
+    const targetId = (u.ID || u.user_id || "").toString().trim();
+    return targetId.toLowerCase() === inputId.toLowerCase();
+  });
+
+  // 비밀번호(PW)까지 일치하는지 확인
+  if (user && (user.PW === inputPw || !user.PW)) {
+    currentUser = user;
+    currentLessonId = user.lesson_id;
+
+    headerUserId.innerText = user.ID || user.user_id;
+    welcomeMsg.innerText = `안녕하세요, ${user.Name || user.name}님!`;
+    
+    viewLogin.classList.add('hidden-view');
+    viewDashboard.classList.remove('hidden-view');
+
+    initLessonSelector(user.lesson_id);
+  } else {
+    loginErrorMsg.classList.remove('hidden');
+  }
+  loginSpinner.classList.add('hidden');
+});
 
       // 1) local users_2.json에서 수강생 검색
       const user = usersData.find(u => u.user_id === inputId);
