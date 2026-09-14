@@ -116,18 +116,31 @@
         </select>
       </section>
 
-      <!-- 1. 대표 문장 말하기 연습 카드 -->
+      <!-- 1. 문장 말하기 연습 카드 (이전/다음 이동 네비게이션 포함) -->
       <section class="p-4 rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
-        <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary text-xs font-bold w-fit">과 정보</span>
+        <div class="flex items-center justify-between">
+          <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary text-xs font-bold w-fit">과 정보</span>
+          <span id="sentence-counter" class="text-xs font-bold text-secondary bg-secondary-container px-2 py-0.5 rounded-md">1 / 1</span>
+        </div>
         
         <div>
-          <p class="text-xs text-outline font-medium">따라 읽을 대표 문장 (Target Sentence)</p>
+          <p class="text-xs text-outline font-medium">따라 읽을 문장 (Target Sentence)</p>
           <div class="flex items-center justify-between gap-2 mt-1">
             <h4 id="target-sentence" class="text-lg font-bold text-primary leading-snug">문장 불러오는 중...</h4>
             <button id="tts-btn" type="button" class="p-2.5 rounded-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all flex-shrink-0 flex items-center justify-center shadow-sm" title="발음 듣기">
               <span class="material-symbols-outlined text-xl">volume_up</span>
             </button>
           </div>
+        </div>
+
+        <!-- 문장 이전 / 다음 이동 버튼 추가 -->
+        <div class="flex gap-2 my-1">
+          <button id="prev-sentence-btn" class="flex-1 py-2 rounded-lg bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 disabled:pointer-events-none">
+            <span class="material-symbols-outlined text-sm">chevron_left</span> 이전 문장
+          </button>
+          <button id="next-sentence-btn" class="flex-1 py-2 rounded-lg bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 disabled:pointer-events-none">
+            다음 문장 <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
         </div>
 
         <div class="p-3 rounded-lg bg-surface-container-low border border-surface-container-high">
@@ -137,7 +150,7 @@
 
         <button id="record-btn" class="mt-1 w-full py-3.5 rounded-xl bg-secondary text-on-secondary font-bold text-sm shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2">
           <span id="mic-icon" class="material-symbols-outlined text-xl">mic</span>
-          <span id="record-btn-text">대표 문장 녹음하기 (録音開始)</span>
+          <span id="record-btn-text">문장 녹음하기 (録音開始)</span>
         </button>
 
         <!-- AI 발음 피드백 카드 -->
@@ -198,6 +211,10 @@
 
     let currentUser = null;
     let currentLessonId = null;
+
+    // 현재 단원의 문장 리스트 관련 데이터
+    let currentSentences = [];
+    let currentSentenceIndex = 0;
     let currentTargetSentence = "";
 
     // DOM 요소 참조
@@ -217,11 +234,14 @@
     const lessonSelect = document.getElementById('lesson-select');
 
     const cardLessonTag = document.getElementById('card-lesson-tag');
+    const sentenceCounter = document.getElementById('sentence-counter');
     const targetSentenceElem = document.getElementById('target-sentence');
     const speechResultText = document.getElementById('speech-result-text');
     const recordBtn = document.getElementById('record-btn');
     const recordBtnText = document.getElementById('record-btn-text');
     const micIcon = document.getElementById('mic-icon');
+    const prevSentenceBtn = document.getElementById('prev-sentence-btn');
+    const nextSentenceBtn = document.getElementById('next-sentence-btn');
     const vocabListContainer = document.getElementById('vocab-list');
     
     const aiResponseBox = document.getElementById('ai-response-box');
@@ -243,7 +263,7 @@
         usersData = await uRes.json();
         curriculumData = await cRes.json();
         lessonsData = await lRes.json();
-        console.log("JSON 데이터 로드 완료");
+        console.log("JSON 데이터 로드 완료", { usersData, curriculumData, lessonsData });
       } catch (err) {
         console.error("JSON 로드 실패:", err);
       }
@@ -265,7 +285,6 @@
         return;
       }
 
-      // 대소문자 무시 및 ID/user_id 키 매핑
       const user = usersData.find(u => {
         const targetId = (u.ID || u.user_id || "").toString().trim();
         return targetId.toLowerCase() === inputId.toLowerCase();
@@ -276,7 +295,7 @@
         currentLessonId = user.lesson_id;
 
         headerUserId.innerText = user.ID || user.user_id;
-        welcomeMsg.innerText = `안녕하세요, ${user.Name || user.name}님!`;
+        welcomeMsg.innerText = `안녕하세요, ${user.Name || user.name || user.ID}님!`;
         
         viewLogin.classList.add('hidden-view');
         viewDashboard.classList.remove('hidden-view');
@@ -298,20 +317,17 @@
       viewLogin.classList.remove('hidden-view');
     });
 
-// 4. 드롭다운 셀렉터 채우기 (사용 중인 curriculum.json 키 값 적용)
+    // 4. 드롭다운 셀렉터 채우기
     function initLessonSelector(userLessonId) {
       lessonSelect.innerHTML = "";
       curriculumData.forEach((curr) => {
         const option = document.createElement('option');
-        
-        // JSON 키 이름 호환 처리 (book / title / lesson_number 반영)
         const lId = curr.lesson_id ?? curr.id;
         const bookName = curr.book || curr.textbook || "교재";
         const lessonNum = curr.lesson_number || "";
         const titleText = curr.title || curr.chapter_title || "";
 
         option.value = lId;
-        // 예: [세종학당 한국어 초급 1] 1과 자기소개 (自己紹介)
         option.innerText = `[${bookName}] ${lessonNum} ${titleText}`.trim();
         
         if (Number(lId) === Number(userLessonId)) option.selected = true;
@@ -325,22 +341,29 @@
     function renderLessonContent(lessonId) {
       currentLessonId = parseInt(lessonId);
 
+      // curriculum 및 lesson 객체 탐색 (문자열/숫자 타입 호환)
       const curr = curriculumData.find(c => Number(c.lesson_id ?? c.id) === currentLessonId) || {};
-      const lesson = lessonsData.find(l => Number(l.lesson_id ?? l.id) === currentLessonId) || {};
+      const lesson = lessonsData.find(l => Number(l.lesson_id ?? l.id ?? l.Lesson_ID) === currentLessonId) || {};
 
       const bookName = curr.book || curr.textbook || "";
       const lessonNum = curr.lesson_number || "";
       const titleText = curr.title || curr.chapter_title || "";
-      const sentence = curr.sentence || curr.target_sentence || "등록된 문장이 없습니다.";
 
-      // 상단 카드의 과 정보 표시
       cardLessonTag.innerText = `${bookName} · ${lessonNum} ${titleText}`.trim();
-      targetSentenceElem.innerText = sentence;
-      currentTargetSentence = sentence;
 
-      aiResponseBox.classList.add('hidden');
-      speechResultText.innerText = "버튼을 누르고 위 문장을 읽어주세요...";
-      speechResultText.classList.add('italic');
+      // 단원 내 연습 문장 세팅 (배열 형태이거나 single string 처리)
+      if (Array.isArray(curr.sentences) && curr.sentences.length > 0) {
+        currentSentences = curr.sentences;
+      } else if (Array.isArray(curr.sentence) && curr.sentence.length > 0) {
+        currentSentences = curr.sentence;
+      } else if (curr.sentence || curr.target_sentence) {
+        currentSentences = [curr.sentence || curr.target_sentence];
+      } else {
+        currentSentences = ["등록된 문장이 없습니다."];
+      }
+
+      currentSentenceIndex = 0;
+      updateSentenceDisplay();
 
       // 진도율 계산
       const currentIndex = curriculumData.findIndex(c => Number(c.lesson_id ?? c.id) === currentLessonId);
@@ -348,20 +371,20 @@
       progressBar.style.width = `${percent}%`;
       progressPercent.innerText = `${percent}%`;
 
-      // 어휘 및 예문 출력 (lessons.json 구조 연동)
+      // 어휘 및 예문 출력 (다양한 JSON 구조 호환 예외 처리)
       vocabListContainer.innerHTML = '';
-      const vocabArray = lesson.vocabulary || lesson.Vocabulary || [];
+      const vocabArray = lesson.vocabulary || lesson.Vocabulary || lesson.words || lesson.vocab_list || [];
       
-      if (vocabArray.length === 0) {
-        vocabListContainer.innerHTML = `<p class="text-xs text-outline">해당 단원의 어휘 데이터가 없습니다.</p>`;
+      if (!vocabArray || vocabArray.length === 0) {
+        vocabListContainer.innerHTML = `<p class="text-xs text-outline py-2">해당 단원의 어휘 데이터가 없습니다.</p>`;
         return;
       }
 
       vocabArray.forEach((item, idx) => {
-        const word = item.word || item.Word || "";
-        const wordTrans = item.word_translation || item.Word_Translation || item.translation || "";
-        const sentenceKr = item.sentence_kr || item.Sentence_KR || item.sentence || "";
-        const sentenceJp = item.sentence_jp || item.Sentence_JP || item.translation_jp || "";
+        const word = item.word || item.Word || item.korean || "";
+        const wordTrans = item.word_translation || item.Word_Translation || item.translation || item.japanese || "";
+        const sentenceKr = item.sentence_kr || item.Sentence_KR || item.sentence || item.example_kr || "";
+        const sentenceJp = item.sentence_jp || item.Sentence_JP || item.translation_jp || item.example_jp || "";
 
         const itemCard = document.createElement('div');
         itemCard.className = "p-3 rounded-xl bg-surface-container-low border border-surface-container-high flex flex-col gap-1.5";
@@ -370,14 +393,45 @@
             <span class="font-bold text-sm text-primary">${idx + 1}. ${word}</span>
             <span class="text-xs text-secondary font-medium bg-surface-container-lowest px-2 py-0.5 rounded-md border border-secondary/20">${wordTrans}</span>
           </div>
+          ${sentenceKr ? `
           <div class="mt-1 pt-1.5 border-t border-outline/10 text-xs flex flex-col gap-0.5">
             <p class="font-medium text-on-surface">💬 ${sentenceKr}</p>
-            <p class="text-[11px] text-on-surface-variant">└ ${sentenceJp}</p>
+            ${sentenceJp ? `<p class="text-[11px] text-on-surface-variant">└ ${sentenceJp}</p>` : ''}
           </div>
+          ` : ''}
         `;
         vocabListContainer.appendChild(itemCard);
       });
     }
+
+    // 현재 선택된 문장 업데이트 함수
+    function updateSentenceDisplay() {
+      currentTargetSentence = currentSentences[currentSentenceIndex] || "";
+      targetSentenceElem.innerText = currentTargetSentence;
+      sentenceCounter.innerText = `${currentSentenceIndex + 1} / ${currentSentences.length}`;
+
+      prevSentenceBtn.disabled = (currentSentenceIndex === 0);
+      nextSentenceBtn.disabled = (currentSentenceIndex >= currentSentences.length - 1);
+
+      aiResponseBox.classList.add('hidden');
+      speechResultText.innerText = "버튼을 누르고 위 문장을 읽어주세요...";
+      speechResultText.classList.add('italic');
+    }
+
+    // 문장 이동 버튼 이벤트
+    prevSentenceBtn.addEventListener('click', () => {
+      if (currentSentenceIndex > 0) {
+        currentSentenceIndex--;
+        updateSentenceDisplay();
+      }
+    });
+
+    nextSentenceBtn.addEventListener('click', () => {
+      if (currentSentenceIndex < currentSentences.length - 1) {
+        currentSentenceIndex++;
+        updateSentenceDisplay();
+      }
+    });
 
     lessonSelect.addEventListener('change', (e) => {
       renderLessonContent(e.target.value);
@@ -423,7 +477,7 @@
       isRecording = false;
       recordBtn.classList.remove('bg-red-600', 'recording-pulse');
       recordBtn.classList.add('bg-secondary');
-      recordBtnText.innerText = "대표 문장 녹음하기 (録音開始)";
+      recordBtnText.innerText = "문장 녹음하기 (録音開始)";
       micIcon.innerText = "mic";
     }
 
@@ -486,7 +540,7 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
       }
     }
 
-    // 7. Web Speech API TTS (대표 문장 발음 재생)
+    // 7. Web Speech API TTS (문장 발음 재생)
     function speakText(text) {
       if (!('speechSynthesis' in window)) {
         alert("이 브라우저는 음성 재생(TTS)을 지원하지 않습니다.");
@@ -495,7 +549,7 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ko-KR';
-      utterance.rate = 0.85; // 일본어 학습자를 위해 약간 천천히 배속 설정
+      utterance.rate = 0.85;
       window.speechSynthesis.speak(utterance);
     }
 
