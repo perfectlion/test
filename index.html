@@ -235,9 +235,9 @@
     async function loadJsonDatabase() {
       try {
         const [uRes, cRes, lRes] = await Promise.all([
-          fetch('users_2.json'),
-          fetch('curriculum_2.json'),
-          fetch('lessons_2.json')
+          fetch('users.json'),
+          fetch('curriculum.json'),
+          fetch('lessons.json')
         ]);
         usersData = await uRes.json();
         curriculumData = await cRes.json();
