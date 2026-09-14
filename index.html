@@ -6,27 +6,9 @@
   <title>세종학당 봉센세 - 한국어 학습 앱</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    @layer base {
-      html, body { width: 100vw; margin: 0; padding: 0; background-color: #faf8ff; }
-      body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-      .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
-      .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
-    }
-    ::-webkit-scrollbar { display: none; }
-    .hidden-view { display: none !important; }
-    .recording-pulse { animation: pulse 1.5s infinite; }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.8; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-  </style>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script id="tailwind-config">
     tailwind.config = {
@@ -82,50 +64,73 @@
             "background": "#faf8ff",
             "surface-container-highest": "#dae2fd"
           },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
           spacing: {
-            "space-md": "1rem",
-            "space-lg": "1.5rem",
-            "space-xs": "0.25rem",
-            "space-xl": "2rem",
-            "gutter": "1rem",
-            "space-sm": "0.5rem"
+            "space-md": "1rem", "space-lg": "1.5rem", "space-xs": "0.25rem", "space-xl": "2rem",
+            "gutter": "1rem", "space-sm": "0.5rem", "gutter-desktop": "1.5rem", "space-2xl": "3rem",
+            "margin": "1rem", "margin-desktop": "2rem"
           },
           fontFamily: {
-            "headline-lg": ["Plus Jakarta Sans"],
-            "headline-sm": ["Plus Jakarta Sans"],
             "label-bold": ["Plus Jakarta Sans"],
             "kana-subtext": ["Noto Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-sm": ["Noto Sans"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "hangul-interactive": ["Noto Sans"],
+            "headline-xl": ["Plus Jakarta Sans"],
+            "body-lg": ["Noto Sans"],
+            "hangul-display": ["Noto Sans"],
             "body-md": ["Noto Sans"],
-            "body-sm": ["Noto Sans"]
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"]
           }
         }
       }
     }
   </script>
+  <style>
+    @layer base {
+      html, body { width: 100vw; margin: 0; padding: 0; background-color: #faf8ff; }
+      body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+      .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+      .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+    }
+    ::-webkit-scrollbar { display: none; }
+    .hidden-view { display: none !important; }
+    .recording-pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 <body class="bg-surface text-on-surface flex flex-col min-h-screen pt-safe pb-safe">
 
-  <!-- ==================== VIEW 1: 로그인 화면 (Stitch Design) ==================== -->
-  <main id="view-login" class="flex flex-col relative w-full bg-surface min-h-screen">
+  <!-- ==================== VIEW 1: 로그인 화면 (요청하신 디자인 반영) ==================== -->
+  <main id="view-login" class="flex flex-col relative w-full bg-surface min-h-screen items-center justify-center">
     <div class="flex flex-col w-full px-space-md py-space-xl items-center justify-center">
       <div class="w-full max-w-sm flex flex-col items-center">
+        
         <!-- Top Emblem & Character Badge -->
         <div class="relative flex flex-col items-center mb-space-lg">
           <div class="relative w-28 h-28 rounded-full bg-surface-container-high p-space-xs shadow-md flex items-center justify-center">
             <img alt="Brand Mascot Emblem" class="w-full h-full object-contain rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1V12x_C5gT83ERBb8ZjwpDvVrUnYIyU27cfHvjTgxlEQ5EWp6HxKlHvt0dA6vzemuPBWNZNCQ17YGpUM0YKAwKhwa08H0-YH5xlRYg0XF7283hMVimCzJGEhmTG6bwtdK5kyLxvmg-_kmBV9e9zQiBrDWjDLxpByEr4b-P9TNs8heQQYT1XhLjyjPkVXtARVbhW2pNv0lEfSrf2bpmUZia_7gKqJR3E1Xc6GQ9KyMdReAc7I8BeXc1I2mY">
             <div class="absolute -bottom-1 -right-1 bg-secondary text-on-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-sm">
-              <span class="material-symbols-outlined text-body-sm" style="font-variation-settings: 'FILL' 1;">translate</span>
+              <span class="material-symbols-outlined text-body-sm" style="font-variation-settings: &quot;FILL&quot; 1;">translate</span>
             </div>
           </div>
           <!-- Bilingual Greeting -->
           <div class="text-center mt-space-md">
-            <h1 class="font-headline-lg text-2xl font-bold text-primary tracking-tight">안녕하세요!</h1>
-            <p class="font-kana-subtext text-kana-subtext text-on-surface-variant font-medium mt-space-xs">ようこそ・한국어 학습へ</p>
+            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">안녕하세요!</h1>
+            <p class="font-kana-subtext text-kana-subtext text-on-surface-variant font-medium mt-space-xs">ようこそ・韓国語学習へ</p>
           </div>
         </div>
 
-        <!-- Login Form Card -->
+        <!-- Login Focused Form Card -->
         <form id="login-form" class="w-full bg-surface-container-lowest rounded-xl shadow-xl p-space-lg flex flex-col gap-space-md">
+          
           <!-- ID Input Field -->
           <div class="flex flex-col gap-space-xs">
             <label class="flex items-center justify-between font-label-bold text-label-bold text-on-surface" for="user-id">
@@ -134,7 +139,7 @@
             </label>
             <div class="relative flex items-center rounded-lg bg-surface-container-low transition-colors duration-150 focus-within:bg-surface-variant/40">
               <span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-body-lg">person</span>
-              <input autocomplete="username" class="w-full pl-11 pr-space-md py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-id" name="username" placeholder="ID (예: shion.usui)" type="text" required>
+              <input autocomplete="username" class="w-full pl-11 pr-space-md py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-id" name="username" placeholder="ID または メールアドレス" type="text" required>
             </div>
           </div>
 
@@ -146,64 +151,79 @@
             </label>
             <div class="relative flex items-center rounded-lg bg-surface-container-low transition-colors duration-150 focus-within:bg-surface-variant/40">
               <span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-body-lg">lock</span>
-              <input autocomplete="current-password" class="w-full pl-11 pr-11 py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-pw" name="password" placeholder="비밀번호 입력" type="password">
-              <button aria-label="비밀번호 표시" class="absolute right-space-md text-outline hover:text-on-surface flex items-center justify-center p-1 rounded-full focus:outline-none" id="toggle-pw-btn" type="button">
+              <input autocomplete="current-password" class="w-full pl-11 pr-11 py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-pw" name="password" placeholder="パスワードを入力" type="password">
+              <button aria-label="パスワードの表示切り替え" class="absolute right-space-md text-outline hover:text-on-surface flex items-center justify-center p-1 rounded-full focus:outline-none transition-transform active:scale-95" id="toggle-pw-btn" type="button">
                 <span class="material-symbols-outlined text-body-lg" id="toggle-pw-icon">visibility</span>
               </button>
             </div>
           </div>
 
-          <p id="login-error-msg" class="text-xs text-error font-bold hidden">등록되지 않은 아이디입니다.</p>
+          <!-- 로그인 오류 메시지 영역 -->
+          <p id="login-error-msg" class="text-xs text-red-600 font-bold hidden text-center">등록되지 않은 아이디이거나 비밀번호가 일치하지 않습니다.</p>
 
-          <!-- Submit Button -->
+          <!-- Dual Checkboxes -->
+          <div class="flex items-center justify-between pt-space-xs pb-space-xs">
+            <!-- Save ID Checkbox -->
+            <label class="flex items-center gap-space-xs cursor-pointer select-none group">
+              <input checked class="sr-only peer" id="remember-id" type="checkbox">
+              <div class="w-5 h-5 rounded bg-surface-container flex items-center justify-center text-transparent peer-checked:bg-primary peer-checked:text-on-primary transition-all duration-150 group-active:scale-90">
+                <span class="material-symbols-outlined text-label-caps" style="font-variation-settings: &quot;FILL&quot; 1;">check</span>
+              </div>
+              <div class="flex flex-col text-left">
+                <span class="font-label-bold text-label-bold text-on-surface leading-tight">아이디 저장</span>
+                <span class="font-kana-subtext text-body-sm text-outline leading-none text-xs">ID保存</span>
+              </div>
+            </label>
+            <!-- Auto Login Checkbox -->
+            <label class="flex items-center gap-space-xs cursor-pointer select-none group">
+              <input class="sr-only peer" id="auto-login" type="checkbox">
+              <div class="w-5 h-5 rounded bg-surface-container flex items-center justify-center text-transparent peer-checked:bg-primary peer-checked:text-on-primary transition-all duration-150 group-active:scale-90">
+                <span class="material-symbols-outlined text-label-caps" style="font-variation-settings: &quot;FILL&quot; 1;">check</span>
+              </div>
+              <div class="flex flex-col text-left">
+                <span class="font-label-bold text-label-bold text-on-surface leading-tight">자동 로그인</span>
+                <span class="font-kana-subtext text-body-sm text-outline leading-none text-xs">自動ログイン</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Tactile Duolingo-style Mint Primary Action Button -->
           <div class="pt-space-xs">
-            <button id="login-submit-btn" type="submit" class="relative w-full rounded-xl bg-secondary text-on-secondary font-headline-sm text-headline-sm py-4 shadow-lg active:translate-y-1 transition-all duration-75 flex items-center justify-center gap-space-sm" style="box-shadow: rgb(0, 81, 55) 0px 4px 0px 0px;">
-              <span id="login-spinner" class="material-symbols-outlined animate-spin text-sm hidden">sync</span>
-              <span>로그인</span>
+            <button class="relative w-full rounded-xl bg-secondary text-on-secondary font-headline-sm text-headline-sm py-4 shadow-lg active:translate-y-1 transition-all duration-75 flex items-center justify-center gap-space-sm" id="login-submit-btn" style="box-shadow: rgb(0, 81, 55) 0px 4px 0px 0px;" type="submit">
+              <span id="login-spinner" class="material-symbols-outlined animate-spin text-body-lg hidden">sync</span>
+              <span class="">로그인</span>
               <span class="font-kana-subtext text-label-bold opacity-90">(ログイン)</span>
               <span class="material-symbols-outlined text-body-lg">arrow_forward</span>
             </button>
           </div>
+
         </form>
       </div>
     </div>
   </main>
 
-  <!-- ==================== VIEW 2: 학습/복습 대시보드 (Stitch Design) ==================== -->
+  <!-- ==================== VIEW 2: 학생 대시보드 (로그인 후 전환) ==================== -->
   <div id="view-dashboard" class="hidden-view flex-col min-h-screen w-full">
-    <!-- Fixed Top Bar -->
-    <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
-      <div class="h-16 px-gutter flex items-center justify-between max-w-md mx-auto">
-        <div class="flex items-center gap-space-sm">
-          <img alt="Emblem" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V12x_C5gT83ERBb8ZjwpDvVrUnYIyU27cfHvjTgxlEQ5EWp6HxKlHvt0dA6vzemuPBWNZNCQ17YGpUM0YKAwKhwa08H0-YH5xlRYg0XF7283hMVimCzJGEhmTG6bwtdK5kyLxvmg-_kmBV9e9zQiBrDWjDLxpByEr4b-P9TNs8heQQYT1XhLjyjPkVXtARVbhW2pNv0lEfSrf2bpmUZia_7gKqJR3E1Xc6GQ9KyMdReAc7I8BeXc1I2mY">
-          <div class="flex flex-col">
-            <div class="flex items-center gap-1">
-              <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-caps text-[10px] font-bold">KR/JP</span>
-            </div>
-            <span class="font-kana-subtext text-xs text-on-surface-variant line-clamp-1 leading-none">Learning & Review Mode</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span id="header-user-id" class="text-xs font-bold text-primary bg-surface-container-high px-2 py-1 rounded-md"></span>
-          <button id="logout-btn" class="text-xs text-outline underline">로그아웃</button>
-        </div>
+    <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-sm h-16 px-4 flex items-center justify-between">
+      <span class="font-bold text-primary text-sm">세종학당 봉센세</span>
+      <div class="flex items-center gap-2">
+        <span id="header-user-id" class="text-xs font-bold text-primary bg-surface-container-high px-2 py-1 rounded-md"></span>
+        <button id="logout-btn" class="text-xs text-outline underline cursor-pointer">로그아웃</button>
       </div>
     </header>
 
-    <main class="flex flex-col relative w-full pt-20 pb-24 bg-surface min-h-screen max-w-md mx-auto px-gutter gap-4">
-      
-      <!-- 수강생 Profile & Progress Banner -->
-      <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden flex flex-col gap-3">
+    <main class="flex flex-col w-full pt-20 pb-10 px-4 gap-4 max-w-md mx-auto">
+      <!-- 상단 수강생 프로필 카드 -->
+      <section class="bg-surface-container-lowest p-4 rounded-xl shadow-md flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <h2 id="welcome-msg" class="text-lg font-bold text-on-surface">안녕하세요!</h2>
-          <span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-bold text-xs flex items-center gap-1">
-            <span class="material-symbols-outlined text-[14px]">auto_awesome</span> 記憶定着率 94%
-          </span>
+          <div>
+            <h2 id="welcome-msg" class="text-lg font-bold">안녕하세요!</h2>
+            <p class="text-xs text-on-surface-variant mt-0.5">現在進行中の学習コース</p>
+          </div>
         </div>
-        
-        <div class="border-t border-surface-container-high pt-2 flex flex-col gap-1">
-          <div class="flex justify-between items-center text-xs">
+
+        <div class="border-t border-surface-container-high pt-2">
+          <div class="flex justify-between items-center text-xs mb-1">
             <span class="font-bold text-primary">전체 학습 진도율</span>
             <span id="progress-percent" class="font-bold text-primary">0%</span>
           </div>
@@ -211,19 +231,19 @@
             <div id="progress-bar" class="bg-primary h-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- 단원 선택 Dropdown -->
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-bold text-primary px-0.5">학습 단원 선택 (Lesson Select)</label>
-        <select id="lesson-select" class="w-full p-3.5 bg-surface-container-lowest rounded-xl font-bold text-sm border border-surface-container-high focus:outline-none shadow-sm">
+      <section class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-primary px-1">학습 단원 선택 (Lesson Select)</label>
+        <select id="lesson-select" class="w-full p-3 bg-surface-container-lowest rounded-xl font-bold text-sm border border-surface-container-high focus:outline-none shadow-sm cursor-pointer">
         </select>
-      </div>
+      </section>
 
-      <!-- 문장 말하기 연습 카드 (Stitch 톤앤매너 적용) -->
-      <div class="p-space-md rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
+      <!-- 1. 문장 말하기 연습 카드 -->
+      <section class="p-4 rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary text-xs font-bold">과 정보</span>
+          <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary text-xs font-bold w-fit">과 정보</span>
           <span id="sentence-counter" class="text-xs font-bold text-secondary bg-secondary-container px-2 py-0.5 rounded-md">1 / 1</span>
         </div>
         
@@ -231,18 +251,18 @@
           <p class="text-xs text-outline font-medium">따라 읽을 문장 (Target Sentence)</p>
           <div class="flex items-center justify-between gap-2 mt-1">
             <h4 id="target-sentence" class="text-lg font-bold text-primary leading-snug">문장 불러오는 중...</h4>
-            <button id="tts-btn" type="button" class="p-2.5 rounded-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all flex-shrink-0 flex items-center justify-center shadow-sm" title="발음 듣기">
+            <button id="tts-btn" type="button" class="p-2.5 rounded-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary transition-all flex-shrink-0 flex items-center justify-center shadow-sm cursor-pointer" title="발음 듣기">
               <span class="material-symbols-outlined text-xl">volume_up</span>
             </button>
           </div>
         </div>
 
-        <!-- 문장 이전 / 다음 이동 네비게이션 -->
+        <!-- 문장 이전 / 다음 이동 버튼 -->
         <div class="flex gap-2 my-1">
-          <button id="prev-sentence-btn" class="flex-1 py-2 rounded-lg bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 disabled:pointer-events-none">
+          <button id="prev-sentence-btn" class="flex-1 py-2 rounded-lg bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer">
             <span class="material-symbols-outlined text-sm">chevron_left</span> 이전 문장
           </button>
-          <button id="next-sentence-btn" class="flex-1 py-2 rounded-lg bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 disabled:pointer-events-none">
+          <button id="next-sentence-btn" class="flex-1 py-2 rounded-lg bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-1 hover:bg-primary hover:text-on-primary transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer">
             다음 문장 <span class="material-symbols-outlined text-sm">chevron_right</span>
           </button>
         </div>
@@ -252,12 +272,12 @@
           <p id="speech-result-text" class="text-sm font-bold text-on-surface italic">버튼을 누르고 위 문장을 읽어주세요...</p>
         </div>
 
-        <button id="record-btn" class="w-full py-4 rounded-xl bg-secondary text-on-secondary font-bold text-sm shadow-md active:translate-y-1 transition-all flex items-center justify-center gap-2" style="box-shadow: rgb(0, 81, 55) 0px 4px 0px 0px;">
+        <button id="record-btn" class="mt-1 w-full py-3.5 rounded-xl bg-secondary text-on-secondary font-bold text-sm shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer">
           <span id="mic-icon" class="material-symbols-outlined text-xl">mic</span>
           <span id="record-btn-text">문장 녹음하기 (録音開始)</span>
         </button>
 
-        <!-- AI 발음 피드백 리포트 -->
+        <!-- AI 발음 피드백 카드 -->
         <div id="ai-response-box" class="hidden mt-2 p-4 bg-surface-container-high rounded-xl flex flex-col gap-3 shadow-inner">
           <div class="flex items-center justify-between border-b border-outline/20 pb-2">
             <div class="flex items-center gap-1.5">
@@ -288,19 +308,16 @@
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- 단원 필수 어휘 및 예문 섹션 -->
-      <div class="p-space-md rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
+      <!-- 2. 단원 어휘 및 예문 목록 -->
+      <section class="p-4 rounded-2xl bg-surface-container-lowest shadow-md flex flex-col gap-3">
         <div class="flex items-center gap-1.5 border-b border-surface-container-high pb-2">
           <span class="material-symbols-outlined text-secondary text-lg">menu_book</span>
           <h3 class="font-bold text-sm text-on-surface">단원 필수 어휘 및 예문 (単語・例文)</h3>
         </div>
-        <div id="vocab-list" class="flex flex-col gap-3 mt-1">
-          <!-- JSON 기반 자동 출력 영역 -->
-        </div>
-      </div>
-
+        <div id="vocab-list" class="flex flex-col gap-3.5 mt-1"></div>
+      </section>
     </main>
   </div>
 
@@ -309,19 +326,17 @@
     const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
     const GEMINI_MODEL = "gemini-3.6-flash"; 
 
-    // JSON 데이터 저장소
     let usersData = [];
     let curriculumData = [];
     let lessonsData = [];
 
     let currentUser = null;
     let currentLessonId = null;
-
     let currentSentences = [];
     let currentSentenceIndex = 0;
     let currentTargetSentence = "";
 
-    // DOM 요소
+    // DOM 요소 참조
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
     const loginForm = document.getElementById('login-form');
@@ -358,16 +373,16 @@
     const feedbackTip = document.getElementById('feedback-tip');
     const ttsBtn = document.getElementById('tts-btn');
 
-    // 비밀번호 토글
-    if (togglePwBtn && userIdInput && togglePwIcon) {
-      togglePwBtn.addEventListener('click', () => {
+    // 비밀번호 표시 토글 기능
+    if (togglePwBtn && userPwInput && togglePwIcon) {
+      togglePwBtn.addEventListener('click', function() {
         const isPassword = userPwInput.getAttribute('type') === 'password';
         userPwInput.setAttribute('type', isPassword ? 'text' : 'password');
         togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
       });
     }
 
-    // 1. JSON 데이터 로드
+    // JSON 데이터 로드
     async function loadJsonDatabase() {
       try {
         const [uRes, cRes, lRes] = await Promise.all([
@@ -384,7 +399,7 @@
     }
     loadJsonDatabase();
 
-    // 2. 로그인 처리
+    // 로그인 제출 이벤트
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const inputId = userIdInput.value.trim();
@@ -421,7 +436,7 @@
       loginSpinner.classList.add('hidden');
     });
 
-    // 3. 로그아웃
+    // 로그아웃 이벤트
     logoutBtn.addEventListener('click', () => {
       currentUser = null;
       currentLessonId = null;
@@ -431,50 +446,39 @@
       viewLogin.classList.remove('hidden-view');
     });
 
-// 4. 셀렉터 초기화 (1번 항목 및 첫 번째 데이터 자동 선택 보장)
+    // 단원 셀렉터 초기화
     function initLessonSelector(userLessonId) {
       lessonSelect.innerHTML = "";
-      
-      if (!curriculumData || curriculumData.length === 0) return;
-
-      curriculumData.forEach((curr, index) => {
+      curriculumData.forEach((curr) => {
         const option = document.createElement('option');
-        // ID가 없거나 유효하지 않을 경우 인덱스 기반(index + 1)으로 fallback 처리
-        const lId = curr.lesson_id ?? curr.id ?? (index + 1);
+        const lId = curr.lesson_id ?? curr.id;
         const bookName = curr.book || curr.textbook || "교재";
-        const lessonNum = curr.lesson_number || `${index + 1}과`;
+        const lessonNum = curr.lesson_number || "";
         const titleText = curr.title || curr.chapter_title || "";
 
         option.value = lId;
         option.innerText = `[${bookName}] ${lessonNum} ${titleText}`.trim();
         
-        // 사용자 지정 lesson_id와 매칭하거나, 매칭 실패 시 첫 번째(1번) 항목 선택
-        if (String(lId) === String(userLessonId)) {
-          option.selected = true;
-        }
+        if (Number(lId) === Number(userLessonId)) option.selected = true;
         lessonSelect.appendChild(option);
       });
 
-      // 만약 선택된 값이 없으면 목록의 첫 번째(1번) 과를 기본으로 로드
-      const initialLessonId = lessonSelect.value || (curriculumData[0].lesson_id ?? curriculumData[0].id ?? 1);
-      renderLessonContent(initialLessonId);
+      renderLessonContent(userLessonId);
     }
 
-    // 5. 단원 콘텐츠 렌더링 (데이터 매칭 안정화)
+    // 단원별 콘텐츠 렌더링
     function renderLessonContent(lessonId) {
-      currentLessonId = lessonId;
+      currentLessonId = parseInt(lessonId);
 
-      // 문자열/숫자 타입 차이로 인한 매칭 오류 방지를 위해 String()으로 비교
-      const curr = curriculumData.find(c => String(c.lesson_id ?? c.id) === String(lessonId)) || curriculumData[0] || {};
-      const lesson = lessonsData.find(l => String(l.lesson_id ?? l.id ?? l.Lesson_ID) === String(lessonId)) || lessonsData[0] || {};
+      const curr = curriculumData.find(c => Number(c.lesson_id ?? c.id) === currentLessonId) || {};
+      const lesson = lessonsData.find(l => Number(l.lesson_id ?? l.id ?? l.Lesson_ID) === currentLessonId) || {};
 
       const bookName = curr.book || curr.textbook || "";
       const lessonNum = curr.lesson_number || "";
       const titleText = curr.title || curr.chapter_title || "";
 
-      cardLessonTag.innerText = `${bookName} ${lessonNum} ${titleText}`.trim();
+      cardLessonTag.innerText = `${bookName} · ${lessonNum} ${titleText}`.trim();
 
-      // 문장 배열 유효성 체크 및 1번 문장 세팅
       if (Array.isArray(curr.sentences) && curr.sentences.length > 0) {
         currentSentences = curr.sentences;
       } else if (Array.isArray(curr.sentence) && curr.sentence.length > 0) {
@@ -485,17 +489,14 @@
         currentSentences = ["등록된 문장이 없습니다."];
       }
 
-      currentSentenceIndex = 0; // 항상 1번 문장(인덱스 0)부터 시작
+      currentSentenceIndex = 0;
       updateSentenceDisplay();
 
-      // 진도율 계산
-      const currentIndex = curriculumData.findIndex(c => String(c.lesson_id ?? c.id) === String(lessonId));
-      const validIndex = currentIndex >= 0 ? currentIndex : 0;
-      const percent = curriculumData.length > 0 ? Math.round(((validIndex + 1) / curriculumData.length) * 100) : 0;
+      const currentIndex = curriculumData.findIndex(c => Number(c.lesson_id ?? c.id) === currentLessonId);
+      const percent = curriculumData.length > 0 ? Math.round(((currentIndex + 1) / curriculumData.length) * 100) : 0;
       progressBar.style.width = `${percent}%`;
       progressPercent.innerText = `${percent}%`;
 
-      // 어휘 및 예문 출력 (1번 단어부터 순회)
       vocabListContainer.innerHTML = '';
       const vocabArray = lesson.vocabulary || lesson.Vocabulary || lesson.words || lesson.vocab_list || [];
       
@@ -559,7 +560,7 @@
       renderLessonContent(e.target.value);
     });
 
-    // 6. STT 음성 인식 & AI 발음 분석
+    // 음성 인식 (STT) 및 Gemini AI 평가 연동
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let isRecording = false;
@@ -662,7 +663,7 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
       }
     }
 
-    // 7. TTS (문장 음성 재생)
+    // TTS 기능
     function speakText(text) {
       if (!('speechSynthesis' in window)) {
         alert("이 브라우저는 음성 재생(TTS)을 지원하지 않습니다.");
@@ -678,6 +679,7 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
     if (ttsBtn) {
       ttsBtn.addEventListener('click', () => {
         if (currentTargetSentence) {
+          speakTest = currentTargetSentence;
           speakText(currentTargetSentence);
         }
       });
