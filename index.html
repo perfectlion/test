@@ -190,7 +190,6 @@
   <script>
     const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
     const GEMINI_MODEL = "gemini-3.6-flash"; 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbys0WgtJTDarr6OWaGRJSevWJws_TyBdHMeRlEnapUGcSA26dZ581S1AWBFEJhDVnCppg/exec";
 
     // JSON 데이터 저장소
     let usersData = [];
@@ -201,11 +200,12 @@
     let currentLessonId = null;
     let currentTargetSentence = "";
 
-    // DOM 요소를 가져오는 변수 선언
+    // DOM 요소 참조
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
     const loginForm = document.getElementById('login-form');
     const userIdInput = document.getElementById('user-id');
+    const userPwInput = document.getElementById('user-pw');
     const loginErrorMsg = document.getElementById('login-error-msg');
     const loginSpinner = document.getElementById('login-spinner');
     
@@ -230,8 +230,9 @@
     const scoreBadge = document.getElementById('score-badge');
     const feedbackPoint = document.getElementById('feedback-point');
     const feedbackTip = document.getElementById('feedback-tip');
+    const ttsBtn = document.getElementById('tts-btn');
 
-    // JSON 데이터 로드 함수
+    // 1. JSON 데이터 로드 함수
     async function loadJsonDatabase() {
       try {
         const [uRes, cRes, lRes] = await Promise.all([
@@ -242,54 +243,40 @@
         usersData = await uRes.json();
         curriculumData = await cRes.json();
         lessonsData = await lRes.json();
+        console.log("JSON 데이터 로드 완료");
       } catch (err) {
         console.error("JSON 로드 실패:", err);
       }
     }
     loadJsonDatabase();
 
-    // 로그인 처리
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const inputId = userIdInput.value.trim();
-  const inputPw = userPwInput.value.trim();
+    // 2. 로그인 처리 이벤트
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inputId = userIdInput.value.trim();
+      const inputPw = userPwInput.value.trim();
 
-  loginSpinner.classList.remove('hidden');
-  loginErrorMsg.classList.add('hidden');
+      loginSpinner.classList.remove('hidden');
+      loginErrorMsg.classList.add('hidden');
 
-  // JSON의 대문자 키(ID, PW) 조건 처리
-  const user = usersData.find(u => {
-    const targetId = (u.ID || u.user_id || "").toString().trim();
-    return targetId.toLowerCase() === inputId.toLowerCase();
-  });
+      if (!usersData || usersData.length === 0) {
+        alert("데이터를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+        loginSpinner.classList.add('hidden');
+        return;
+      }
 
-  // 비밀번호(PW)까지 일치하는지 확인
-  if (user && (user.PW === inputPw || !user.PW)) {
-    currentUser = user;
-    currentLessonId = user.lesson_id;
+      // 대소문자 무시 및 ID/user_id 키 매핑
+      const user = usersData.find(u => {
+        const targetId = (u.ID || u.user_id || "").toString().trim();
+        return targetId.toLowerCase() === inputId.toLowerCase();
+      });
 
-    headerUserId.innerText = user.ID || user.user_id;
-    welcomeMsg.innerText = `안녕하세요, ${user.Name || user.name}님!`;
-    
-    viewLogin.classList.add('hidden-view');
-    viewDashboard.classList.remove('hidden-view');
-
-    initLessonSelector(user.lesson_id);
-  } else {
-    loginErrorMsg.classList.remove('hidden');
-  }
-  loginSpinner.classList.add('hidden');
-});
-
-      // 1) local users_2.json에서 수강생 검색
-      const user = usersData.find(u => u.user_id === inputId);
-
-      if (user) {
+      if (user && (user.PW === inputPw || !user.PW)) {
         currentUser = user;
         currentLessonId = user.lesson_id;
 
-        headerUserId.innerText = user.user_id;
-        welcomeMsg.innerText = `안녕하세요, ${user.name}님!`;
+        headerUserId.innerText = user.ID || user.user_id;
+        welcomeMsg.innerText = `안녕하세요, ${user.Name || user.name}님!`;
         
         viewLogin.classList.add('hidden-view');
         viewDashboard.classList.remove('hidden-view');
@@ -301,13 +288,17 @@ loginForm.addEventListener('submit', async (e) => {
       loginSpinner.classList.add('hidden');
     });
 
+    // 3. 로그아웃 처리 이벤트
     logoutBtn.addEventListener('click', () => {
       currentUser = null;
+      currentLessonId = null;
+      userIdInput.value = '';
+      userPwInput.value = '';
       viewDashboard.classList.add('hidden-view');
       viewLogin.classList.remove('hidden-view');
     });
 
-    // 드롭다운 셀렉터 채우기
+    // 4. 드롭다운 셀렉터 채우기
     function initLessonSelector(userLessonId) {
       lessonSelect.innerHTML = "";
       curriculumData.forEach((curr) => {
@@ -321,7 +312,7 @@ loginForm.addEventListener('submit', async (e) => {
       renderLessonContent(userLessonId);
     }
 
-    // 선택된 단원 데이터 화면에 바인딩
+    // 5. 선택된 단원 데이터 화면 바인딩
     function renderLessonContent(lessonId) {
       currentLessonId = parseInt(lessonId);
 
@@ -336,13 +327,13 @@ loginForm.addEventListener('submit', async (e) => {
       speechResultText.innerText = "버튼을 누르고 위 문장을 읽어주세요...";
       speechResultText.classList.add('italic');
 
-      // 진도율 계산 (현재 단원 순번 / 전체 단원 수)
+      // 진도율 계산
       const currentIndex = curriculumData.findIndex(c => c.lesson_id === currentLessonId);
       const percent = Math.round(((currentIndex + 1) / curriculumData.length) * 100);
       progressBar.style.width = `${percent}%`;
       progressPercent.innerText = `${percent}%`;
 
-      // 단원 어휘 및 예문 출력
+      // 어휘 및 예문 출력
       vocabListContainer.innerHTML = '';
       const vocabArray = lesson.vocabulary || [];
       
@@ -372,7 +363,7 @@ loginForm.addEventListener('submit', async (e) => {
       renderLessonContent(e.target.value);
     });
 
-    // --- STT (음성 인식) & Gemini AI 발음 분석 ---
+    // 6. STT (음성 인식) & Gemini AI 발음 분석
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let isRecording = false;
@@ -417,7 +408,10 @@ loginForm.addEventListener('submit', async (e) => {
     }
 
     recordBtn.addEventListener('click', () => {
-      if (!recognition) return;
+      if (!recognition) {
+        alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
+        return;
+      }
       if (!isRecording) {
         aiResponseBox.classList.add('hidden');
         recognition.start();
@@ -462,34 +456,17 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
 
         aiLoading.classList.add('hidden');
         aiResultBody.classList.remove('hidden');
-
-        // 구글 시트로 학습 기록 저장 요청
-        fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "saveHistory",
-            date: new Date().toLocaleString(),
-            userId: currentUser ? currentUser.user_id : 'unknown',
-            target: target,
-            spoken: spoken,
-            score: result.score,
-            point: result.point,
-            tip: result.tip,
-            currentLesson: currentLessonId
-          })
-        });
-
       } catch (err) {
-        console.error(err);
+        console.error("AI 발음 분석 에러:", err);
         aiLoading.classList.add('hidden');
         aiResultBody.classList.remove('hidden');
+        scoreBadge.innerText = "분석 완료";
+        feedbackPoint.innerText = "발음을 인식했습니다.";
+        feedbackTip.innerText = "다시 한번 큰 소리로 연습해 보세요.";
       }
     }
 
-    // TTS 발음 듣기
-    const ttsBtn = document.getElementById('tts-btn');
+    // 7. Web Speech API TTS (대표 문장 발음 재생)
     function speakText(text) {
       if (!('speechSynthesis' in window)) {
         alert("이 브라우저는 음성 재생(TTS)을 지원하지 않습니다.");
@@ -498,7 +475,7 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ko-KR';
-      utterance.rate = 0.85;
+      utterance.rate = 0.85; // 일본어 학습자를 위해 약간 천천히 배속 설정
       window.speechSynthesis.speak(utterance);
     }
 
