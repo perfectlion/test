@@ -4,419 +4,419 @@
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "1과",
    "title": "자기소개 (自己紹介)",
-   "sentence": "저는 한국 사람이에요"
+   "sentences": "저는 한국 사람이에요"
  },
  {
    "lesson_id": 2,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "2과",
    "title": "가족 (家族)",
-   "sentence": "회사원이 아니에요"
+   "sentences": "회사원이 아니에요"
  },
  {
    "lesson_id": 3,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "3과",
    "title": "일상생활 (日常生活)",
-   "sentence": "저도 드라마를 좋아합니다."
+   "sentences": "저도 드라마를 좋아합니다."
  },
  {
    "lesson_id": 4,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "4과",
    "title": "학교 (学校)",
-   "sentence": "여기가 지훈 씨의 학교입니까?"
+   "sentences": "여기가 지훈 씨의 학교입니까?"
  },
  {
    "lesson_id": 5,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "5과",
    "title": "날씨 (天気)",
-   "sentence": "날씨가 좋지 않아요"
+   "sentences": "날씨가 좋지 않아요"
  },
  {
    "lesson_id": 6,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "6과",
    "title": "친구 (友達)",
-   "sentence": "친구한테 편지를 써요"
+   "sentences": "친구한테 편지를 써요"
  },
  {
    "lesson_id": 7,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "7과",
    "title": "위치 (位置)",
-   "sentence": "지금 어디에 있어요?"
+   "sentences": "지금 어디에 있어요?"
  },
  {
    "lesson_id": 8,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "8과",
    "title": "날짜 (日付)",
-   "sentence": "토요일에 친구를 만났어요."
+   "sentences": "토요일에 친구를 만났어요."
  },
  {
    "lesson_id": 9,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "9과",
    "title": "운동 (運動)",
-   "sentence": "저는 수영을 못해요."
+   "sentences": "저는 수영을 못해요."
  },
  {
    "lesson_id": 10,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "10과",
    "title": "약속 (約束)",
-   "sentence": "같이 점심을 먹을까요?"
+   "sentences": "같이 점심을 먹을까요?"
  },
  {
    "lesson_id": 11,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "11과",
    "title": "음식 (食事)",
-   "sentence": "떡볶이는 매워서 잘 못 먹어요."
+   "sentences": "떡볶이는 매워서 잘 못 먹어요."
  },
  {
    "lesson_id": 12,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "12과",
    "title": "쇼핑 (買い物)",
-   "sentence": "운동화를 좀 보고 싶어요."
+   "sentences": "운동화를 좀 보고 싶어요."
  },
  {
    "lesson_id": 13,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "13과",
    "title": "취미 (趣味)",
-   "sentence": "케이 팝 댄스를 출 수 있어요?"
+   "sentences": "케이 팝 댄스를 출 수 있어요?"
  },
  {
    "lesson_id": 14,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "14과",
    "title": "여행 (旅行)",
-   "sentence": "고향에 가기 전에 여행을 할 거예요."
+   "sentences": "고향에 가기 전에 여행을 할 거예요."
  },
  {
    "lesson_id": 15,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "15과",
    "title": "건강 (健康)",
-   "sentence": "약을 먹은 후에 푹 쉬세요."
+   "sentences": "약을 먹은 후에 푹 쉬세요."
  },
  {
    "lesson_id": 16,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "16과",
    "title": "교통 (交通)",
-   "sentence": "여기에서 서울역까지 어떻게 가요."
+   "sentences": "여기에서 서울역까지 어떻게 가요."
  },
  {
    "lesson_id": 17,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "17과",
    "title": "집들이 (引っ越し祝い)",
-   "sentence": "집들이에 뭘 사 가야 돼요?"
+   "sentences": "집들이에 뭘 사 가야 돼요?"
  },
  {
    "lesson_id": 18,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "18과",
    "title": "여가 (余暇)",
-   "sentence": "길이 막히니까 공연장까지 지하철로 갑시다."
+   "sentences": "길이 막히니까 공연장까지 지하철로 갑시다."
  },
  {
    "lesson_id": 19,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "19과",
    "title": "길 찾기 (道探し)",
-   "sentence": "저랑 같이 사러 가요."
+   "sentences": "저랑 같이 사러 가요."
  },
  {
    "lesson_id": 20,
    "book": "세종학당 한국어 초급 1",
    "lesson_number": "20과",
    "title": "방문 (訪問)",
-   "sentence": "어머니께서 꽃을 좋아하세요."
+   "sentences": "어머니께서 꽃을 좋아하세요."
  },
  {
    "lesson_id": 21,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "1과",
    "title": "날씨 (天気)",
-   "sentence": "비가 너무 많이 오네요"
+   "sentences": "비가 너무 많이 오네요"
  },
  {
    "lesson_id": 22,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "2과",
    "title": "쇼핑 (買い物)",
-   "sentence": "동대문에 가 보세요"
+   "sentences": "동대문에 가 보세요"
  },
  {
    "lesson_id": 23,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "3과",
    "title": "외모 (外見)",
-   "sentence": "엄마 친구는 어떻게 생겼어요?"
+   "sentences": "엄마 친구는 어떻게 생겼어요?"
  },
  {
    "lesson_id": 24,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "4과",
    "title": "장보기 (買い物/市場)",
-   "sentence": "불고기를 해 먹는 게 어때요?"
+   "sentences": "불고기를 해 먹는 게 어때요?"
  },
  {
    "lesson_id": 25,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "5과",
    "title": "주문 (注文)",
-   "sentence": "주문할게요"
+   "sentences": "주문할게요"
  },
  {
    "lesson_id": 26,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "6과",
    "title": "휴가 (休暇)",
-   "sentence": "휴가를 어떻게 보내기로 했어요?"
+   "sentences": "휴가를 어떻게 보내기로 했어요?"
  },
  {
    "lesson_id": 27,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "7과",
    "title": "건강 (健康)",
-   "sentence": "찬 음식을 너무 많이 먹지 마세요."
+   "sentences": "찬 음식을 너무 많이 먹지 마세요."
  },
  {
    "lesson_id": 28,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "8과",
    "title": "영화 (映画)",
-   "sentence": "오늘 저녁에 뭐 할래요?"
+   "sentences": "오늘 저녁에 뭐 할래요?"
  },
  {
    "lesson_id": 29,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "9과",
    "title": "휴일 (休日)",
-   "sentence": "주말마다 산에 가요"
+   "sentences": "주말마다 산에 가요"
  },
  {
    "lesson_id": 30,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "10과",
    "title": "학교생활 (学校生活)",
-   "sentence": "밤 10시 이후로는 조용히 할 것"
+   "sentences": "밤 10시 이후로는 조용히 할 것"
  },
  {
    "lesson_id": 31,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "11과",
    "title": "공공서비스 (公共サービス)",
-   "sentence": "약속 장소에 가다가 돌아왔어요"
+   "sentences": "약속 장소에 가다가 돌아왔어요"
  },
  {
    "lesson_id": 32,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "12과",
    "title": "대인관계 (対人関係)",
-   "sentence": "사비나 씨는 어떤 사람을 좋아해요?"
+   "sentences": "사비나 씨는 어떤 사람을 좋아해요?"
  },
  {
    "lesson_id": 33,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "13과",
    "title": "가정생활 (家庭生活)",
-   "sentence": "집안일을 나눠서 하는게 어때?"
+   "sentences": "집안일을 나눠서 하는게 어때?"
  },
  {
    "lesson_id": 34,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "14과",
    "title": "생활 편의시설 (生活便宜施設)",
-   "sentence": "한국에서 찜질방은 처음인데요"
+   "sentences": "한국에서 찜질방은 처음인데요"
  },
  {
    "lesson_id": 35,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "15과",
    "title": "배달 (配達)",
-   "sentence": "치킨 두 마리를 주문하려고 해요"
+   "sentences": "치킨 두 마리를 주문하려고 해요"
  },
  {
    "lesson_id": 36,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "16과",
    "title": "의복 (衣服)",
-   "sentence": "이 원피스를 입어봐도 돼요?"
+   "sentences": "이 원피스를 입어봐도 돼요?"
  },
  {
    "lesson_id": 37,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "17과",
    "title": "취미 (趣味)",
-   "sentence": "저는 시간이 있을 때 요리해요."
+   "sentences": "저는 시간이 있을 때 요리해요."
  },
  {
    "lesson_id": 38,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "18과",
    "title": "모임 (集まり)",
-   "sentence": "대한 씨 딸이 태어난 지 벌써 1년이 됐어요?"
+   "sentences": "대한 씨 딸이 태어난 지 벌써 1년이 됐어요?"
  },
  {
    "lesson_id": 39,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "19과",
    "title": "집 (家)",
-   "sentence": "저도 학교 근처로 이사할까 봐요"
+   "sentences": "저도 학교 근처로 이사할까 봐요"
  },
  {
    "lesson_id": 40,
    "book": "세종학당 한국어 초급 2",
    "lesson_number": "20과",
    "title": "약속 (約束)",
-   "sentence": "이번 일요일은 좀 어려울 것 같아요"
+   "sentences": "이번 일요일은 좀 어려울 것 같아요"
  },
  {
    "lesson_id": 41,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "1과",
    "title": "모임",
-   "sentence": "약속 시간에 늦으면 안 돼요"
+   "sentences": "약속 시간에 늦으면 안 돼요"
  },
  {
    "lesson_id": 42,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "2과",
    "title": "만남과 추억",
-   "sentence": "어제 친구를 우연히 기차역에서 만났어요"
+   "sentences": "어제 친구를 우연히 기차역에서 만났어요"
  },
  {
    "lesson_id": 43,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "3과",
    "title": "계획과 바람",
-   "sentence": "열심히 노력해야 목표를 이룰 수 있어요"
+   "sentences": "열심히 노력해야 목표를 이룰 수 있어요"
  },
  {
    "lesson_id": 44,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "4과",
    "title": "자기 계발",
-   "sentence": "꾸준히 운동을 하면 건강해져요"
+   "sentences": "꾸준히 운동을 하면 건강해져요"
  },
  {
    "lesson_id": 45,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "5과",
    "title": "관람과 감상",
-   "sentence": "우리 팀이 이겨서 정말 신나더라"
+   "sentences": "우리 팀이 이겨서 정말 신나더라"
  },
  {
    "lesson_id": 46,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "6과",
    "title": "취미",
-   "sentence": "오랜만에 영화를 보니 정말 재미있었어요"
+   "sentences": "오랜만에 영화를 보니 정말 재미있었어요"
  },
  {
    "lesson_id": 47,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "7과",
    "title": "휴식과 휴가",
-   "sentence": "여행을 가는 대신에 집에서 쉬는 것이 좋겠네요"
+   "sentences": "여행을 가는 대신에 집에서 쉬는 것이 좋겠네요"
  },
  {
    "lesson_id": 48,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "8과",
    "title": "인터넷과 컴퓨터",
-   "sentence": "궁금한 것은 인터넷 게시판에 댓글로 남겨 주세요"
+   "sentences": "궁금한 것은 인터넷 게시판에 댓글로 남겨 주세요"
  },
  {
    "lesson_id": 49,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "9과",
    "title": "성격과 외모",
-   "sentence": "제 친구는 성격이 활발해요"
+   "sentences": "제 친구는 성격이 활발해요"
  },
  {
    "lesson_id": 50,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "10과",
    "title": "능력과 평판",
-   "sentence": "공부면 공부, 운동이면 운동 정말 못하는 게 없는 것 같아요"
+   "sentences": "공부면 공부, 운동이면 운동 정말 못하는 게 없는 것 같아요"
  },
  {
    "lesson_id": 51,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "11과",
    "title": "식품",
-   "sentence": "채소를 사려거든 시장에 가세요"
+   "sentences": "채소를 사려거든 시장에 가세요"
  },
  {
    "lesson_id": 52,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "12과",
    "title": "외식",
-   "sentence": "오늘은 제가 점심을 살 테니 새로 생긴 한식당에 가요"
+   "sentences": "오늘은 제가 점심을 살 테니 새로 생긴 한식당에 가요"
  },
  {
    "lesson_id": 53,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "13과",
    "title": "요리",
-   "sentence": "고기를 양념에 넣고 나서 30분 기다립니다"
+   "sentences": "고기를 양념에 넣고 나서 30분 기다립니다"
  },
  {
    "lesson_id": 54,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "14과",
    "title": "일정",
-   "sentence": "휴가철이 다 되어 가는데 휴가 계획은 세웠어요?"
+   "sentences": "휴가철이 다 되어 가는데 휴가 계획은 세웠어요?"
  },
  {
    "lesson_id": 55,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "15과",
    "title": "숙소",
-   "sentence": "여행을 가려고 인터넷에서 숙소를 찾는 중이에요"
+   "sentences": "여행을 가려고 인터넷에서 숙소를 찾는 중이에요"
  },
  {
    "lesson_id": 56,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "16과",
    "title": "여행 준비와 짐 싸기",
-   "sentence": "여행 가방을 잃어버리지 않도록 가방에 이름표를 달았어요"
+   "sentences": "여행 가방을 잃어버리지 않도록 가방에 이름표를 달았어요"
  },
  {
    "lesson_id": 57,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "17과",
    "title": "의복",
-   "sentence": "흰색 셔츠가 청바지와 잘 어울려요"
+   "sentences": "흰색 셔츠가 청바지와 잘 어울려요"
  },
  {
    "lesson_id": 58,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "18과",
    "title": "생활용품",
-   "sentence": "중고 소파를 사려다가 새 제품을 샀어요"
+   "sentences": "중고 소파를 사려다가 새 제품을 샀어요"
  },
  {
    "lesson_id": 59,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "19과",
    "title": "인간관계와 예절",
-   "sentence": "한국 예절에 대하여 조언해 주세요"
+   "sentences": "한국 예절에 대하여 조언해 주세요"
  },
  {
    "lesson_id": 60,
    "book": "세종학당 한국어 중급 1",
    "lesson_number": "20과",
    "title": "사회생활",
-   "sentence": "내일 회의 준비는 다 됐어요?"
+   "sentences": "내일 회의 준비는 다 됐어요?"
  }
 ]
