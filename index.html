@@ -298,14 +298,23 @@
       viewLogin.classList.remove('hidden-view');
     });
 
-    // 4. 드롭다운 셀렉터 채우기
+// 4. 드롭다운 셀렉터 채우기 (사용 중인 curriculum.json 키 값 적용)
     function initLessonSelector(userLessonId) {
       lessonSelect.innerHTML = "";
       curriculumData.forEach((curr) => {
         const option = document.createElement('option');
-        option.value = curr.lesson_id;
-        option.innerText = `[${curr.textbook}] ${curr.chapter_title}`;
-        if (curr.lesson_id === userLessonId) option.selected = true;
+        
+        // JSON 키 이름 호환 처리 (book / title / lesson_number 반영)
+        const lId = curr.lesson_id ?? curr.id;
+        const bookName = curr.book || curr.textbook || "교재";
+        const lessonNum = curr.lesson_number || "";
+        const titleText = curr.title || curr.chapter_title || "";
+
+        option.value = lId;
+        // 예: [세종학당 한국어 초급 1] 1과 자기소개 (自己紹介)
+        option.innerText = `[${bookName}] ${lessonNum} ${titleText}`.trim();
+        
+        if (Number(lId) === Number(userLessonId)) option.selected = true;
         lessonSelect.appendChild(option);
       });
 
@@ -316,26 +325,32 @@
     function renderLessonContent(lessonId) {
       currentLessonId = parseInt(lessonId);
 
-      const curr = curriculumData.find(c => c.lesson_id === currentLessonId) || {};
-      const lesson = lessonsData.find(l => l.lesson_id === currentLessonId) || {};
+      const curr = curriculumData.find(c => Number(c.lesson_id ?? c.id) === currentLessonId) || {};
+      const lesson = lessonsData.find(l => Number(l.lesson_id ?? l.id) === currentLessonId) || {};
 
-      cardLessonTag.innerText = `${curr.textbook || ''} · ${curr.chapter_title || ''}`;
-      targetSentenceElem.innerText = curr.sentence || '등록된 문장이 없습니다.';
-      currentTargetSentence = curr.sentence || '';
+      const bookName = curr.book || curr.textbook || "";
+      const lessonNum = curr.lesson_number || "";
+      const titleText = curr.title || curr.chapter_title || "";
+      const sentence = curr.sentence || curr.target_sentence || "등록된 문장이 없습니다.";
+
+      // 상단 카드의 과 정보 표시
+      cardLessonTag.innerText = `${bookName} · ${lessonNum} ${titleText}`.trim();
+      targetSentenceElem.innerText = sentence;
+      currentTargetSentence = sentence;
 
       aiResponseBox.classList.add('hidden');
       speechResultText.innerText = "버튼을 누르고 위 문장을 읽어주세요...";
       speechResultText.classList.add('italic');
 
       // 진도율 계산
-      const currentIndex = curriculumData.findIndex(c => c.lesson_id === currentLessonId);
-      const percent = Math.round(((currentIndex + 1) / curriculumData.length) * 100);
+      const currentIndex = curriculumData.findIndex(c => Number(c.lesson_id ?? c.id) === currentLessonId);
+      const percent = curriculumData.length > 0 ? Math.round(((currentIndex + 1) / curriculumData.length) * 100) : 0;
       progressBar.style.width = `${percent}%`;
       progressPercent.innerText = `${percent}%`;
 
-      // 어휘 및 예문 출력
+      // 어휘 및 예문 출력 (lessons.json 구조 연동)
       vocabListContainer.innerHTML = '';
-      const vocabArray = lesson.vocabulary || [];
+      const vocabArray = lesson.vocabulary || lesson.Vocabulary || [];
       
       if (vocabArray.length === 0) {
         vocabListContainer.innerHTML = `<p class="text-xs text-outline">해당 단원의 어휘 데이터가 없습니다.</p>`;
@@ -343,16 +358,21 @@
       }
 
       vocabArray.forEach((item, idx) => {
+        const word = item.word || item.Word || "";
+        const wordTrans = item.word_translation || item.Word_Translation || item.translation || "";
+        const sentenceKr = item.sentence_kr || item.Sentence_KR || item.sentence || "";
+        const sentenceJp = item.sentence_jp || item.Sentence_JP || item.translation_jp || "";
+
         const itemCard = document.createElement('div');
         itemCard.className = "p-3 rounded-xl bg-surface-container-low border border-surface-container-high flex flex-col gap-1.5";
         itemCard.innerHTML = `
           <div class="flex items-center justify-between">
-            <span class="font-bold text-sm text-primary">${idx + 1}. ${item.word}</span>
-            <span class="text-xs text-secondary font-medium bg-surface-container-lowest px-2 py-0.5 rounded-md border border-secondary/20">${item.word_translation}</span>
+            <span class="font-bold text-sm text-primary">${idx + 1}. ${word}</span>
+            <span class="text-xs text-secondary font-medium bg-surface-container-lowest px-2 py-0.5 rounded-md border border-secondary/20">${wordTrans}</span>
           </div>
           <div class="mt-1 pt-1.5 border-t border-outline/10 text-xs flex flex-col gap-0.5">
-            <p class="font-medium text-on-surface">💬 ${item.sentence_kr}</p>
-            <p class="text-[11px] text-on-surface-variant">└ ${item.sentence_jp}</p>
+            <p class="font-medium text-on-surface">💬 ${sentenceKr}</p>
+            <p class="text-[11px] text-on-surface-variant">└ ${sentenceJp}</p>
           </div>
         `;
         vocabListContainer.appendChild(itemCard);
