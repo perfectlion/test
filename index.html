@@ -628,23 +628,30 @@
     viewLogin.classList.remove('hidden-view');
   });
 
-  // 4. 연습하기 버튼 클릭 -> lessons.json 데이터 추출 (sentence_kr, sentence_jp)
+// 4. 연습하기 버튼 클릭 -> lessons.json 데이터 추출 (타입 변환 안전 처리 적용)
   goPracticeBtn.addEventListener('click', () => {
+    // currentLessonId를 숫자 타입으로 통일 비교
+    const targetId = Number(currentLessonId);
+
     lessonSentencesList = lessonsData
-      .filter(l => l.lesson_id === currentLessonId && l.sentence_kr && l.sentence_kr.trim() !== "")
+      .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
       .map(l => ({
         sentence: l.sentence_kr,
         translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
       }));
 
-    // lessons.json에 문장이 없으면 curriculum의 대표 문장 사용
+    // lessons.json에 해당 lesson_id의 문장이 아직 없더라도 curriculum의 대표 문장으로 진행
     if (lessonSentencesList.length === 0) {
-      lessonSentencesList = [{ sentence: currentTargetSentence, translation: "오늘의 핵심 문장 연습" }];
+      lessonSentencesList = [{ 
+        sentence: currentTargetSentence || "저는 한국 사람이에요.", 
+        translation: "자연스러운 회화를 연습합니다." 
+      }];
     }
 
     currentSentenceIndex = 0;
     loadPracticeSentenceAtIndex(currentSentenceIndex);
 
+    // 화면 전환 (대시보드 숨기고 연습 화면 표시)
     viewDashboard.classList.add('hidden-view');
     viewPractice.classList.remove('hidden-view');
   });
