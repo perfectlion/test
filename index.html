@@ -663,13 +663,15 @@
       practiceSentence.innerText = item.sentence;
       practiceSentenceTrans.innerText = item.translation;
 
-      const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 100);
-      practiceProgressBar.style.width = `${progressPercent}%`;
-      practiceStepIndicator.innerText = `${index + 1} / ${lessonSentencesList.length} 問`;
+const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 100);
+      
+      // ?. (옵셔널 체이닝)을 붙여서 요소가 null이어도 에러가 나지 않도록 처리
+      if (practiceProgressBar) practiceProgressBar.style.width = `${progressPercent}%`;
+      if (practiceStepIndicator) practiceStepIndicator.innerText = `${index + 1} / ${lessonSentencesList.length} 問`;
 
-      nextBtnText.innerText = "다음 문장으로 (次の文へ)";
-      nextBtnIcon.style.display = "inline-block";
-      btnNextSentence.disabled = false;
+      if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (次の文へ)";
+      if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
+      if (btnNextSentence) btnNextSentence.disabled = false;
 
       // 발음 인식 결과 초기화
       practiceRecognizedText.innerText = "마이크 버튼을 누르고 말해보세요.";
