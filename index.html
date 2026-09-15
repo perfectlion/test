@@ -673,23 +673,23 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
       if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
       if (btnNextSentence) btnNextSentence.disabled = false;
 
-      // 발음 인식 결과 초기화
-      practiceRecognizedText.innerText = "마이크 버튼을 누르고 말해보세요.";
-      practiceMatchBadge.innerText = "🎯 발음 대기 중";
-      practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 AI가 발음을 분석해 줍니다.";
+// 발음 인식 결과 초기화
+      if (practiceRecognizedText) practiceRecognizedText.innerText = "마이크 버튼을 누르고 말해보세요.";
+      if (practiceMatchBadge) practiceMatchBadge.innerText = "🎯 발음 대기 중";
+      if (practiceEvalText) practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 AI가 발음을 분석해 줍니다.";
     } else {
       // 모든 문장 완료 시
-      practiceSentence.innerText = "수고하셨습니다!";
-      practiceSentenceTrans.innerText = "모든 학습 문장을 완료했습니다. 素晴らしい！";
-      practiceStepIndicator.innerText = "완료 (完了)";
-      practiceProgressBar.style.width = "100%";
+      if (practiceSentence) practiceSentence.innerText = "수고하셨습니다!";
+      if (practiceSentenceTrans) practiceSentenceTrans.innerText = "모든 학습 문장을 완료했습니다. 素晴らしい！";
+      if (practiceStepIndicator) practiceStepIndicator.innerText = "완료 (完了)";
+      if (practiceProgressBar) practiceProgressBar.style.width = "100%";
 
-      nextBtnText.innerText = "대시보드로 돌아가기 (ダッシュボードへ)";
-      nextBtnIcon.style.display = "none";
+      if (nextBtnText) nextBtnText.innerText = "대시보드로 돌아가기 (ダッシュボードへ)";
+      if (nextBtnIcon) nextBtnIcon.style.display = "none";
     }
   }
 
-  btnNextSentence.addEventListener('click', () => {
+  btnNextSentence?.addEventListener('click', () => {
     if (currentSentenceIndex < lessonSentencesList.length - 1) {
       currentSentenceIndex++;
       loadPracticeSentenceAtIndex(currentSentenceIndex);
@@ -699,15 +699,15 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
   });
 
   const returnToDashboard = () => {
-    viewPractice.classList.add('hidden-view');
-    viewDashboard.classList.remove('hidden-view');
+    viewPractice?.classList.add('hidden-view');
+    viewDashboard?.classList.remove('hidden-view');
   };
-  backToDashboard.addEventListener('click', returnToDashboard);
-  closePracticeBtn.addEventListener('click', returnToDashboard);
+  backToDashboard?.addEventListener('click', returnToDashboard);
+  closePracticeBtn?.addEventListener('click', returnToDashboard);
 
   // 5. TTS (한국어 소리 들려주기)
   function playTTS(text, rate = 0.8) {
-    if ('speechSynthesis' in window) {
+    if ('speechSynthesis' in window && text) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ko-KR';
@@ -716,9 +716,9 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
     }
   }
 
-  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence.innerText, 0.8));
-  if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence.innerText, 1.0));
-  if (btnAudioSlow) btnAudioSlow.addEventListener('click', () => playTTS(practiceSentence.innerText, 0.8));
+  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.8));
+  if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 1.0));
+  if (btnAudioSlow) btnAudioSlow.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.8));
 
   // 6. STT & Gemini AI 발음 평가
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -733,42 +733,48 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
 
     recognition.onstart = () => {
       isRecording = true;
-      micPulseRing.classList.remove('opacity-60', 'bg-secondary/20');
-      micPulseRing.classList.add('opacity-100', 'bg-error/30');
-      micRecordBtn.classList.remove('bg-secondary');
-      micRecordBtn.classList.add('bg-error');
-      recordCaption.textContent = '聞いています... (お話しください)';
-      recordCaption.classList.remove('text-secondary');
-      recordCaption.classList.add('text-error');
-      micIcon.textContent = 'graphic_eq';
-      practiceRecognizedText.innerText = "음성 인식 중...";
+      micPulseRing?.classList.remove('opacity-60', 'bg-secondary/20');
+      micPulseRing?.classList.add('opacity-100', 'bg-error/30');
+      micRecordBtn?.classList.remove('bg-secondary');
+      micRecordBtn?.classList.add('bg-error');
+      
+      if (recordCaption) {
+        recordCaption.textContent = '聞いています... (お話しください)';
+        recordCaption.classList.remove('text-secondary');
+        recordCaption.classList.add('text-error');
+      }
+      if (micIcon) micIcon.textContent = 'graphic_eq';
+      if (practiceRecognizedText) practiceRecognizedText.innerText = "음성 인식 중...";
     };
 
     recognition.onresult = (event) => {
       const transcript = Array.from(event.results).map(r => r[0]).map(r => r.transcript).join('');
-      practiceRecognizedText.innerText = `"${transcript}"`;
+      if (practiceRecognizedText) practiceRecognizedText.innerText = `"${transcript}"`;
     };
 
     recognition.onerror = () => stopPracticeRecordingUI();
     recognition.onend = () => {
       stopPracticeRecordingUI();
-      const spokenText = practiceRecognizedText.innerText.replace(/"/g, '');
+      const spokenText = practiceRecognizedText?.innerText.replace(/"/g, '') || '';
       if (spokenText && !spokenText.includes("음성 인식 중") && !spokenText.includes("마이크 버튼")) {
-        evaluatePronunciationAI(practiceSentence.innerText, spokenText);
+        evaluatePronunciationAI(practiceSentence?.innerText || '', spokenText);
       }
     };
   }
 
   function stopPracticeRecordingUI() {
     isRecording = false;
-    micPulseRing.classList.remove('opacity-100', 'bg-error/30');
-    micPulseRing.classList.add('opacity-60', 'bg-secondary/20');
-    micRecordBtn.classList.remove('bg-error');
-    micRecordBtn.classList.add('bg-secondary');
-    recordCaption.textContent = 'タップして発音をチェック';
-    recordCaption.classList.remove('text-error');
-    recordCaption.classList.add('text-secondary');
-    micIcon.textContent = 'mic';
+    micPulseRing?.classList.remove('opacity-100', 'bg-error/30');
+    micPulseRing?.classList.add('opacity-60', 'bg-secondary/20');
+    micRecordBtn?.classList.remove('bg-error');
+    micRecordBtn?.classList.add('bg-secondary');
+    
+    if (recordCaption) {
+      recordCaption.textContent = 'タップして発音をチェック';
+      recordCaption.classList.remove('text-error');
+      recordCaption.classList.add('text-secondary');
+    }
+    if (micIcon) micIcon.textContent = 'mic';
   }
 
   if (micRecordBtn) {
