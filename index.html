@@ -480,9 +480,10 @@
   const practiceSentenceTrans = document.getElementById('practice-sentence-trans');
   const practiceProgressBar = document.getElementById('practice-progress-bar');
   const practiceStepIndicator = document.getElementById('practice-step-indicator');
-  const btnNextSentence = document.getElementById('btn-next-sentence');
-  const nextBtnText = document.getElementById('next-btn-text');
-  const nextBtnIcon = document.getElementById('next-btn-icon');
+// HTML ID가 btn-next-sentence 또는 btn-next-lesson 어느 쪽이든 자동으로 가져옵니다.
+  const btnNextSentence = document.getElementById('btn-next-sentence') || document.getElementById('btn-next-lesson');
+  const nextBtnText = document.getElementById('next-btn-text') || btnNextSentence?.querySelector('span:first-child');
+  const nextBtnIcon = document.getElementById('next-btn-icon') || btnNextSentence?.querySelector('span:last-child');
 
   const topTtsBtn = document.getElementById('top-tts-btn');
   const btnAudioNormal = document.getElementById('btn-audio-normal');
@@ -702,27 +703,35 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
   }
   });
 
-// 대시보드로 돌아가기 (HTML ID 이름을 자동으로 찾아서 전환)
+// 대시보드 화면 복귀 함수 (모든 ID/클래스 대응)
   const returnToDashboard = () => {
-    // 1. 대시보드 화면 요소를 찾음
     const dashView = document.getElementById('view-dashboard') || document.getElementById('dashboard-view') || viewDashboard;
-    // 2. 연습 화면 요소를 찾음
     const pracView = document.getElementById('view-practice') || document.getElementById('practice-view') || viewPractice;
 
     if (pracView) {
-      pracView.classList.add('hidden-view');
-      pracView.classList.add('hidden'); // Tailwind CSS 기본 hidden 클래스 대응
-      pracView.style.display = 'none';   // 인라인 스타일로 확실하게 숨김
+      pracView.classList.add('hidden-view', 'hidden');
+      pracView.style.display = 'none';
     }
-    
     if (dashView) {
-      dashView.classList.remove('hidden-view');
-      dashView.classList.remove('hidden');
-      dashView.style.display = 'block'; // 확실하게 대시보드 표시
+      dashView.classList.remove('hidden-view', 'hidden');
+      dashView.style.display = 'block';
     }
   };
 
-  // 돌아가기 버튼들에 이벤트 바인딩
+  // '다음 문장으로 / 대시보드로 돌아가기' 버튼 클릭 이벤트 통합
+  btnNextSentence?.addEventListener('click', () => {
+    // 1. 남아있는 다음 문장이 있는 경우 -> 다음 문장 로드
+    if (currentSentenceIndex < lessonSentencesList.length - 1) {
+      currentSentenceIndex++;
+      loadPracticeSentenceAtIndex(currentSentenceIndex);
+    } 
+    // 2. 마지막 문장이거나 대시보드로 돌아가야 하는 경우 -> 대시보드 복귀
+    else {
+      returnToDashboard();
+    }
+  });
+
+  // 상단 X 버튼 및 기타 돌아가기 버튼 이벤트 바인딩
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
