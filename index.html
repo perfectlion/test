@@ -224,7 +224,10 @@
               </p>
             </div>
             <div class="flex-shrink-0 w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shadow-sm">
-              <img class="w-10 h-10 object-contain rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJI51Nqgg71T_gH7W9QPOFUbxOtO3lutdmUzSq-2VOlkbKPwRY7AKIp8LFFiS6vTJK2Ix_qpeULuAHRfORk3EzFLKmeAjCaDFUpnAXOW2C1CD3YnpkmbvF0dWlh6Wq_vnH-nwMoFB2P-O1wbxf8lZzdi1kVAcSICVQOiJazcFcrDwfXWfh2DrNAo8xmo-5WyNAPpVTPq1hBBMPQUHMP3In3sqoAN6GtmLwW42puFSVuHLOuwAjn3YnSw">
+             <img id="user-profile-img" 
+       alt="Profile" 
+       class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed bg-secondary-container p-0.5" 
+       src="https://api.iconify.design/noto:smiling-face-with-sunglasses.svg">
             </div>
           </div>
         </section>
@@ -298,14 +301,14 @@
           <button id="back-to-dashboard" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
             <span class="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
-          <img alt="Emblem" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V12x_C5gT83ERBb8ZjwpDvVrUnYIyU27cfHvjTgxlEQ5EWp6HxKlHvt0dA6vzemuPBWNZNCQ17YGpUM0YKAwKhwa08H0-YH5xlRYg0XF7283hMVimCzJGEhmTG6bwtdK5kyLxvmg-_kmBV9e9zQiBrDWjDLxpByEr4b-P9TNs8heQQYT1XhLjyjPkVXtARVbhW2pNv0lEfSrf2bpmUZia_7gKqJR3E1Xc6GQ9KyMdReAc7I8BeXc1I2mY">
+          <img alt="Emblem" class="h-7 w-auto object-contain" src="./images/Emblem.jpg">
           <h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[180px]">읽기 연습</h1>
         </div>
         <div class="flex items-center gap-space-sm">
-          <button id="top-tts-btn" aria-label="音声ガイド設定" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant active:scale-95 transition-transform cursor-pointer" type="button">
-            <span class="material-symbols-outlined text-[22px]">volume_up</span>
-          </button>
-          <img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" src="https://lh3.googleusercontent.com/aida/AEtjO1XT_oZ8o_fvwyEzmxAaPvrZeymzUR1J6FrdETupR00_nJQOW8Z_nAxKb-0NhZpXq9nzSSSmhtVnljdD71AlesE4FtIWWoZfJ4mIrQxB2U3EKjhedxqeHSDDVBqAZv0mjY86z0FKegIVUiyo-8lLHmrxfz4MnO9T4d0nG8wMQNV3UjMQEuc4PlssJ61PvOj1_qLUCwWD3EZLCcSgAbDqPbbJkf2zazsGvd0Ewag7vyF4K4r1pHBdI9KLNFAw">
+          <img id="user-profile-img" 
+       alt="Profile" 
+       class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed bg-secondary-container p-0.5" 
+       src="https://api.iconify.design/noto:smiling-face-with-sunglasses.svg">
         </div>
       </div>
     </header>
@@ -313,27 +316,28 @@
     <main class="flex flex-col relative w-full pt-16 bg-surface min-h-screen pb-safe">
       <div class="flex flex-col w-full px-gutter pb-space-xl">
         
-        <!-- Progress Header Deck -->
-        <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
-          <button id="close-practice-btn" aria-label="レッスンを終了" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant active:scale-90 transition-transform -ml-2 cursor-pointer" type="button">
-            <span class="material-symbols-outlined text-[24px]">close</span>
-          </button>
-          <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
-            <div class="h-full bg-secondary rounded-full transition-all duration-500 relative flex items-center" style="width: 60%;">
-              <div class="absolute inset-0 bg-white/20 rounded-full"></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-full shadow-sm">
-            <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
-            <span class="font-label-bold text-label-bold text-on-surface">5</span>
-          </div>
+    <!-- Progress Header Deck -->
+    <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
+      <button id="close-practice-btn" aria-label="レッスンを終了" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant active:scale-90 transition-transform -ml-2 cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[24px]">close</span>
+      </button>
+      <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
+        <!-- id="practice-progress-bar" 추가 -->
+        <div id="practice-progress-bar" class="h-full bg-secondary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
+          <div class="absolute inset-0 bg-white/20 rounded-full"></div>
         </div>
-
-        <!-- Lesson Stage Track Indicator -->
-        <div class="flex items-center justify-between px-1 mb-space-sm">
-          <span id="practice-stage-title" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Lesson 4 • Travel Essentials</span>
-          <span class="font-label-bold text-label-bold text-secondary">1 / 1 問</span>
-        </div>
+      </div>
+      <div class="flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-full shadow-sm">
+        <span class="material-symbols-outlined text-error text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+      </div>
+    </div>
+    
+    <!-- Lesson Stage Track Indicator -->
+    <div class="flex items-center justify-between px-1 mb-space-sm">
+      <span id="practice-stage-title" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Lesson 1 • 기초 회화</span>
+      <!-- id="practice-step-indicator" 추가 -->
+      <span id="practice-step-indicator" class="font-label-bold text-label-bold text-secondary">1 / 1 問</span>
+    </div>
 
         <!-- Main Focus Learning Card -->
         <div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-md flex flex-col items-center text-center relative overflow-hidden mb-space-md">
@@ -658,29 +662,41 @@
     viewPractice.classList.remove('hidden-view');
   });
 
-  function loadPracticeSentenceAtIndex(index) {
+function loadPracticeSentenceAtIndex(index) {
     if (index < lessonSentencesList.length) {
       const item = lessonSentencesList[index];
-      practiceStageTitle.innerText = currentLessonDisplayTitle;
-      practiceSentence.innerText = item.sentence;
-      practiceSentenceTrans.innerText = item.translation;
 
-const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 100);
-      
-      // ?. (옵셔널 체이닝)을 붙여서 요소가 null이어도 에러가 나지 않도록 처리
-      if (practiceProgressBar) practiceProgressBar.style.width = `${progressPercent}%`;
-      if (practiceStepIndicator) practiceStepIndicator.innerText = `${index + 1} / ${lessonSentencesList.length} 問`;
+      // 1. 과 타이틀 및 문장 데이터 표시
+      if (practiceStageTitle) practiceStageTitle.innerText = currentLessonDisplayTitle;
+      if (practiceSentence) practiceSentence.innerText = item.sentence || item.sentence_kr || "";
+      if (practiceSentenceTrans) practiceSentenceTrans.innerText = item.translation || item.sentence_jp || "";
 
-      if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (次の文へ)";
-      if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
-      if (btnNextSentence) btnNextSentence.disabled = false;
+      // 2. 상단 프로그래스 바 & 문장 번호(인디케이터) 동적 계산
+      const totalSentences = lessonSentencesList.length;
+      const progressPercent = Math.round(((index + 1) / totalSentences) * 100);
 
-// 발음 인식 결과 초기화
+      if (practiceProgressBar) {
+        practiceProgressBar.style.width = `${progressPercent}%`;
+      }
+      if (practiceStepIndicator) {
+        practiceStepIndicator.innerText = `${index + 1} / ${totalSentences} 問`;
+      }
+
+      // 3. 발음 인식 결과 및 하단 UI 초기화
       if (practiceRecognizedText) practiceRecognizedText.innerText = "마이크 버튼을 누르고 말해보세요.";
       if (practiceMatchBadge) practiceMatchBadge.innerText = "🎯 발음 대기 중";
       if (practiceEvalText) practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 AI가 발음을 분석해 줍니다.";
+
+      // 4. 다음 문장 버튼 텍스트 설정
+      if (index < totalSentences - 1) {
+        if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (次の文へ)";
+        if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
+      } else {
+        if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (完了)";
+        if (nextBtnIcon) nextBtnIcon.style.display = "none";
+      }
     } else {
-      // 모든 문장 완료 시
+      // 모든 문장 학습 완료 시 처리
       if (practiceSentence) practiceSentence.innerText = "수고하셨습니다!";
       if (practiceSentenceTrans) practiceSentenceTrans.innerText = "모든 학습 문장을 완료했습니다. 素晴らしい！";
       if (practiceStepIndicator) practiceStepIndicator.innerText = "완료 (完了)";
