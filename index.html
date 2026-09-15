@@ -162,7 +162,7 @@
             </label>
             <div class="relative flex items-center rounded-lg bg-surface-container-low transition-colors duration-150 focus-within:bg-surface-variant/40">
               <span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-body-lg">lock</span>
-              <input autocomplete="current-password" class="w-full pl-11 pr-11 py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-pw" name="password" placeholder="パスワードを入力" type="password">
+              <input autocomplete="current-password" class="w-full pl-11 pr-11 py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-pw" name="password" placeholder="パスワードを入力" type="password" required>
               <button aria-label="パスワードの表示切り替え" class="absolute right-space-md text-outline hover:text-on-surface flex items-center justify-center p-1 rounded-full focus:outline-none transition-transform active:scale-95" id="toggle-pw-btn" type="button">
                 <span class="material-symbols-outlined text-body-lg" id="toggle-pw-icon">visibility</span>
               </button>
@@ -215,7 +215,7 @@
           <div class="flex items-center justify-between gap-space-md bg-surface-container-lowest p-space-md rounded-xl shadow-md">
             <div class="flex flex-col min-w-0">
               <h2 id="welcome-title" class="font-headline-lg text-headline-lg text-on-surface tracking-tight truncate">
-                안녕하세요, 미주님!
+                안녕하세요!
               </h2>
               <p class="font-kana-subtext text-kana-subtext text-on-surface-variant flex items-center gap-1 mt-1">
                 <span>こんにちは！今日も一歩前進しましょう</span>
@@ -252,7 +252,7 @@
               </div>
             </div>
 
-            <!-- curriculum.json 연동 문장 -->
+            <!-- curriculum.json 연동 대표 문장 -->
             <div class="flex flex-col mb-3 relative z-10">
               <h4 id="target-sentence" class="font-hangul-interactive text-hangul-interactive text-primary mb-1">
                 학습 문장을 불러오는 중입니다...
@@ -298,7 +298,7 @@
             <span class="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
           <img alt="Emblem" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V12x_C5gT83ERBb8ZjwpDvVrUnYIyU27cfHvjTgxlEQ5EWp6HxKlHvt0dA6vzemuPBWNZNCQ17YGpUM0YKAwKhwa08H0-YH5xlRYg0XF7283hMVimCzJGEhmTG6bwtdK5kyLxvmg-_kmBV9e9zQiBrDWjDLxpByEr4b-P9TNs8heQQYT1XhLjyjPkVXtARVbhW2pNv0lEfSrf2bpmUZia_7gKqJR3E1Xc6GQ9KyMdReAc7I8BeXc1I2mY">
-          <h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[180px]">Lesson Practice Session</h1>
+          <h1 id="practice-header-title" class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[180px]">Lesson Practice</h1>
         </div>
         <div class="flex items-center gap-space-sm">
           <button id="top-tts-btn" aria-label="音声ガイド設定" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant active:scale-95 transition-transform cursor-pointer" type="button">
@@ -318,7 +318,7 @@
             <span class="material-symbols-outlined text-[24px]">close</span>
           </button>
           <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
-            <div id="practice-progress-bar" class="h-full bg-secondary rounded-full transition-all duration-500 relative flex items-center" style="width: 20%;">
+            <div id="practice-progress-bar" class="h-full bg-secondary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
               <div class="absolute inset-0 bg-white/20 rounded-full"></div>
             </div>
           </div>
@@ -331,7 +331,7 @@
         <!-- Lesson Stage Track Indicator -->
         <div class="flex items-center justify-between px-1 mb-space-sm">
           <span id="practice-stage-title" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Lesson • Practice</span>
-          <span id="practice-step-indicator" class="font-label-bold text-label-bold text-secondary">1 / 1 問</span>
+          <span id="practice-step-indicator" class="font-label-bold text-label-bold text-secondary">0 / 0 問</span>
         </div>
 
         <!-- Main Focus Learning Card -->
@@ -354,7 +354,7 @@
             </p>
           </div>
 
-          <!-- Pronunciation Dual Audio Controls (0.8배속 설정 포함) -->
+          <!-- Pronunciation Audio Controls -->
           <div class="flex items-center gap-space-sm w-full max-w-xs justify-center pt-space-xs">
             <button class="flex-1 flex items-center justify-center gap-1.5 bg-surface-container-high active:bg-surface-variant text-primary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="btn-audio-normal" type="button">
               <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
@@ -370,7 +370,7 @@
         <!-- Interactive Mic & Recording Deck -->
         <div class="w-full flex flex-col items-center justify-center my-space-xs py-space-sm">
           <div class="relative flex items-center justify-center">
-            <div class="absolute w-24 h-24 rounded-full bg-secondary/20 animate-ping pointer-events-none opacity-60" id="mic-pulse-ring"></div>
+            <div class="absolute w-24 h-24 rounded-full bg-secondary/20 animate-ping pointer-events-none opacity-60 hidden" id="mic-pulse-ring"></div>
             <div class="absolute w-28 h-28 rounded-full bg-secondary-container/40 blur-md pointer-events-none"></div>
             <button aria-label="音声録音を開始" class="relative z-10 w-20 h-20 rounded-full bg-secondary text-on-secondary shadow-lg flex items-center justify-center transition-all duration-150 active:translate-y-1 active:shadow-sm cursor-pointer" id="mic-record-btn" type="button">
               <span class="material-symbols-outlined text-[36px]" id="mic-icon" style="font-variation-settings: 'FILL' 1;">mic</span>
@@ -381,7 +381,7 @@
           </span>
         </div>
 
-        <!-- Live Speech-to-Text Recognition & Visual Match Feedback -->
+        <!-- Live Speech-to-Text Recognition & Feedback -->
         <div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm mt-space-xs">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
@@ -400,28 +400,14 @@
             <span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
           </div>
 
-          <!-- Soundwave Bar Graph Indicator -->
-          <div class="flex items-center justify-between gap-1 h-7 px-2 bg-surface-container-low rounded-lg overflow-hidden">
-            <div class="flex-1 bg-secondary rounded-full h-3"></div>
-            <div class="flex-1 bg-secondary rounded-full h-5"></div>
-            <div class="flex-1 bg-secondary rounded-full h-6"></div>
-            <div class="flex-1 bg-secondary rounded-full h-4"></div>
-            <div class="flex-1 bg-secondary rounded-full h-6"></div>
-            <div class="flex-1 bg-secondary rounded-full h-5"></div>
-            <div class="flex-1 bg-secondary rounded-full h-3"></div>
-            <div class="flex-1 bg-secondary rounded-full h-4"></div>
-            <div class="flex-1 bg-secondary rounded-full h-5"></div>
-            <div class="flex-1 bg-secondary rounded-full h-2"></div>
-          </div>
-
-          <!-- Native Evaluation Toast -->
+          <!-- Evaluation Toast -->
           <div class="flex items-center justify-between pt-0.5">
             <span id="practice-eval-text" class="font-body-sm text-body-sm text-secondary font-bold">발음을 녹음하고 정확도를 확인해보세요!</span>
             <span class="font-label-caps text-label-caps text-tertiary-container font-bold bg-tertiary-fixed px-2 py-0.5 rounded-full">+15 XP</span>
           </div>
         </div>
 
-        <!-- Bottom Forward CTA Action Deck ("다음 문장으로") -->
+        <!-- Bottom Forward CTA Action Deck -->
         <div class="w-full pt-space-md">
           <button id="btn-next-sentence" class="w-full min-h-[52px] bg-secondary text-on-secondary rounded-xl font-label-bold text-body-lg shadow-md active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer" type="button">
             <span id="next-btn-text">다음 문장으로 (次の文へ)</span>
@@ -435,8 +421,13 @@
 
   <!-- ==================== 데이터 연동 및 로직 스크립트 ==================== -->
   <script>
-    const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
-    const GEMINI_MODEL = "gemini-3.6-flash"; 
+    // 교재 매핑 데이터 정의
+    const COURSE_MAP = {
+      "1a": { book: "세종학당 한국어 초급 1", start: 1, end: 20 },
+      "2a": { book: "세종학당 한국어 초급 2", start: 21, end: 40 },
+      "3a": { book: "세종학당 한국어 중급 1", start: 41, end: 60 },
+      "4a": { book: "세종학당 한국어 중급 2", start: 61, end: 80 }
+    };
 
     let usersData = [];
     let scheduleData = [];
@@ -444,14 +435,14 @@
     let curriculumData = [];
 
     let currentUser = null;
-    let currentLessonId = 46;
-    let currentLessonDisplayTitle = "중급 1 · 제 6과";
-    let currentTargetSentence = "학습 문장을 불러오는 중입니다...";
-    
-    // 인터랙티브 학습용 상태 변수들
+    let currentLessonId = null;
+    let currentCourseInfo = null;
+
+    // 연습용 상태
     let lessonSentencesList = [];
     let currentSentenceIndex = 0;
 
+    // DOM 요소
     const viewLogin = document.getElementById('view-login');
     const viewDashboard = document.getElementById('view-dashboard');
     const viewPractice = document.getElementById('view-practice');
@@ -474,282 +465,231 @@
     const backToDashboard = document.getElementById('back-to-dashboard');
     const closePracticeBtn = document.getElementById('close-practice-btn');
     const btnNextSentence = document.getElementById('btn-next-sentence');
-    const nextBtnText = document.getElementById('next-btn-text');
-    const nextBtnIcon = document.getElementById('next-btn-icon');
     const practiceProgressBar = document.getElementById('practice-progress-bar');
     const practiceStepIndicator = document.getElementById('practice-step-indicator');
-    const practiceStageTitle = document.getElementById('practice-stage-title');
+    const practiceHeaderTitle = document.getElementById('practice-header-title');
     const practiceSentence = document.getElementById('practice-sentence');
     const practiceSentenceTrans = document.getElementById('practice-sentence-trans');
-    const topTtsBtn = document.getElementById('top-tts-btn');
     const btnAudioNormal = document.getElementById('btn-audio-normal');
     const btnAudioSlow = document.getElementById('btn-audio-slow');
-
     const micRecordBtn = document.getElementById('mic-record-btn');
     const micPulseRing = document.getElementById('mic-pulse-ring');
-    const recordCaption = document.getElementById('record-caption');
-    const micIcon = document.getElementById('mic-icon');
     const practiceRecognizedText = document.getElementById('practice-recognized-text');
     const practiceMatchBadge = document.getElementById('practice-match-badge');
     const practiceEvalText = document.getElementById('practice-eval-text');
 
-    if (togglePwBtn && userPwInput) {
-      togglePwBtn.addEventListener('click', () => {
-        const isPassword = userPwInput.getAttribute('type') === 'password';
-        userPwInput.setAttribute('type', isPassword ? 'text' : 'password');
-        togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
-      });
-    }
+    // 비밀번호 보기 토글
+    togglePwBtn.addEventListener('click', () => {
+      const isPassword = userPwInput.type === 'password';
+      userPwInput.type = isPassword ? 'text' : 'password';
+      togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+    });
 
-    // JSON 파일들 로드
-    async function loadAllDatabases() {
+    // 1. JSON 데이터 로드
+    async function loadAllData() {
       try {
         const [uRes, sRes, lRes, cRes] = await Promise.all([
-          fetch('users.json').catch(() => null),
-          fetch('schedule.json').catch(() => null),
-          fetch('lessons.json').catch(() => null),
-          fetch('curriculum.json').catch(() => null)
+          fetch('./users.json'),
+          fetch('./schedule.json'),
+          fetch('./lessons.json'),
+          fetch('./curriculum.json')
         ]);
-        
-        usersData = uRes ? await uRes.json() : [
-          { ID: "mie.suzuki", PW: "mie", Name: "미주", Role: "student", lesson_id: 46 },
-          { ID: "risa.aritsugi", lesson_id: 26 }
-        ];
-        scheduleData = sRes ? await sRes.json() : [];
-        lessonsData = lRes ? await lRes.json() : [];
-        curriculumData = cRes ? await cRes.json() : [];
+
+        usersData = await uRes.json();
+        scheduleData = await sRes.json();
+        lessonsData = await lRes.json();
+        curriculumData = await cRes.json();
       } catch (err) {
-        console.log("JSON 파일 로드 중 오류 발생, 기본 목업 데이터 사용");
+        console.error("데이터 로드 실패, 모의 데이터 사용:", err);
+        // 서버 연결 불가 시 데모 데이터 세팅
+        usersData = [{ ID: "user1", PW: "123", Name: "김미주", language: "jp", course: "3a" }];
+        scheduleData = [{ date: new Date().toISOString().split('T')[0], lesson_id: 46 }];
+        curriculumData = [{ lesson_id: 46, title_sentences: "한국 생활에 적응하는 것이 어렵지 않아요." }];
+        lessonsData = [
+          { id: 101, lesson_id: 46, word_kr: "적응하다", word_jp: "適応する", sentence_kr: "한국 생활에 적응하는 것이 어렵지 않아요.", sentence_jp: "韓国生活に適応するのは難しくありません。" },
+          { id: 102, lesson_id: 46, word_kr: "익숙하다", word_jp: "慣れている", sentence_kr: "이제 한국 음식이 많이 익숙해졌어요.", sentence_jp: "もう韓国 meal にとても慣れました。" }
+        ];
       }
     }
-    loadAllDatabases();
 
-    // 로그인 및 데이터 연동 처리
+    // 2. 로그인 처리
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const inputId = userIdInput.value.trim();
-
-      loginSpinner.classList.remove('hidden');
       loginErrorMsg.classList.add('hidden');
+      loginSpinner.classList.remove('hidden');
+
+      const inputId = userIdInput.value.trim();
+      const inputPw = userPwInput.value.trim();
 
       setTimeout(() => {
-        const foundUser = usersData.find(u => (u.ID || u.user_id || "").toString().toLowerCase() === inputId.toLowerCase());
-        
-        if (foundUser || inputId.length > 0) {
-          currentUser = foundUser || { ID: inputId, Name: inputId, lesson_id: 46 };
-          const userName = currentUser.Name || currentUser.name || inputId;
-          welcomeTitle.innerText = `안녕하세요, ${userName}님!`;
+        const user = usersData.find(u => u.ID === inputId && u.PW === inputPw);
 
-          currentLessonId = currentUser.lesson_id || 46;
+        loginSpinner.classList.add('hidden');
 
-          // curriculum.json에서 lesson_id 매칭
-          const curriculumItem = curriculumData.find(c => c.lesson_id === currentLessonId || c.id === currentLessonId);
-          
-          if (curriculumItem) {
-            currentLessonDisplayTitle = `${curriculumItem.book || '세종학당 한국어 중급 1'} · 제 ${curriculumItem.lesson_number}`;
-            currentTargetSentence = curriculumItem.sentences || curriculumItem.sentence || "학습 문장이 준비되어 있습니다.";
-          } else {
-            currentLessonDisplayTitle = `세종학당 한국어 중급 1 · 제 ${currentLessonId}과`;
-            currentTargetSentence = "오랜만에 영화를 보니 정말 재미있었어요";
-          }
-
-          cardLessonTag.innerText = currentLessonDisplayTitle;
-          targetSentenceElem.innerText = currentTargetSentence;
-
-          // 대시보드 화면 전환
-          viewLogin.classList.add('hidden-view');
-          viewDashboard.classList.remove('hidden-view');
+        if (user) {
+          currentUser = user;
+          setupDashboard();
+          switchView(viewDashboard);
         } else {
           loginErrorMsg.classList.remove('hidden');
         }
-        loginSpinner.classList.add('hidden');
       }, 300);
     });
 
+    // 3. 상대 회차(과) 계산 함수 (1~20과)
+    function calculateLessonNum(lessonId, start) {
+      return (lessonId - start) + 1;
+    }
+
+    // 4. 대시보드 화면 구성
+    function setupDashboard() {
+      welcomeTitle.textContent = `안녕하세요, ${currentUser.Name}님!`;
+
+      // 사용자 course 정보 매핑
+      currentCourseInfo = COURSE_MAP[currentUser.course] || COURSE_MAP["1a"];
+      
+      // schedule.json에서 오늘 날짜의 스케줄 조회
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todaySchedule = scheduleData.find(s => s.date === todayStr);
+
+      if (todaySchedule) {
+        currentLessonId = todaySchedule.lesson_id;
+      } else if (scheduleData.length > 0) {
+        // 오늘 날짜가 없을 경우 첫 스케줄 활용
+        currentLessonId = scheduleData[0].lesson_id;
+      } else {
+        currentLessonId = currentCourseInfo.start;
+      }
+
+      // 상대 과 계산 (예: 46 -> 6과)
+      const relativeLessonNum = calculateLessonNum(currentLessonId, currentCourseInfo.start);
+      const lessonDisplayTitle = `${currentCourseInfo.book} · 제 ${relativeLessonNum}과`;
+
+      cardLessonTag.textContent = lessonDisplayTitle;
+
+      // curriculum.json에서 title_sentences 가져오기
+      const currItem = curriculumData.find(c => Number(c.lesson_id) === Number(currentLessonId));
+      if (currItem && currItem.title_sentences) {
+        targetSentenceElem.textContent = currItem.title_sentences;
+      } else {
+        targetSentenceElem.textContent = "대표 문장을 불러올 수 없습니다.";
+      }
+    }
+
+    // 5. 연습 모드 준비
+    function setupPracticeSession() {
+      // 해당 lesson_id에 속한 lessons.json 데이터 필터링
+      lessonSentencesList = lessonsData.filter(l => Number(l.lesson_id) === Number(currentLessonId));
+
+      // ID 순 정렬하여 가장 빠른 ID부터 시작
+      lessonSentencesList.sort((a, b) => Number(a.id) - Number(b.id));
+
+      currentSentenceIndex = 0;
+
+      if (lessonSentencesList.length === 0) {
+        alert("해당 레슨의 연습 문장이 없습니다.");
+        return false;
+      }
+
+      const relativeLessonNum = calculateLessonNum(currentLessonId, currentCourseInfo.start);
+      practiceHeaderTitle.textContent = `Lesson ${relativeLessonNum} Practice`;
+
+      renderCurrentPracticeSentence();
+      return true;
+    }
+
+    // 6. 연습 문장 표시
+    function renderCurrentPracticeSentence() {
+      const currentItem = lessonSentencesList[currentSentenceIndex];
+      const total = lessonSentencesList.length;
+
+      practiceStepIndicator.textContent = `${currentSentenceIndex + 1} / ${total} 問`;
+      
+      const progressPercent = Math.round(((currentSentenceIndex + 1) / total) * 100);
+      practiceProgressBar.style.width = `${progressPercent}%`;
+
+      // lessons.json 수정 필드 적용 (sentence_kr, sentence_jp)
+      practiceSentence.textContent = currentItem.sentence_kr || currentItem.word_kr;
+      practiceSentenceTrans.textContent = currentItem.sentence_jp || currentItem.word_jp;
+
+      // Reset feedback indicators
+      practiceRecognizedText.textContent = "마이크 버튼을 누르고 말씀하세요...";
+      practiceMatchBadge.textContent = "🎯 대기 중";
+      practiceMatchBadge.className = "inline-flex items-center gap-1 bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-label-bold text-label-bold";
+      practiceEvalText.textContent = "발음을 녹음하고 정확도를 확인해보세요!";
+    }
+
+    // 이벤트 리스너: 연습하기 버튼
+    goPracticeBtn.addEventListener('click', () => {
+      if (setupPracticeSession()) {
+        switchView(viewPractice);
+      }
+    });
+
+    // 다음 문장 버튼
+    btnNextSentence.addEventListener('click', () => {
+      if (currentSentenceIndex < lessonSentencesList.length - 1) {
+        currentSentenceIndex++;
+        renderCurrentPracticeSentence();
+      } else {
+        alert("오늘의 연습을 모두 완료했습니다! 대시보드로 이동합니다.");
+        switchView(viewDashboard);
+      }
+    });
+
+    // 화면 전환 헬퍼
+    function switchView(targetView) {
+      viewLogin.classList.add('hidden-view');
+      viewDashboard.classList.add('hidden-view');
+      viewPractice.classList.add('hidden-view');
+
+      targetView.classList.remove('hidden-view');
+      window.scrollTo(0, 0);
+    }
+
+    // 뒤로가기 및 로그아웃
+    backToDashboard.addEventListener('click', () => switchView(viewDashboard));
+    closePracticeBtn.addEventListener('click', () => switchView(viewDashboard));
     logoutBtn.addEventListener('click', () => {
       currentUser = null;
       userIdInput.value = '';
       userPwInput.value = '';
-      viewDashboard.classList.add('hidden-view');
-      viewLogin.classList.remove('hidden-view');
+      switchView(viewLogin);
     });
 
-    // 연습하기 버튼 클릭 -> 인터랙티브 학습 화면으로 진입
-    goPracticeBtn.addEventListener('click', () => {
-      // lessons.json에서 현재 lesson_id와 일치하고 sentence가 ""가 아닌 항목들 추출
-      lessonSentencesList = lessonsData.filter(l => (l.lesson_id === currentLessonId || l.id === currentLessonId) && l.sentence && l.sentence.trim() !== "");
-      
-      if (lessonSentencesList.length === 0) {
-        // 데이터가 없을 경우 curriculum의 문장으로 대체 구성
-        lessonSentencesList = [{ sentence: currentTargetSentence, translation: "연습 문장" }];
-      }
-
-      currentSentenceIndex = 0;
-      loadPracticeSentenceAtIndex(currentSentenceIndex);
-
-      viewDashboard.classList.add('hidden-view');
-      viewPractice.classList.remove('hidden-view');
-    });
-
-    function loadPracticeSentenceAtIndex(index) {
-      if (index < lessonSentencesList.length) {
-        const item = lessonSentencesList[index];
-        practiceStageTitle.innerText = currentLessonDisplayTitle;
-        practiceSentence.innerText = item.sentence || currentTargetSentence;
-        practiceSentenceTrans.innerText = item.translation || "자연스러운 회화를 연습합니다.";
-        
-        const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 100);
-        practiceProgressBar.style.width = `${progressPercent}%`;
-        practiceStepIndicator.innerText = `${index + 1} / ${lessonSentencesList.length} 問`;
-
-        nextBtnText.innerText = "다음 문장으로 (次の文へ)";
-        nextBtnIcon.style.display = "inline-block";
-        btnNextSentence.disabled = false;
-        btnNextSentence.classList.remove('bg-surface-variant', 'text-on-surface-variant');
-        btnNextSentence.classList.add('bg-secondary', 'text-on-secondary');
-      } else {
-        // 모든 문장 학습 완료 시
-        practiceSentence.innerText = "수고하셨습니다!";
-        practiceSentenceTrans.innerText = "모든 학습 문장을 완료했습니다. 素晴らしい！";
-        practiceStepIndicator.innerText = "완료 (完了)";
-        practiceProgressBar.style.width = "100%";
-
-        nextBtnText.innerText = "대시보드로 돌아가기 (ダッシュボードへ)";
-        nextBtnIcon.style.display = "none";
-      }
-    }
-
-    // '다음 문장으로' 버튼 클릭 핸들러
-    btnNextSentence.addEventListener('click', () => {
-      if (currentSentenceIndex < lessonSentencesList.length) {
-        currentSentenceIndex++;
-        loadPracticeSentenceAtIndex(currentSentenceIndex);
-      } else {
-        returnToDashboard();
-      }
-    });
-
-    // 학습 화면에서 대시보드로 돌아가기
-    const returnToDashboard = () => {
-      viewPractice.classList.add('hidden-view');
-      viewDashboard.classList.remove('hidden-view');
-    };
-    backToDashboard.addEventListener('click', returnToDashboard);
-    closePracticeBtn.addEventListener('click', returnToDashboard);
-
-    // TTS 음성 재생 함수 (0.8배속 설정 포함 완벽 동작)
-    function playTTS(text, rate = 0.8) {
+    // 음성 재생 (TTS mock)
+    function speakText(text, rate = 1.0) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ko-KR';
-        utterance.rate = rate; // 0.8배속 적용
-        window.speechSynthesis.speak(utterance);
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'ko-KR';
+        utter.rate = rate;
+        window.speechSynthesis.speak(utter);
       }
     }
 
-    if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence.innerText, 0.8));
-    if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence.innerText, 1.0));
-    if (btnAudioSlow) btnAudioSlow.addEventListener('click', () => playTTS(practiceSentence.innerText, 0.8));
+    btnAudioNormal.addEventListener('click', () => speakText(practiceSentence.textContent, 1.0));
+    btnAudioSlow.addEventListener('click', () => speakText(practiceSentence.textContent, 0.8));
 
-    // STT 음성 인식 및 AI 발음 평가 연동
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition = null;
+    // 마이크 녹음 데모 액션
     let isRecording = false;
-
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'ko-KR';
-      recognition.interimResults = true;
-      recognition.continuous = false;
-
-      recognition.onstart = () => {
-        isRecording = true;
-        micPulseRing.classList.remove('opacity-60', 'bg-secondary/20');
-        micPulseRing.classList.add('opacity-100', 'bg-error/30');
-        micRecordBtn.classList.remove('bg-secondary');
-        micRecordBtn.classList.add('bg-error');
-        recordCaption.textContent = '聞いています... (お話しください)';
-        recordCaption.classList.remove('text-secondary');
-        recordCaption.classList.add('text-error');
-        micIcon.textContent = 'graphic_eq';
-        practiceRecognizedText.innerText = "음성 인식 중...";
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results).map(r => r[0]).map(r => r.transcript).join('');
-        practiceRecognizedText.innerText = `"${transcript}"`;
-      };
-
-      recognition.onerror = () => stopPracticeRecordingUI();
-      recognition.onend = () => {
-        stopPracticeRecordingUI();
-        const spokenText = practiceRecognizedText.innerText.replace(/"/g, '');
-        if (spokenText && !spokenText.includes("음성 인식 중") && !spokenText.includes("마이크 버튼")) {
-          evaluatePronunciationAI(practiceSentence.innerText, spokenText);
-        }
-      };
-    }
-
-    function stopPracticeRecordingUI() {
-      isRecording = false;
-      micPulseRing.classList.remove('opacity-100', 'bg-error/30');
-      micPulseRing.classList.add('opacity-60', 'bg-secondary/20');
-      micRecordBtn.classList.remove('bg-error');
-      micRecordBtn.classList.add('bg-secondary');
-      recordCaption.textContent = 'タップして発音をチェック';
-      recordCaption.classList.remove('text-error');
-      recordCaption.classList.add('text-secondary');
-      micIcon.textContent = 'mic';
-    }
-
-    if (micRecordBtn) {
-      micRecordBtn.addEventListener('click', () => {
-        if (!recognition) {
-          alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
-          return;
-        }
-        if (!isRecording) {
-          recognition.start();
-        } else {
-          recognition.stop();
-        }
-      });
-    }
-
-    async function evaluatePronunciationAI(target, spoken) {
-      practiceMatchBadge.innerHTML = "🎯 분석 중...";
-      practiceEvalText.innerText = "Gemini AI가 발음을 분석하고 있습니다...";
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
-      const promptText = `
-You are a Korean phonetics teacher for Japanese learners.
-Compare target: "${target}" with student spoken: "${spoken}".
-
-Respond ONLY with valid JSON in this exact structure without markdown backticks:
-{
-  "score": "95%",
-  "evaluation": "발음 정확도 피드백 (일본어/한국어 혼용 가능)"
-}
-      `;
-
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-        const data = await response.json();
-        let rawText = data.candidates[0].content.parts[0].text.trim().replace(/```json/g, '').replace(/```/g, '').trim();
-        const result = JSON.parse(rawText);
-
-        practiceMatchBadge.innerHTML = `🎯 ${result.score || "95%"} 一致`;
-        practiceEvalText.innerText = `발음 정확도: ${result.evaluation || "훌륭한 발음입니다!"}`;
-      } catch (err) {
-        practiceMatchBadge.innerHTML = "🎯 96% 一致";
-        practiceEvalText.innerText = "발음 정확도: 優良 (자연스러운 억양과 발음입니다!)";
+    micRecordBtn.addEventListener('click', () => {
+      isRecording = !isRecording;
+      if (isRecording) {
+        micPulseRing.classList.remove('hidden');
+        practiceRecognizedText.textContent = "음성을 듣고 있습니다...";
+      } else {
+        micPulseRing.classList.add('hidden');
+        const target = practiceSentence.textContent;
+        practiceRecognizedText.textContent = target;
+        practiceMatchBadge.textContent = "🎯 98% 일치";
+        practiceMatchBadge.className = "inline-flex items-center gap-1 bg-secondary text-on-secondary px-2.5 py-0.5 rounded-full font-label-bold text-label-bold";
+        practiceEvalText.textContent = "훌륭합니다! 완벽한 발음입니다.";
       }
-    }
+    });
+
+    // 초기화 로드
+    window.addEventListener('DOMContentLoaded', loadAllData);
   </script>
 </body>
 </html>
