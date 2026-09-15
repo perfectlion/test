@@ -690,18 +690,39 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
   }
 
   btnNextSentence?.addEventListener('click', () => {
-    if (currentSentenceIndex < lessonSentencesList.length - 1) {
-      currentSentenceIndex++;
-      loadPracticeSentenceAtIndex(currentSentenceIndex);
-    } else {
-      returnToDashboard();
-    }
+// loadPracticeSentenceAtIndex 함수 내부의 하단 버튼 제어 부분
+  if (currentSentenceIndex < lessonSentencesList.length - 1) {
+    // 다음 문장이 남아있는 경우
+    if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (次の文へ)";
+    if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
+  } else {
+    // 마지막 문장이거나 문장이 1개뿐인 경우
+    if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (完了)";
+    if (nextBtnIcon) nextBtnIcon.style.display = "none";
+  }
   });
 
+// 대시보드로 돌아가기 (HTML ID 이름을 자동으로 찾아서 전환)
   const returnToDashboard = () => {
-    viewPractice?.classList.add('hidden-view');
-    viewDashboard?.classList.remove('hidden-view');
+    // 1. 대시보드 화면 요소를 찾음
+    const dashView = document.getElementById('view-dashboard') || document.getElementById('dashboard-view') || viewDashboard;
+    // 2. 연습 화면 요소를 찾음
+    const pracView = document.getElementById('view-practice') || document.getElementById('practice-view') || viewPractice;
+
+    if (pracView) {
+      pracView.classList.add('hidden-view');
+      pracView.classList.add('hidden'); // Tailwind CSS 기본 hidden 클래스 대응
+      pracView.style.display = 'none';   // 인라인 스타일로 확실하게 숨김
+    }
+    
+    if (dashView) {
+      dashView.classList.remove('hidden-view');
+      dashView.classList.remove('hidden');
+      dashView.style.display = 'block'; // 확실하게 대시보드 표시
+    }
   };
+
+  // 돌아가기 버튼들에 이벤트 바인딩
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
@@ -716,7 +737,7 @@ const progressPercent = Math.round(((index + 1) / lessonSentencesList.length) * 
     }
   }
 
-  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.8));
+  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.7));
   if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 1.0));
   if (btnAudioSlow) btnAudioSlow.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.8));
 
