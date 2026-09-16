@@ -311,9 +311,9 @@
           </button>
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
-              <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
+              <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-none">세종학당 봉센세</span>
             </div>
-            <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-none">읽기 연습</span>
+            <span class="font-headline-sm text-headline-sm text-primary tracking-tight">읽기 연습</span>
           </div>
         </div>
         <div class="flex items-center gap-space-sm">
@@ -348,40 +348,36 @@
       <span id="practice-step-indicator" class="font-label-bold text-label-bold text-secondary">1 / 1 問</span>
     </div>
 
-        <!-- Main Focus Learning Card -->
-<div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-md flex flex-col items-center text-center relative overflow-hidden mb-space-md">
-  <div class="w-full flex flex-col items-center justify-center gap-1 bg-surface-container-low py-2 px-3 rounded-xl mb-space-md">
-    <div class="flex items-center gap-1.5">
-      <span class="material-symbols-outlined text-primary text-[18px]">record_voice_over</span>
-      <p class="font-label-bold text-label-bold text-on-surface">발음을 듣고 따라 말해보세요</p>
+    <!-- Main Focus Learning Card (단일 연보라 바탕으로 축소) -->
+    <div class="w-full bg-surface-container-low rounded-xl p-3 shadow-sm flex flex-col items-center justify-center text-center gap-1 mb-space-md">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-primary text-[18px]">record_voice_over</span>
+        <p class="font-label-bold text-label-bold text-on-surface">발음을 듣고 따라 말해보세요</p>
+      </div>
+      <p class="text-xs text-on-surface-variant/80 font-normal">発音を聞いて声に出してみましょう。</p>
     </div>
-      <p class="text-xs text-on-surface-variant/80 font-normal">発音を聞いて声に出してみましょう</p>
-  </div>
-</div>
-
-          <!-- Core Korean Expression -->
-          <div class="my-space-md flex flex-col items-center">
-            <h2 id="practice-sentence" class="font-hangul-display text-hangul-display text-primary tracking-tight select-none">
-              학습 문장 로딩 중...
-            </h2>
-            <p id="practice-sentence-trans" class="font-body-md text-body-md text-on-surface-variant mt-2">
-              (한국어 문장을 불러오는 중입니다)
-            </p>
-          </div>
-
-          <!-- Pronunciation Dual Audio Controls (기존 TTS API 연동) -->
-          <!-- 컨트롤 버튼 영역 (듣기 / 말하기 나란히 배치) -->
-          <div class="flex items-center gap-space-sm w-full max-w-xs justify-center pt-space-xs my-space-sm">
-            <button class="flex-1 flex items-center justify-center gap-1.5 bg-surface-container-high active:bg-surface-variant text-primary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="btn-audio-normal" type="button">
-              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
-              <span class="font-label-bold text-label-bold">듣기 (聞く)</span>
-            </button>
-            <!-- 말하기 버튼 (0.8x 버튼 대신 듣기 버튼과 동일 형태로 추가, 녹색 bg-secondary 적용) -->
-            <button class="flex-1 flex items-center justify-center gap-1.5 bg-secondary active:opacity-90 text-on-secondary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="mic-record-btn" type="button">
-              <span class="material-symbols-outlined text-[20px]" id="mic-icon" style="font-variation-settings: 'FILL' 1;">mic</span>
-              <span class="font-label-bold text-label-bold">말하기 (話す)</span>
-            </button>
-          </div>
+    
+    <!-- Core Korean Expression -->
+    <div class="my-space-md flex flex-col items-center text-center">
+      <h2 id="practice-sentence" class="font-hangul-display text-hangul-display text-primary tracking-tight select-none">
+        학습 문장 로딩 중...
+      </h2>
+      <p id="practice-sentence-trans" class="font-body-md text-body-md text-on-surface-variant mt-2">
+        (한국어 문장을 불러오는 중입니다)
+      </p>
+    </div>
+    
+    <!-- Pronunciation Dual Audio Controls (mx-auto로 중앙 정렬) -->
+    <div class="flex items-center gap-space-sm w-full max-w-xs justify-center mx-auto my-space-sm">
+      <button class="flex-1 flex items-center justify-center gap-1.5 bg-surface-container-high active:bg-surface-variant text-primary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="btn-audio-normal" type="button">
+        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+        <span class="font-label-bold text-label-bold">듣기 (聞く)</span>
+      </button>
+      <button class="flex-1 flex items-center justify-center gap-1.5 bg-secondary active:opacity-90 text-on-secondary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="mic-record-btn" type="button">
+        <span class="material-symbols-outlined text-[20px]" id="mic-icon" style="font-variation-settings: 'FILL' 1;">mic</span>
+        <span class="font-label-bold text-label-bold">말하기 (話す)</span>
+      </button>
+    </div>
 
         <!-- Live Speech-to-Text Recognition & Visual Match Feedback -->
         <div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm mt-space-xs">
@@ -397,7 +393,7 @@
 
           <div class="bg-surface-container-low rounded-lg p-2.5 flex items-center justify-between">
             <p id="practice-recognized-text" class="font-body-md text-body-md text-on-surface font-semibold">
-              마이크 버튼을 누르고 말씀하세요...
+              말하기 버튼을 누르고 말씀하세요...
             </p>
             <span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
           </div>
