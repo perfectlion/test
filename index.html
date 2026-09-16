@@ -592,7 +592,7 @@
       </div>
 
     <!-- Bottom Drawer -->
-    <div class="fixed inset-x-0 bottom-0 z-40 bg-secondary-container shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-gutter pt-4 pb-safe border-t border-secondary/10">
+    <div id="quiz-bottom-drawer" class="hidden fixed inset-x-0 bottom-0 z-40 bg-secondary-container shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-gutter pt-4 pb-safe border-t border-secondary/10">
       <div class="flex flex-col gap-3 pb-3 max-w-md mx-auto">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
@@ -992,6 +992,17 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('view-quiz').classList.add('hidden-view');
       document.getElementById('view-dashboard').classList.remove('hidden-view');
     });
+  
+    // 정답 제출 및 드로어 제어 함수 예시
+      function showQuizResult(isCorrect) {
+        // 드로어 열기
+        document.getElementById('quiz-bottom-drawer')?.classList.remove('hidden');
+      }
+      
+      function hideQuizResult() {
+        // 드로어 닫기
+        document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
+      }
   
   // 5. TTS 음성 출력
   function playTTS(text, rate = 1.0) {
