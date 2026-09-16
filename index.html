@@ -207,7 +207,7 @@
             <div class="flex items-center gap-1">
               <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
             </div>
-            <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-none">Today'S Lesson</span>
+            <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-none">Today's Lesson</span>
           </div>
         </div>
         <div class="flex items-center gap-space-sm">
@@ -309,8 +309,12 @@
           <button id="back-to-dashboard" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
             <span class="material-symbols-outlined text-[24px]">arrow_back</span>
           </button>
-          <img alt="Emblem" class="h-7 w-auto object-contain" src="./images/Emblem.jpg">
-          <h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[180px]">읽기 연습</h1>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1">
+              <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
+            </div>
+            <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-none">읽기 연습</span>
+          </div>
         </div>
         <div class="flex items-center gap-space-sm">
           <img id="user-profile-img" 
@@ -326,9 +330,6 @@
         
     <!-- Progress Header Deck -->
     <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
-      <button id="close-practice-btn" aria-label="レッスンを終了" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant active:scale-90 transition-transform -ml-2 cursor-pointer" type="button">
-        <span class="material-symbols-outlined text-[24px]">close</span>
-      </button>
       <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
         <!-- id="practice-progress-bar" 추가 -->
         <div id="practice-progress-bar" class="h-full bg-secondary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
@@ -348,14 +349,15 @@
     </div>
 
         <!-- Main Focus Learning Card -->
-        <div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-md flex flex-col items-center text-center relative overflow-hidden mb-space-md">
-          <div class="w-full flex items-center justify-center gap-1.5 bg-surface-container-low py-1.5 px-3 rounded-full mb-space-md">
-            <span class="material-symbols-outlined text-primary text-[18px]">record_voice_over</span>
-            <p class="font-label-bold text-label-bold text-on-surface">발음을 듣고 따라 말해보세요</p>
-          </div>
-          <div class="w-full flex justify-center mb-space-xs">
-            <span class="font-kana-subtext text-kana-subtext text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded-full">ネイティブの発音を聞いて声に出してみましょう</span>
-          </div>
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-md flex flex-col items-center text-center relative overflow-hidden mb-space-md">
+  <div class="w-full flex flex-col items-center justify-center gap-1 bg-surface-container-low py-2 px-3 rounded-xl mb-space-md">
+    <div class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-primary text-[18px]">record_voice_over</span>
+      <p class="font-label-bold text-label-bold text-on-surface">발음을 듣고 따라 말해보세요</p>
+    </div>
+      <p class="text-xs text-on-surface-variant/80 font-normal">発音を聞いて声に出してみましょう</p>
+  </div>
+</div>
 
           <!-- Core Korean Expression -->
           <div class="my-space-md flex flex-col items-center">
@@ -368,31 +370,18 @@
           </div>
 
           <!-- Pronunciation Dual Audio Controls (기존 TTS API 연동) -->
-          <div class="flex items-center gap-space-sm w-full max-w-xs justify-center pt-space-xs">
+          <!-- 컨트롤 버튼 영역 (듣기 / 말하기 나란히 배치) -->
+          <div class="flex items-center gap-space-sm w-full max-w-xs justify-center pt-space-xs my-space-sm">
             <button class="flex-1 flex items-center justify-center gap-1.5 bg-surface-container-high active:bg-surface-variant text-primary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="btn-audio-normal" type="button">
               <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
-              <span class="font-label-bold text-label-bold">通常速度</span>
+              <span class="font-label-bold text-label-bold">듣기 (聞く)</span>
             </button>
-            <button class="flex-1 flex items-center justify-center gap-1.5 bg-surface-container-low active:bg-surface-container text-on-surface-variant py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="btn-audio-slow" type="button">
-              <span class="material-symbols-outlined text-[20px]">slow_motion_video</span>
-              <span class="font-label-bold text-label-bold">ゆっくり (0.8x)</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Interactive Mic & Recording Deck -->
-        <div class="w-full flex flex-col items-center justify-center my-space-xs py-space-sm">
-          <div class="relative flex items-center justify-center">
-            <div class="absolute w-24 h-24 rounded-full bg-secondary/20 animate-ping pointer-events-none opacity-60" id="mic-pulse-ring"></div>
-            <div class="absolute w-28 h-28 rounded-full bg-secondary-container/40 blur-md pointer-events-none"></div>
-            <button aria-label="音声録音を開始" class="relative z-10 w-20 h-20 rounded-full bg-secondary text-on-secondary shadow-lg flex items-center justify-center transition-all duration-150 active:translate-y-1 active:shadow-sm cursor-pointer" id="mic-record-btn" type="button">
-              <span class="material-symbols-outlined text-[36px]" id="mic-icon" style="font-variation-settings: 'FILL' 1;">mic</span>
+            <!-- 말하기 버튼 (0.8x 버튼 대신 듣기 버튼과 동일 형태로 추가, 녹색 bg-secondary 적용) -->
+            <button class="flex-1 flex items-center justify-center gap-1.5 bg-secondary active:opacity-90 text-on-secondary py-2.5 px-3 rounded-lg shadow-sm active:scale-95 transition-all cursor-pointer" id="mic-record-btn" type="button">
+              <span class="material-symbols-outlined text-[20px]" id="mic-icon" style="font-variation-settings: 'FILL' 1;">mic</span>
+              <span class="font-label-bold text-label-bold">말하기 (話す)</span>
             </button>
           </div>
-          <span class="font-label-bold text-label-bold text-secondary mt-3" id="record-caption">
-            タップして発音をチェック
-          </span>
-        </div>
 
         <!-- Live Speech-to-Text Recognition & Visual Match Feedback -->
         <div class="w-full bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm mt-space-xs">
@@ -412,25 +401,9 @@
             </p>
             <span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
           </div>
-
-          <!-- Soundwave Bar Graph Indicator -->
-          <div class="flex items-center justify-between gap-1 h-7 px-2 bg-surface-container-low rounded-lg overflow-hidden">
-            <div class="flex-1 bg-secondary rounded-full h-3"></div>
-            <div class="flex-1 bg-secondary rounded-full h-5"></div>
-            <div class="flex-1 bg-secondary rounded-full h-6"></div>
-            <div class="flex-1 bg-secondary rounded-full h-4"></div>
-            <div class="flex-1 bg-secondary rounded-full h-6"></div>
-            <div class="flex-1 bg-secondary rounded-full h-5"></div>
-            <div class="flex-1 bg-secondary rounded-full h-3"></div>
-            <div class="flex-1 bg-secondary rounded-full h-4"></div>
-            <div class="flex-1 bg-secondary rounded-full h-5"></div>
-            <div class="flex-1 bg-secondary rounded-full h-2"></div>
-          </div>
-
           <!-- Native Evaluation Toast -->
           <div class="flex items-center justify-between pt-0.5">
             <span id="practice-eval-text" class="font-body-sm text-body-sm text-secondary font-bold">발음을 녹음하고 정확도를 확인해보세요!</span>
-            <span class="font-label-caps text-label-caps text-tertiary-container font-bold bg-tertiary-fixed px-2 py-0.5 rounded-full">+15 XP</span>
           </div>
         </div>
 
