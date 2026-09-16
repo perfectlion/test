@@ -295,11 +295,11 @@
               </div>
             </div>
           
-            <button class="group relative w-full h-13 py-3 px-4 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 shadow-[0_4px_0_0_#001551] active:translate-y-1 active:shadow-[0_0_0_0_transparent] transition-all cursor-pointer" type="button">
-              <span class="material-symbols-outlined text-[20px]">quiz</span>
-              <span>퀴즈 풀기 (挑戦する)</span>
-              <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">bolt</span>
-            </button>
+           <button id="go-quiz-btn" class="group relative w-full h-13 py-3 px-4 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 shadow-[0_4px_0_0_#001551] active:translate-y-1 active:shadow-[0_0_0_0_transparent] transition-all cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[20px]">quiz</span>
+            <span>퀴즈 풀기 (挑戦する)</span>
+            <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">bolt</span>
+          </button>
           </div>
         </section>
 
@@ -942,6 +942,18 @@
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
+    // 퀴즈 화면으로 이동
+    document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
+      document.getElementById('view-dashboard').classList.add('hidden-view');
+      document.getElementById('view-quiz').classList.remove('hidden-view');
+    });
+    
+    // 퀴즈 화면에서 뒤로가기 버튼 클릭 시 대시보드로 복귀
+    document.getElementById('back-from-quiz')?.addEventListener('click', () => {
+      document.getElementById('view-quiz').classList.add('hidden-view');
+      document.getElementById('view-dashboard').classList.remove('hidden-view');
+    });
+  
   // 5. TTS 음성 출력
   function playTTS(text, rate = 1.0) {
     if ('speechSynthesis' in window && text) {
