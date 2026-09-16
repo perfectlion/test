@@ -421,7 +421,7 @@
   </div>
 
   <!-- ==================== 데이터 연동 및 로직 스크립트 ==================== -->
-  <script>
+<script>
   // JSON 데이터 보관 변수
   let usersData = [];
   let scheduleData = [];
@@ -436,7 +436,7 @@
   let lessonSentencesList = [];
   let currentSentenceIndex = 0;
 
-  // Gemini API 설정 (필요 시 본인 키 입력)
+  // Gemini API 설정
   const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
   const GEMINI_MODEL = "gemini-3.6-flash"; 
 
@@ -467,33 +467,55 @@
   const practiceSentenceTrans = document.getElementById('practice-sentence-trans');
   const practiceProgressBar = document.getElementById('practice-progress-bar');
   const practiceStepIndicator = document.getElementById('practice-step-indicator');
-// HTML ID가 btn-next-sentence 또는 btn-next-lesson 어느 쪽이든 자동으로 가져옵니다.
+
   const btnNextSentence = document.getElementById('btn-next-sentence') || document.getElementById('btn-next-lesson');
   const nextBtnText = document.getElementById('next-btn-text') || btnNextSentence?.querySelector('span:first-child');
   const nextBtnIcon = document.getElementById('next-btn-icon') || btnNextSentence?.querySelector('span:last-child');
 
   const topTtsBtn = document.getElementById('top-tts-btn');
   const btnAudioNormal = document.getElementById('btn-audio-normal');
-  const btnAudioSlow = document.getElementById('btn-audio-slow');
 
-    const micRecordBtn = document.getElementById('mic-record-btn');
-    const micPulseRing = document.getElementById('mic-pulse-ring');
-    const recordCaption = document.getElementById('record-caption');
-    const micIcon = document.getElementById('mic-icon');
-    const practiceRecognizedText = document.getElementById('practice-recognized-text');
-    const practiceMatchBadge = document.getElementById('practice-match-badge');
-    const practiceEvalText = document.getElementById('practice-eval-text');
+  const micRecordBtn = document.getElementById('mic-record-btn');
+  const micPulseRing = document.getElementById('mic-pulse-ring');
+  const recordCaption = document.getElementById('record-caption');
+  const micIcon = document.getElementById('mic-icon');
+  const practiceRecognizedText = document.getElementById('practice-recognized-text');
+  const practiceMatchBadge = document.getElementById('practice-match-badge');
+  const practiceEvalText = document.getElementById('practice-eval-text');
 
   // 비밀번호 보이기/숨기기 토글
   if (togglePwBtn && userPwInput) {
     togglePwBtn.addEventListener('click', () => {
       const isPassword = userPwInput.getAttribute('type') === 'password';
       userPwInput.setAttribute('type', isPassword ? 'text' : 'password');
-      togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+      if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
     });
   }
 
-  // 1. JSON 데이터베이스 로드
+  // 0. 화면 전환 통합 관리 함수 (흰 화면 및 클래스 충돌 방지)
+  function showView(targetViewId) {
+    const views = [
+      { id: 'view-login', el: viewLogin },
+      { id: 'view-dashboard', el: viewDashboard },
+      { id: 'view-practice', el: viewPractice }
+    ];
+
+    views.forEach(v => {
+      if (v.el) {
+        // inline display 제거 및 hidden 클래스 깔끔 정리
+        v.el.style.display = ''; 
+        v.el.classList.remove('hidden');
+        
+        if (v.id === targetViewId) {
+          v.el.classList.remove('hidden-view');
+        } else {
+          v.el.classList.add('hidden-view');
+        }
+      }
+    });
+  }
+
+  // 1. JSON 데이터베이스 로드 및 세션 복원
   async function loadAllDatabases() {
     try {
       const [uRes, sRes, lRes, cRes] = await Promise.all([
@@ -508,23 +530,41 @@
       lessonsData = lRes && lRes.ok ? await lRes.json() : [];
       curriculumData = cRes && cRes.ok ? await cRes.json() : [];
       console.log("JSON 데이터 로드 완료:", { usersData, scheduleData, lessonsData, curriculumData });
+
+      // 데이터 로드 완료 후 자동 로그인 확인
+      checkAutoLogin();
     } catch (err) {
       console.error("JSON 로드 중 오류 발생:", err);
     }
   }
   loadAllDatabases();
 
+  // 자동 로그인 체크 (새로고침 대응)
+  function checkAutoLogin() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        currentUser = JSON.parse(savedUser);
+        setupDashboardUI(currentUser);
+        showView('view-dashboard');
+      } catch (e) {
+        localStorage.removeItem('currentUser');
+        showView('view-login');
+      }
+    } else {
+      showView('view-login');
+    }
+  }
+
   // 2. 학생 course와 오늘 날짜에 따른 lesson_id 계산 함수
   function getLessonIdForUser(userCourse) {
     const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
     
-    // course별 lesson_id 범위
     let minId = 1, maxId = 20;
     if (userCourse === "2a") { minId = 21; maxId = 40; }
     else if (userCourse === "3a") { minId = 41; maxId = 60; }
     else if (userCourse === "4a") { minId = 61; maxId = 80; }
 
-    // 오늘 날짜에 해당하는 스케줄 찾기
     const matchedSchedule = scheduleData.find(s => todayStr >= s.start_date && todayStr <= s.end_date);
     
     if (matchedSchedule && Array.isArray(matchedSchedule.lessons)) {
@@ -532,11 +572,9 @@
       if (targetLesson) return targetLesson;
     }
     
-    // 스케줄 범위 밖이면 해당 코스의 기본 첫 과 적용
     return minId;
   }
 
-  // 코스 코드 -> 교재명 및 과 번호 텍스트 변환
   function getBookAndLessonTitle(course, lessonId) {
     let bookName = "세종학당 한국어 초급 1";
     let lessonNum = lessonId;
@@ -558,17 +596,38 @@
     return { bookName, lessonNum };
   }
 
-  // 3. 로그인 처리 (user.json 구조 적용: ID, PW, Name, course)
-  loginForm.addEventListener('submit', (e) => {
+  // 대시보드 데이터 및 UI 세팅
+  function setupDashboardUI(user) {
+    const userName = user.Name || user.ID || "학생";
+    if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName} 님!`;
+
+    currentLessonId = getLessonIdForUser(user.course || "1a");
+
+    const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
+    const { bookName, lessonNum } = getBookAndLessonTitle(user.course || "1a", currentLessonId);
+
+    if (currItem) {
+      currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (${currItem.title})`;
+      currentTargetSentence = currItem.title_sentences || "학습 문장이 준비되어 있습니다.";
+    } else {
+      currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과`;
+      currentTargetSentence = "오늘의 한국어 문장을 연습해보세요.";
+    }
+
+    if (cardLessonTag) cardLessonTag.innerText = currentLessonDisplayTitle;
+    if (targetSentenceElem) targetSentenceElem.innerText = currentTargetSentence;
+  }
+
+  // 3. 로그인 처리
+  loginForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     const inputId = userIdInput.value.trim();
     const inputPw = userPwInput.value.trim();
 
-    loginSpinner.classList.remove('hidden');
-    loginErrorMsg.classList.add('hidden');
+    loginSpinner?.classList.remove('hidden');
+    loginErrorMsg?.classList.add('hidden');
 
     setTimeout(() => {
-      // ID 및 PW 일치 검증
       const foundUser = usersData.find(u => 
         (u.ID || "").toString().toLowerCase() === inputId.toLowerCase() &&
         (u.PW || "").toString() === inputPw
@@ -576,49 +635,27 @@
 
       if (foundUser) {
         currentUser = foundUser;
-        const userName = currentUser.Name || inputId;
-        welcomeTitle.innerText = `안녕하세요, ${userName}님!`;
-
-        // 오늘의 lesson_id 자동 계산
-        currentLessonId = getLessonIdForUser(currentUser.course || "1a");
-
-        // curriculum.json 정보 매칭
-        const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
-        const { bookName, lessonNum } = getBookAndLessonTitle(currentUser.course || "1a", currentLessonId);
-
-        if (currItem) {
-          currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (${currItem.title})`;
-          currentTargetSentence = currItem.title_sentences || "학습 문장이 준비되어 있습니다.";
-        } else {
-          currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과`;
-          currentTargetSentence = "오늘의 한국어 문장을 연습해보세요.";
-        }
-
-        cardLessonTag.innerText = currentLessonDisplayTitle;
-        targetSentenceElem.innerText = currentTargetSentence;
-
-        // 대시보드로 화면 전환
-        viewLogin.classList.add('hidden-view');
-        viewDashboard.classList.remove('hidden-view');
+        localStorage.setItem('currentUser', JSON.stringify(currentUser)); // 로컬스토리지에 로그인 세션 저장
+        setupDashboardUI(currentUser);
+        showView('view-dashboard');
       } else {
-        loginErrorMsg.classList.remove('hidden');
+        loginErrorMsg?.classList.remove('hidden');
       }
-      loginSpinner.classList.add('hidden');
+      loginSpinner?.classList.add('hidden');
     }, 300);
   });
 
   // 로그아웃
-  logoutBtn.addEventListener('click', () => {
+  logoutBtn?.addEventListener('click', () => {
     currentUser = null;
-    userIdInput.value = '';
-    userPwInput.value = '';
-    viewDashboard.classList.add('hidden-view');
-    viewLogin.classList.remove('hidden-view');
+    localStorage.removeItem('currentUser'); // 로그인 세션 삭제
+    if (userIdInput) userIdInput.value = '';
+    if (userPwInput) userPwInput.value = '';
+    showView('view-login');
   });
 
-// 4. 연습하기 버튼 클릭 -> lessons.json 데이터 추출 (타입 변환 안전 처리 적용)
-  goPracticeBtn.addEventListener('click', () => {
-    // currentLessonId를 숫자 타입으로 통일 비교
+  // 4. 연습하기 진입 및 초기화
+  goPracticeBtn?.addEventListener('click', () => {
     const targetId = Number(currentLessonId);
 
     lessonSentencesList = lessonsData
@@ -628,7 +665,6 @@
         translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
       }));
 
-    // lessons.json에 해당 lesson_id의 문장이 아직 없더라도 curriculum의 대표 문장으로 진행
     if (lessonSentencesList.length === 0) {
       lessonSentencesList = [{ 
         sentence: currentTargetSentence || "저는 한국 사람이에요.", 
@@ -638,47 +674,35 @@
 
     currentSentenceIndex = 0;
     loadPracticeSentenceAtIndex(currentSentenceIndex);
-
-    // 화면 전환 (대시보드 숨기고 연습 화면 표시)
-    viewDashboard.classList.add('hidden-view');
-    viewPractice.classList.remove('hidden-view');
+    showView('view-practice');
   });
 
-function loadPracticeSentenceAtIndex(index) {
+  function loadPracticeSentenceAtIndex(index) {
     if (index < lessonSentencesList.length) {
       const item = lessonSentencesList[index];
 
-      // 1. 과 타이틀 및 문장 데이터 표시
       if (practiceStageTitle) practiceStageTitle.innerText = currentLessonDisplayTitle;
-      if (practiceSentence) practiceSentence.innerText = item.sentence || item.sentence_kr || "";
-      if (practiceSentenceTrans) practiceSentenceTrans.innerText = item.translation || item.sentence_jp || "";
+      if (practiceSentence) practiceSentence.innerText = item.sentence || "";
+      if (practiceSentenceTrans) practiceSentenceTrans.innerText = item.translation || "";
 
-      // 2. 상단 프로그래스 바 & 문장 번호(인디케이터) 동적 계산
       const totalSentences = lessonSentencesList.length;
       const progressPercent = Math.round(((index + 1) / totalSentences) * 100);
 
-      if (practiceProgressBar) {
-        practiceProgressBar.style.width = `${progressPercent}%`;
-      }
-      if (practiceStepIndicator) {
-        practiceStepIndicator.innerText = `${index + 1} / ${totalSentences} 問`;
-      }
+      if (practiceProgressBar) practiceProgressBar.style.width = `${progressPercent}%`;
+      if (practiceStepIndicator) practiceStepIndicator.innerText = `${index + 1} / ${totalSentences} 問`;
 
-      // 3. 발음 인식 결과 및 하단 UI 초기화
       if (practiceRecognizedText) practiceRecognizedText.innerText = "마이크 버튼을 누르고 말해보세요.";
       if (practiceMatchBadge) practiceMatchBadge.innerText = "🎯 발음 대기 중";
       if (practiceEvalText) practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 AI가 발음을 분석해 줍니다.";
 
-      // 4. 다음 문장 버튼 텍스트 설정
       if (index < totalSentences - 1) {
-        if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (次の文へ)";
+        if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (다음 문장으로)";
         if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
       } else {
-        if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (完了)";
+        if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (완료)";
         if (nextBtnIcon) nextBtnIcon.style.display = "none";
       }
     } else {
-      // 모든 문장 학습 완료 시 처리
       if (practiceSentence) practiceSentence.innerText = "수고하셨습니다!";
       if (practiceSentenceTrans) practiceSentenceTrans.innerText = "모든 학습 문장을 완료했습니다. 素晴らしい！";
       if (practiceStepIndicator) practiceStepIndicator.innerText = "완료 (完了)";
@@ -689,53 +713,29 @@ function loadPracticeSentenceAtIndex(index) {
     }
   }
 
-  btnNextSentence?.addEventListener('click', () => {
-// loadPracticeSentenceAtIndex 함수 내부의 하단 버튼 제어 부분
-  if (currentSentenceIndex < lessonSentencesList.length - 1) {
-    // 다음 문장이 남아있는 경우
-    if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (次の文へ)";
-    if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
-  } else {
-    // 마지막 문장이거나 문장이 1개뿐인 경우
-    if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (完了)";
-    if (nextBtnIcon) nextBtnIcon.style.display = "none";
+  // 대시보드로 안전 복귀
+  function returnToDashboard() {
+    stopPracticeRecordingUI();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    showView('view-dashboard');
   }
-  });
 
-// 대시보드 화면 복귀 함수 (모든 ID/클래스 대응)
-  const returnToDashboard = () => {
-    const dashView = document.getElementById('view-dashboard') || document.getElementById('dashboard-view') || viewDashboard;
-    const pracView = document.getElementById('view-practice') || document.getElementById('practice-view') || viewPractice;
-
-    if (pracView) {
-      pracView.classList.add('hidden-view', 'hidden');
-      pracView.style.display = 'none';
-    }
-    if (dashView) {
-      dashView.classList.remove('hidden-view', 'hidden');
-      dashView.style.display = 'block';
-    }
-  };
-
-  // '다음 문장으로 / 대시보드로 돌아가기' 버튼 클릭 이벤트 통합
   btnNextSentence?.addEventListener('click', () => {
-    // 1. 남아있는 다음 문장이 있는 경우 -> 다음 문장 로드
     if (currentSentenceIndex < lessonSentencesList.length - 1) {
       currentSentenceIndex++;
       loadPracticeSentenceAtIndex(currentSentenceIndex);
-    } 
-    // 2. 마지막 문장이거나 대시보드로 돌아가야 하는 경우 -> 대시보드 복귀
-    else {
+    } else {
       returnToDashboard();
     }
   });
 
-  // 상단 X 버튼 및 기타 돌아가기 버튼 이벤트 바인딩
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
   // 5. TTS (한국어 소리 들려주기)
-  function playTTS(text, rate = 0.8) {
+  function playTTS(text, rate = 1.0) {
     if ('speechSynthesis' in window && text) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -745,9 +745,8 @@ function loadPracticeSentenceAtIndex(index) {
     }
   }
 
-  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.7));
-  if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 1.0));
-  if (btnAudioSlow) btnAudioSlow.addEventListener('click', () => playTTS(practiceSentence?.innerText || '', 0.8));
+  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
+  if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
 
   // 6. STT & Gemini AI 발음 평가
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -792,6 +791,9 @@ function loadPracticeSentenceAtIndex(index) {
   }
 
   function stopPracticeRecordingUI() {
+    if (isRecording && recognition) {
+      try { recognition.stop(); } catch(e) {}
+    }
     isRecording = false;
     micPulseRing?.classList.remove('opacity-100', 'bg-error/30');
     micPulseRing?.classList.add('opacity-60', 'bg-secondary/20');
@@ -820,17 +822,16 @@ function loadPracticeSentenceAtIndex(index) {
     });
   }
 
-  // Gemini AI 평가 (API Key가 없거나 오류 시 자체 매칭 fallback 계산 제공)
+  // Gemini AI 평가
   async function evaluatePronunciationAI(target, spoken) {
-    practiceMatchBadge.innerHTML = "🎯 분석 중...";
-    practiceEvalText.innerText = "발음을 분석하고 있습니다...";
+    if (practiceMatchBadge) practiceMatchBadge.innerHTML = "🎯 분석 중...";
+    if (practiceEvalText) practiceEvalText.innerText = "발음을 분석하고 있습니다...";
 
     if (!API_KEY) {
-      // API Key 미설정 시 간단 문자열 비교 Fallback
       const isExact = target.replace(/\s+/g, '') === spoken.replace(/\s+/g, '');
       const score = isExact ? "100%" : "85%";
-      practiceMatchBadge.innerHTML = `🎯 ${score} 一致`;
-      practiceEvalText.innerText = isExact ? "발음 정확도: 完璧です！ (완벽합니다!)" : "발음 정확도: 良好 (자연스러운 발음입니다!)";
+      if (practiceMatchBadge) practiceMatchBadge.innerHTML = `🎯 ${score} 一致`;
+      if (practiceEvalText) practiceEvalText.innerText = isExact ? "발음 정확도: 完璧です！ (완벽합니다!)" : "발음 정확도: 良好 (자연스러운 발음입니다!)";
       return;
     }
 
@@ -856,11 +857,11 @@ Respond ONLY with valid JSON in this exact structure without markdown backticks:
       let rawText = data.candidates[0].content.parts[0].text.trim().replace(/```json/g, '').replace(/```/g, '').trim();
       const result = JSON.parse(rawText);
 
-      practiceMatchBadge.innerHTML = `🎯 ${result.score || "95%"} 一致`;
-      practiceEvalText.innerText = `발음 정확도: ${result.evaluation || "훌륭한 발음입니다!"}`;
+      if (practiceMatchBadge) practiceMatchBadge.innerHTML = `🎯 ${result.score || "95%"} 一致`;
+      if (practiceEvalText) practiceEvalText.innerText = `발음 정확도: ${result.evaluation || "훌륭한 발음입니다!"}`;
     } catch (err) {
-      practiceMatchBadge.innerHTML = "🎯 90% 一致";
-      practiceEvalText.innerText = "발음 정확도: 優良 (좋은 발음입니다!)";
+      if (practiceMatchBadge) practiceMatchBadge.innerHTML = "🎯 90% 一致";
+      if (practiceEvalText) practiceEvalText.innerText = "발음 정확도: 優良 (좋은 발음입니다!)";
     }
   }
 </script>
