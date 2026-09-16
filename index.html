@@ -602,14 +602,15 @@
     const userName = user.Name || user.ID || "학생";
     if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName} 님!`;
 
-      // 프로필 사진 업데이트 (사용자에게 profile_img가 있으면 해당 이미지, 없으면 기본 이미지)
+// 프로필 사진 업데이트 (사용자에게 profile_img가 있으면 해당 이미지, 없으면 기본 이미지)
   if (userProfileImg) {
-    if (currentUser.profile_img) {
-      userProfileImg.src = currentUser.profile_img;
+    if (user.profile_img) {
+      userProfileImg.src = user.profile_img;
     } else {
-      // 이미지 경로가 지정되지 않은 학생인 경우 이름 기반 기본 아바타 생성
-      userProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=0D9488&color=fff`;
-    
+      // 이미지 경로가 지정되지 않은 학생인 경우 이름 기반 기본 아바타 생성 (user.Name 사용)
+      userProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D9488&color=fff`;
+    }
+  }
     currentLessonId = getLessonIdForUser(user.course || "1a");
 
     const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
