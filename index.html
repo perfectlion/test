@@ -421,13 +421,12 @@
 
   <!-- ==================== 데이터 연동 및 로직 스크립트 ==================== -->
 <script>
-  // JSON 데이터 보관 변수
+  // ==================== 데이터 및 상태 관리 ====================
   let usersData = [];
   let scheduleData = [];
   let lessonsData = [];
   let curriculumData = [];
 
-  // 현재 로그인 유저 및 학습 정보
   let currentUser = null;
   let currentLessonId = 1;
   let currentLessonDisplayTitle = "";
@@ -439,11 +438,13 @@
   const API_KEY = "AQ.Ab8RN6JSYiIBH1GPm6Pyt3_ZpY6K5rOTsyag_p0UV_YMfyZHpw"; 
   const GEMINI_MODEL = "gemini-3.6-flash"; 
 
-  // DOM 요소 참조
+  // ==================== DOM 요소 참조 ====================
+  // 뷰 화면
   const viewLogin = document.getElementById('view-login');
   const viewDashboard = document.getElementById('view-dashboard');
   const viewPractice = document.getElementById('view-practice');
 
+  // 로그인 관련
   const loginForm = document.getElementById('login-form');
   const userIdInput = document.getElementById('user-id');
   const userPwInput = document.getElementById('user-pw');
@@ -452,14 +453,15 @@
   const loginSpinner = document.getElementById('login-spinner');
   const loginErrorMsg = document.getElementById('login-error-msg');
 
+  // 대시보드 관련
   const welcomeTitle = document.getElementById('welcome-title');
   const logoutBtn = document.getElementById('logout-btn');
   const goPracticeBtn = document.getElementById('go-practice-btn');
   const userProfileImg = document.getElementById('user-profile-img');
-
   const cardLessonTag = document.getElementById('card-lesson-tag');
   const targetSentenceElem = document.getElementById('target-sentence');
 
+  // 연습 모드 관련
   const backToDashboard = document.getElementById('back-to-dashboard');
   const closePracticeBtn = document.getElementById('close-practice-btn');
   const practiceStageTitle = document.getElementById('practice-stage-title');
@@ -468,9 +470,9 @@
   const practiceProgressBar = document.getElementById('practice-progress-bar');
   const practiceStepIndicator = document.getElementById('practice-step-indicator');
 
-  const btnNextSentence = document.getElementById('btn-next-sentence') || document.getElementById('btn-next-lesson');
-  const nextBtnText = document.getElementById('next-btn-text') || btnNextSentence?.querySelector('span:first-child');
-  const nextBtnIcon = document.getElementById('next-btn-icon') || btnNextSentence?.querySelector('span:last-child');
+  const btnNextSentence = document.getElementById('btn-next-sentence');
+  const nextBtnText = document.getElementById('next-btn-text');
+  const nextBtnIcon = document.getElementById('next-btn-icon');
 
   const topTtsBtn = document.getElementById('top-tts-btn');
   const btnAudioNormal = document.getElementById('btn-audio-normal');
@@ -483,16 +485,17 @@
   const practiceMatchBadge = document.getElementById('practice-match-badge');
   const practiceEvalText = document.getElementById('practice-eval-text');
 
-  // 비밀번호 보이기/숨기기 토글
-  if (togglePwBtn && userPwInput) {
-    togglePwBtn.addEventListener('click', () => {
-      const isPassword = userPwInput.getAttribute('type') === 'password';
-      userPwInput.setAttribute('type', isPassword ? 'text' : 'password');
-      if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
-    });
-  }
+  // ==================== 초기화 및 이벤트 등록 ====================
 
-  // 0. 화면 전환 통합 관리 함수 (흰 화면 및 클래스 충돌 방지)
+  // 비밀번호 보이기/숨기기
+  togglePwBtn?.addEventListener('click', () => {
+    if (!userPwInput) return;
+    const isPassword = userPwInput.getAttribute('type') === 'password';
+    userPwInput.setAttribute('type', isPassword ? 'text' : 'password');
+    if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+  });
+
+  // 0. 화면 전환 통합 관리 함수
   function showView(targetViewId) {
     const views = [
       { id: 'view-login', el: viewLogin },
@@ -502,10 +505,8 @@
 
     views.forEach(v => {
       if (v.el) {
-        // inline display 제거 및 hidden 클래스 깔끔 정리
         v.el.style.display = ''; 
         v.el.classList.remove('hidden');
-        
         if (v.id === targetViewId) {
           v.el.classList.remove('hidden-view');
         } else {
@@ -529,9 +530,7 @@
       scheduleData = sRes && sRes.ok ? await sRes.json() : [];
       lessonsData = lRes && lRes.ok ? await lRes.json() : [];
       curriculumData = cRes && cRes.ok ? await cRes.json() : [];
-      console.log("JSON 데이터 로드 완료:", { usersData, scheduleData, lessonsData, curriculumData });
 
-      // 데이터 로드 완료 후 자동 로그인 확인
       checkAutoLogin();
     } catch (err) {
       console.error("JSON 로드 중 오류 발생:", err);
@@ -539,7 +538,7 @@
   }
   loadAllDatabases();
 
-  // 자동 로그인 체크 (새로고침 대응)
+  // 자동 로그인 체크
   function checkAutoLogin() {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -556,9 +555,9 @@
     }
   }
 
-  // 2. 학생 course와 오늘 날짜에 따른 lesson_id 계산 함수
+  // 2. 학생 course와 날짜에 따른 lesson_id 연산
   function getLessonIdForUser(userCourse) {
-    const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const todayStr = new Date().toISOString().split('T')[0];
     
     let minId = 1, maxId = 20;
     if (userCourse === "2a") { minId = 21; maxId = 40; }
@@ -579,10 +578,7 @@
     let bookName = "세종학당 한국어 초급 1";
     let lessonNum = lessonId;
 
-    if (course === "1a") {
-      bookName = "세종학당 한국어 초급 1";
-      lessonNum = lessonId;
-    } else if (course === "2a") {
+    if (course === "2a") {
       bookName = "세종학당 한국어 초급 2";
       lessonNum = lessonId - 20;
     } else if (course === "3a") {
@@ -599,17 +595,16 @@
   // 대시보드 데이터 및 UI 세팅
   function setupDashboardUI(user) {
     const userName = user.Name || user.ID || "학생";
-    if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName} 님!`;
+    if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName}님!`;
 
-// 프로필 사진 업데이트 (사용자에게 profile_img가 있으면 해당 이미지, 없으면 기본 이미지)
-  if (userProfileImg) {
-    if (user.profile_img) {
-      userProfileImg.src = user.profile_img;
-    } else {
-      // 이미지 경로가 지정되지 않은 학생인 경우 이름 기반 기본 아바타 생성 (user.Name 사용)
-      userProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D9488&color=fff`;
+    if (userProfileImg) {
+      if (user.profile_img) {
+        userProfileImg.src = user.profile_img;
+      } else {
+        userProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D9488&color=fff`;
+      }
     }
-  }
+
     currentLessonId = getLessonIdForUser(user.course || "1a");
 
     const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
@@ -627,7 +622,7 @@
     if (targetSentenceElem) targetSentenceElem.innerText = currentTargetSentence;
   }
 
-  // 3. 로그인 처리
+  // 3. 로그인 및 로그아웃
   loginForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     const inputId = userIdInput.value.trim();
@@ -644,7 +639,7 @@
 
       if (foundUser) {
         currentUser = foundUser;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser)); // 로컬스토리지에 로그인 세션 저장
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
         setupDashboardUI(currentUser);
         showView('view-dashboard');
       } else {
@@ -654,16 +649,15 @@
     }, 300);
   });
 
-  // 로그아웃
   logoutBtn?.addEventListener('click', () => {
     currentUser = null;
-    localStorage.removeItem('currentUser'); // 로그인 세션 삭제
+    localStorage.removeItem('currentUser');
     if (userIdInput) userIdInput.value = '';
     if (userPwInput) userPwInput.value = '';
     showView('view-login');
   });
 
-  // 4. 연습하기 진입 및 초기화
+  // 4. 연습하기 진입 및 진행
   goPracticeBtn?.addEventListener('click', () => {
     const targetId = Number(currentLessonId);
 
@@ -722,7 +716,6 @@
     }
   }
 
-  // 대시보드로 안전 복귀
   function returnToDashboard() {
     stopPracticeRecordingUI();
     if ('speechSynthesis' in window) {
@@ -743,7 +736,7 @@
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
-  // 5. TTS (한국어 소리 들려주기)
+  // 5. TTS 음성 출력
   function playTTS(text, rate = 1.0) {
     if ('speechSynthesis' in window && text) {
       window.speechSynthesis.cancel();
@@ -754,10 +747,10 @@
     }
   }
 
-  if (topTtsBtn) topTtsBtn.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
-  if (btnAudioNormal) btnAudioNormal.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
+  topTtsBtn?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
+  btnAudioNormal?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
 
-  // 6. STT & Gemini AI 발음 평가
+  // 6. STT 음성 인식 및 Gemini AI 평가
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
   let isRecording = false;
@@ -817,21 +810,18 @@
     if (micIcon) micIcon.textContent = 'mic';
   }
 
-  if (micRecordBtn) {
-    micRecordBtn.addEventListener('click', () => {
-      if (!recognition) {
-        alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
-        return;
-      }
-      if (!isRecording) {
-        recognition.start();
-      } else {
-        recognition.stop();
-      }
-    });
-  }
+  micRecordBtn?.addEventListener('click', () => {
+    if (!recognition) {
+      alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
+      return;
+    }
+    if (!isRecording) {
+      recognition.start();
+    } else {
+      recognition.stop();
+    }
+  });
 
-  // Gemini AI 평가
   async function evaluatePronunciationAI(target, spoken) {
     if (practiceMatchBadge) practiceMatchBadge.innerHTML = "🎯 분석 중...";
     if (practiceEvalText) practiceEvalText.innerText = "발음을 분석하고 있습니다...";
