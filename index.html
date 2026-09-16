@@ -235,10 +235,10 @@
               </p>
             </div>
             <div class="flex-shrink-0 w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shadow-sm">
-             <img id="user-profile-img" 
-       alt="Profile" 
-       class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed bg-secondary-container p-0.5" 
-       src="https://api.iconify.design/noto:smiling-face-with-sunglasses.svg">
+          <!-- id="user-profile-img" 추가 및 기본 아바타 설정 -->
+          <img id="user-profile-img" alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" 
+               src="./images/default-avatar.png" 
+               onerror="this.src='https://ui-avatars.com/api/?name=User&background=random';">
             </div>
           </div>
         </section>
@@ -456,6 +456,7 @@
   const welcomeTitle = document.getElementById('welcome-title');
   const logoutBtn = document.getElementById('logout-btn');
   const goPracticeBtn = document.getElementById('go-practice-btn');
+  const userProfileImg = document.getElementById('user-profile-img');
 
   const cardLessonTag = document.getElementById('card-lesson-tag');
   const targetSentenceElem = document.getElementById('target-sentence');
@@ -601,6 +602,14 @@
     const userName = user.Name || user.ID || "학생";
     if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName} 님!`;
 
+      // 프로필 사진 업데이트 (사용자에게 profile_img가 있으면 해당 이미지, 없으면 기본 이미지)
+  if (userProfileImg) {
+    if (currentUser.profile_img) {
+      userProfileImg.src = currentUser.profile_img;
+    } else {
+      // 이미지 경로가 지정되지 않은 학생인 경우 이름 기반 기본 아바타 생성
+      userProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=0D9488&color=fff`;
+    
     currentLessonId = getLessonIdForUser(user.course || "1a");
 
     const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
