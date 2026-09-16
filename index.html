@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>세종학당 봉센세 - 한국어 학습 앱</title>
   
+<!-- Google Fonts & Material Symbols -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script id="tailwind-config">
     tailwind.config = {
@@ -71,19 +74,19 @@
             "margin": "1rem", "margin-desktop": "2rem"
           },
           fontFamily: {
-            "label-bold": ["Plus Jakarta Sans"],
-            "kana-subtext": ["Noto Sans"],
-            "display-lg": ["Plus Jakarta Sans"],
-            "body-sm": ["Noto Sans"],
-            "label-caps": ["Plus Jakarta Sans"],
-            "hangul-interactive": ["Noto Sans"],
-            "headline-xl": ["Plus Jakarta Sans"],
-            "body-lg": ["Noto Sans"],
-            "hangul-display": ["Noto Sans"],
-            "body-md": ["Noto Sans"],
-            "headline-sm": ["Plus Jakarta Sans"],
-            "headline-lg": ["Plus Jakarta Sans"],
-            "display-lg-mobile": ["Plus Jakarta Sans"]
+            "label-bold": ["Plus Jakarta Sans", "sans-serif"],
+            "kana-subtext": ["Noto Sans JP", "Noto Sans", "sans-serif"],
+            "display-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "body-sm": ["Noto Sans KR", "Noto Sans JP", "Noto Sans", "sans-serif"],
+            "label-caps": ["Plus Jakarta Sans", "sans-serif"],
+            "hangul-interactive": ["Noto Sans KR", "sans-serif"],
+            "headline-xl": ["Plus Jakarta Sans", "sans-serif"],
+            "body-lg": ["Noto Sans KR", "Noto Sans JP", "Noto Sans", "sans-serif"],
+            "hangul-display": ["Noto Sans KR", "sans-serif"],
+            "body-md": ["Noto Sans KR", "Noto Sans JP", "Noto Sans", "sans-serif"],
+            "headline-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "display-lg-mobile": ["Plus Jakarta Sans", "sans-serif"]
           },
           fontSize: {
             "label-bold": ["0.875rem", { "lineHeight": "1rem", "fontWeight": "700" }],
@@ -104,44 +107,48 @@
       }
     }
   </script>
+
   <style>
-    @layer base {
-      html, body { width: 100vw; margin: 0; padding: 0; background-color: #faf8ff; }
-      body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-      .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
-      .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
-      main>:first-child { margin-top: 0 !important; }
-      main>:last-child { margin-bottom: 0 !important; }
-    }
-    ::-webkit-scrollbar { display: none; }
-    .hidden-view { display: none !important; }
-    .recording-pulse { animation: pulse 1.5s infinite; }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.8; }
-      100% { transform: scale(1); opacity: 1; }
+    /* Material Symbols 기본 클래스 설정 */
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
     }
   </style>
 </head>
 <body class="bg-surface text-on-surface flex flex-col min-h-screen">
 
   <!-- ==================== VIEW 1: 로그인 화면 ==================== -->
-  <main id="view-login" class="flex flex-col relative w-full bg-surface min-h-screen items-center justify-center">
-    <div class="flex flex-col w-full px-space-md py-space-xl items-center justify-center">
-      <div class="w-full max-w-sm flex flex-col items-center">
-        
-        <div class="relative flex flex-col items-center mb-space-lg">
-          <div class="relative w-28 h-28 rounded-full bg-surface-container-high p-space-xs shadow-md flex items-center justify-center">
-            <img src="./images/Emblem.jpg" alt="Brand Mascot Emblem">
-            <div class="absolute -bottom-1 -right-1 bg-secondary text-on-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-sm">
-              <span class="material-symbols-outlined text-body-sm" style="font-variation-settings: 'FILL' 1;">translate</span>
-            </div>
-          </div>
-          <div class="text-center mt-space-md">
-            <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">안녕하세요!</h1>
-            <p class="font-kana-subtext text-kana-subtext text-on-surface-variant font-medium mt-space-xs">ようこそ・韓国語学習へ</p>
+<main id="view-login" class="flex flex-col relative w-full bg-surface min-h-screen items-center justify-center">
+  <!-- py-space-xl을 py-space-md로 변경하여 작은 화면에서 상하 여백 축소 -->
+  <div class="flex flex-col w-full px-space-md py-space-md items-center justify-center">
+    <div class="w-full max-w-sm flex flex-col items-center">
+      
+      <!-- mb-space-lg를 mb-space-md로 변경하여 엠블럼 하단 간격 축소 -->
+      <div class="relative flex flex-col items-center mb-space-md">
+        <!-- 엠블럼 크기를 w-24 h-24 로 살짝 다이어트 (선택사항, 28 유지도 가능) -->
+        <div class="relative w-24 h-24 rounded-full bg-surface-container-high p-space-xs shadow-md flex items-center justify-center">
+          <img src="./images/Emblem.jpg" alt="Brand Mascot Emblem" class="w-full h-full object-cover rounded-full">
+          <div class="absolute -bottom-1 -right-1 bg-secondary text-on-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined text-body-sm" style="font-variation-settings: 'FILL' 1;">translate</span>
           </div>
         </div>
+        
+        <div class="text-center mt-space-sm">
+          <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">안녕하세요!</h1>
+          <p class="font-kana-subtext text-kana-subtext text-on-surface-variant font-medium mt-1">ようこそ・韓国語学習へ</p>
+        </div>
+      </div>
 
         <form id="login-form" class="w-full bg-surface-container-lowest rounded-xl shadow-xl p-space-lg flex flex-col gap-space-md">
           <div class="flex flex-col gap-space-xs">
@@ -151,7 +158,7 @@
             </label>
             <div class="relative flex items-center rounded-lg bg-surface-container-low transition-colors duration-150 focus-within:bg-surface-variant/40">
               <span class="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-body-lg">person</span>
-              <input autocomplete="username" class="w-full pl-11 pr-space-md py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-id" name="username" placeholder="ID または メールアドレス" type="text" required>
+              <input autocomplete="username" class="w-full pl-11 pr-space-md py-3.5 bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none rounded-lg" id="user-id" name="username" placeholder="IDを入力" type="text" required>
             </div>
           </div>
 
@@ -194,7 +201,6 @@
           <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-caps text-label-caps">KR/JP</span>
             </div>
             <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-none">Today'S Lesson</span>
           </div>
@@ -216,7 +222,7 @@
           <div class="flex items-center justify-between gap-space-md bg-surface-container-lowest p-space-md rounded-xl shadow-md">
             <div class="flex flex-col min-w-0">
               <h2 id="welcome-title" class="font-headline-lg text-headline-lg text-on-surface tracking-tight truncate">
-                안녕하세요, 유이님!
+                안녕하세요, 봉근님!
               </h2>
               <p class="font-kana-subtext text-kana-subtext text-on-surface-variant flex items-center gap-1 mt-1">
                 <span>今日も一歩前進しましょう</span>
@@ -249,9 +255,6 @@
               <div class="flex items-center gap-2">
                 <span id="card-lesson-tag" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary font-label-caps text-label-caps">
                   데이터 연동 중...
-                </span>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-caps text-label-caps">
-                  <span class="material-symbols-outlined text-[13px]">mic</span> AI 발음 분석
                 </span>
               </div>
             </div>
