@@ -235,9 +235,7 @@
               </p>
             </div>
             <div class="flex-shrink-0 w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center shadow-sm overflow-hidden">
-              <img id="user-profile-img" alt="Profile" class="w-full h-full object-cover ring-2 ring-primary-fixed" 
-                   src="./images/default-avatar.png" 
-                   onerror="this.src='https://ui-avatars.com/api/?name=User&background=random';">
+              <img id="user-profile-img" class="user-profile-img-all w-full h-full object-cover ring-2 ring-primary-fixed" src="..." />
             </div>
           </div>
         </section>
@@ -340,9 +338,7 @@
           </div>
         </div>
         <div class="flex items-center gap-space-sm">
-          <img id="practice-user-profile-img" alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" 
-               src="./images/default-avatar.png" 
-               onerror="this.src='https://ui-avatars.com/api/?name=User&background=random';">
+         <img id="practice-user-profile-img" class="user-profile-img-all w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" src="..." />
         </div>
       </div>
     </header>
@@ -460,9 +456,7 @@
           </div>
         </div>
         <div class="flex items-center gap-space-sm">
-          <img id="quiz-user-profile-img" alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" 
-               src="./images/default-avatar.png" 
-               onerror="this.src='https://ui-avatars.com/api/?name=User&background=random';">
+         <img id="quiz-user-profile-img" class="user-profile-img-all w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" src="..." />
         </div>
       </div>
     </header>
@@ -590,6 +584,7 @@
           </div>
         </button>
       </div>
+    </main>
 
     <!-- Bottom Drawer -->
     <div id="quiz-bottom-drawer" class="hidden fixed inset-x-0 bottom-0 z-40 bg-secondary-container shadow-[0_-4px_20px_rgba(0,0,0,0.1)] px-gutter pt-4 pb-safe border-t border-secondary/10">
@@ -653,7 +648,7 @@
   const welcomeTitle = document.getElementById('welcome-title');
   const logoutBtn = document.getElementById('logout-btn');
   const goPracticeBtn = document.getElementById('go-practice-btn');
-  const userProfileImg = document.getElementById('user-profile-img');
+  const userProfileImgs = document.querySelectorAll('.user-profile-img-all');
   const cardLessonTag = document.getElementById('card-lesson-tag');
   const targetSentenceElem = document.getElementById('target-sentence');
 
@@ -809,18 +804,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return { bookName, lessonNum };
   }
 
-  // 대시보드 데이터 및 UI 세팅
-  function setupDashboardUI(user) {
-    const userName = user.Name || user.ID || "학생";
-    if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName}님!`;
+// 대시보드 데이터 및 UI 세팅
+function setupDashboardUI(user) {
+  const userName = user.Name || user.ID || "학생";
+  if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName}님!`;
 
-    if (userProfileImg) {
-      if (user.profile_img) {
-        userProfileImg.src = user.profile_img;
-      } else {
-        userProfileImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D9488&color=fff`;
-      }
-    }
+  // 💡 공통 class를 가진 모든 프로필 이미지 src 변경
+  if (userProfileImgs && userProfileImgs.length > 0) {
+    const photoUrl = user.profile_img || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D9488&color=fff`;
+    
+    userProfileImgs.forEach(img => {
+      img.src = photoUrl;
+    });
+  }
 
     currentLessonId = getLessonIdForUser(user.course || "1a");
 
