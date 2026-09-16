@@ -439,7 +439,7 @@
         </div>
 
       </div>
-  <!-- ==================== VIEW 4: 데일리 퀴즈 학습 화면 ==================== -->
+      
 <!-- ==================== VIEW 4: 데일리 퀴즈 학습 화면 ==================== -->
   <div id="view-quiz" class="hidden-view flex flex-col min-h-screen w-full bg-surface">
     
@@ -701,25 +701,47 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
-  // 0. 화면 전환 통합 관리 함수
-  function showView(targetViewId) {
-    const views = [
-      { id: 'view-login', el: viewLogin },
-      { id: 'view-dashboard', el: viewDashboard },
-      { id: 'view-practice', el: viewPractice }
-    ];
+// 뷰 전환 전용 함수
+function switchView(targetViewId) {
+  // 모든 VIEW 레이어 숨기기
+  const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz'];
+  views.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden-view');
+  });
 
-    views.forEach(v => {
-      if (v.el) {
-        v.el.style.display = ''; 
-        v.el.classList.remove('hidden');
-        if (v.id === targetViewId) {
-          v.el.classList.remove('hidden-view');
-        } else {
-          v.el.classList.add('hidden-view');
-        }
-      }
-    });
+  // 목표 VIEW만 보이기
+  const target = document.getElementById(targetViewId);
+  if (target) {
+    target.classList.remove('hidden-view');
+    window.scrollTo(0, 0); // 화면 최상단으로 스크롤 reset
+  } else {
+    console.error(`VIEW ID를 찾을 수 없습니다: ${targetViewId}`);
+  }
+}
+
+// 이벤트 리스너 등록
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. 대시보드 -> 읽기 연습
+  document.getElementById('go-practice-btn')?.addEventListener('click', () => {
+    switchView('view-practice');
+  });
+
+  // 2. 읽기 연습 -> 대시보드
+  document.getElementById('back-to-dashboard')?.addEventListener('click', () => {
+    switchView('view-dashboard');
+  });
+
+  // 3. 대시보드 -> 데일리 퀴즈
+  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
+    switchView('view-quiz');
+  });
+
+  // 4. 데일리 퀴즈 -> 대시보드
+  document.getElementById('back-from-quiz')?.addEventListener('click', () => {
+    switchView('view-dashboard');
+  });
+});
   }
 
   // 1. JSON 데이터베이스 로드 및 세션 복원
