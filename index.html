@@ -701,8 +701,8 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
-// 뷰 전환 전용 함수
-function switchView(targetViewId) {
+// 뷰 전환 전용 함수 (함수명을 showView로 통일)
+function showView(targetViewId) {
   // 모든 VIEW 레이어 숨기기
   const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz'];
   views.forEach(id => {
@@ -724,22 +724,22 @@ function switchView(targetViewId) {
 document.addEventListener('DOMContentLoaded', () => {
   // 1. 대시보드 -> 읽기 연습
   document.getElementById('go-practice-btn')?.addEventListener('click', () => {
-    switchView('view-practice');
+    showView('view-practice');
   });
 
   // 2. 읽기 연습 -> 대시보드
   document.getElementById('back-to-dashboard')?.addEventListener('click', () => {
-    switchView('view-dashboard');
+    showView('view-dashboard');
   });
 
   // 3. 대시보드 -> 데일리 퀴즈
   document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-    switchView('view-quiz');
+    showView('view-quiz');
   });
 
   // 4. 데일리 퀴즈 -> 대시보드
   document.getElementById('back-from-quiz')?.addEventListener('click', () => {
-    switchView('view-dashboard');
+    showView('view-dashboard');
   });
 });
 
