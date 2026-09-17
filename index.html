@@ -241,7 +241,7 @@
           <div class="flex items-center justify-between gap-space-md bg-surface-container-lowest p-space-md rounded-xl shadow-md">
             <div class="flex flex-col min-w-0">
               <h2 id="welcome-title" class="font-headline-lg text-headline-lg text-on-surface tracking-tight truncate">
-                안녕하세요, 봉근님!
+                안녕하세요, 봉근 님!
               </h2>
               <p class="font-kana-subtext text-kana-subtext text-on-surface-variant flex items-center gap-1 mt-1">
                 <span>今日も一歩前進しましょう</span>
@@ -352,7 +352,7 @@
           </div>
         </div>
         <div class="flex items-center gap-space-sm">
-         <img id="practice-user-profile-img" class="user-profile-img-all w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" src="..." />
+         <img id="practice-user-profile-img" class="user-profile-img-all w-full h-full rounded-full object-cover ring-2 ring-primary-fixed" src="..." />
         </div>
       </div>
     </header>
@@ -454,23 +454,21 @@
       
 <!-- ==================== VIEW 4: 데일리 퀴즈 학습 화면 ==================== -->
 <div id="view-quiz" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
-  
-  <!-- Header -->
   <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
     <div class="h-16 px-gutter flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <button id="back-from-quiz" class="min-w-[44px] min-h-[44px] -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-95 transition-all cursor-pointer" type="button" aria-label="뒤로가기">
+      <div class="flex items-center gap-space-sm">
+       <button id="back-from-quiz" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
           <span class="material-symbols-outlined text-[24px]">arrow_back</span>
         </button>
-        <div class="flex flex-col min-w-0">
+        <div class="flex flex-col">
           <div class="flex items-center gap-1">
-            <span class="font-headline-sm text-headline-sm text-primary tracking-tight font-bold truncate">세종학당 봉센세</span>
+            <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
           </div>
-          <span class="font-bilingual-hint text-[12px] text-on-surface-variant leading-none">Quiz Mode</span>
+          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Quiz Mode</span>
         </div>
       </div>
       <div class="flex items-center gap-space-sm">
-        <img class="user-profile-img-all w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
+        <img id="practice-user-profile-img" class="user-profile-img-all w-full h-full rounded-full object-cover ring-2 ring-primary-fixed" src="..." />
       </div>
     </div>
   </header>
@@ -757,17 +755,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getBookAndLessonTitle(course, lessonId) {
-    let bookName = "세종학당 한국어 초급 1";
+    let bookName = "초급 1";
     let lessonNum = lessonId;
 
     if (course === "2a") {
-      bookName = "세종학당 한국어 초급 2";
+      bookName = "초급 2";
       lessonNum = lessonId - 20;
     } else if (course === "3a") {
-      bookName = "세종학당 한국어 중급 1";
+      bookName = "중급 1";
       lessonNum = lessonId - 40;
     } else if (course === "4a") {
-      bookName = "세종학당 한국어 중급 2";
+      bookName = "중급 2";
       lessonNum = lessonId - 60;
     }
 
@@ -1112,7 +1110,7 @@ document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
 });
   
   // 5. TTS 음성 출력
-  function playTTS(text, rate = 1.0) {
+  function playTTS(text, rate = 0.8) {
     if ('speechSynthesis' in window && text) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
