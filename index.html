@@ -477,25 +477,25 @@
   <main class="flex flex-col relative w-full pt-16 bg-surface min-h-screen pb-safe">
     <div class="flex flex-col w-full px-gutter pb-space-xl">
       
-      <!-- Progress Header Deck -->
+      <!-- Progress Header Deck (파란색 메인 스태터스 바) -->
       <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
         <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
-          <div id="quiz-progress-bar" class="h-full bg-secondary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
+          <div id="quiz-progress-bar" class="h-full bg-primary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
             <div class="absolute inset-0 bg-white/20 rounded-full"></div>
           </div>
         </div>
-        <div class="flex items-center gap-1 bg-surface-container-low px-2.5 py-1 rounded-full shadow-sm">
-          <span id="quiz-progress-percent" class="font-label-bold text-label-bold text-secondary">0%</span>
+        <div class="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shadow-sm">
+          <span id="quiz-progress-percent" class="font-label-bold text-label-bold text-primary">0%</span>
         </div>
       </div>
       
       <!-- Lesson Stage Track Indicator -->
       <div class="flex items-center justify-between px-1 mb-space-sm">
-        <span id="quiz-course-tag" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Lesson 1 • 기초 회화</span>
-        <span id="quiz-progress-text" class="font-label-bold text-label-bold text-secondary">Q 1 / 5</span>
+        <span id="quiz-course-tag" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Lesson 1 • 복습 퀴즈</span>
+        <span id="quiz-progress-text" class="font-label-bold text-label-bold text-primary">Q 1 / 5</span>
       </div>
 
-      <!-- Main Focus Learning Card (읽기 연습 화면과 동일한 흰색 카드 구조) -->
+      <!-- Main Focus Learning Card -->
       <div id="quiz-card-container" class="perspective-1000 w-full bg-surface-container-lowest rounded-2xl p-space-md shadow-md flex flex-col items-center text-center relative overflow-hidden mb-space-md cursor-pointer select-none">
         
         <div id="quiz-card-inner" class="relative w-full transition-transform duration-500 transform-style-3d">
@@ -503,7 +503,7 @@
           <!-- [앞면] 문제 문장 및 안내 -->
           <div class="w-full backface-hidden flex flex-col items-center text-center">
             
-            <!-- 1. 상단 안내 영역 (연보라 둥근 박스) -->
+            <!-- 1. 상단 안내 영역 -->
             <div class="w-full bg-surface-container-low rounded-xl p-3 flex flex-col items-center justify-center text-center gap-1 mb-space-md">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
@@ -519,21 +519,20 @@
               </h2>
             </div>
 
-            <!-- 3. 하단 컨트롤 버튼 영역 (힌트 / 터치 - 日本語) -->
+            <!-- 3. 하단 컨트롤 버튼 영역 (파란색 힌트 / 연파랑 터치) -->
             <div class="flex items-center gap-space-sm w-full max-w-xs justify-center mx-auto mt-space-md">
               
-              <!-- 힌트 버튼 (1a, 2a는 연한 노란/황토색 톤, 3a/4a는 hidden) -->
+              <!-- 힌트 버튼 (메인 파란색 bg-primary) -->
               <div id="quiz-hint-box" class="flex-1 flex items-center justify-center">
-                <div class="w-full flex items-center justify-center gap-1.5 bg-tertiary-container text-on-tertiary-container py-2.5 px-3 rounded-lg shadow-sm font-label-bold text-label-bold">
-                  <span class="material-symbols-outlined text-[18px] text-tertiary" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+                <div class="w-full flex items-center justify-center gap-1.5 bg-primary text-on-primary py-2.5 px-3 rounded-lg shadow-sm font-label-bold text-label-bold">
                   <span id="quiz-hint-text">힌트 : -</span>
                 </div>
               </div>
 
-              <!-- 터치 - 日本語 버튼 (연한 보라/세컨더리 톤) -->
-              <div class="flex-1 flex items-center justify-center gap-1.5 bg-secondary-container text-on-secondary-container py-2.5 px-3 rounded-lg shadow-sm font-label-bold text-label-bold">
+              <!-- 터치 - 日本語 버튼 (절반 정도 연한 파란색 bg-primary-container) -->
+              <div class="flex-1 flex items-center justify-center gap-1.5 bg-primary-container text-on-primary-container py-2.5 px-3 rounded-lg shadow-sm font-label-bold text-label-bold">
                 <span class="material-symbols-outlined text-[18px]">touch_app</span>
-                <span>터치 • 日本語</span>
+                <span>日本語</span>
               </div>
 
             </div>
@@ -541,8 +540,8 @@
           </div>
 
           <!-- [뒷면] 일본어 문장 (sentence_jp) -->
-          <div class="absolute inset-0 w-full h-full p-space-md bg-secondary-container text-on-secondary-container rounded-2xl backface-hidden rotate-y-180 flex flex-col justify-center items-center text-center">
-            <span class="text-xs font-bold text-secondary mb-2">日本語訳 (전체 의미)</span>
+          <div class="absolute inset-0 w-full h-full p-space-md bg-primary-container text-on-primary-container rounded-2xl backface-hidden rotate-y-180 flex flex-col justify-center items-center text-center">
+            <span class="text-xs font-bold text-primary mb-2">日本語訳 (전체 의미)</span>
             <p id="quiz-sentence-jp" class="font-bilingual-hint text-body-lg font-semibold leading-relaxed">
               -
             </p>
@@ -552,11 +551,12 @@
 
       </div>
 
-    <!-- Choices Grid (JS에서 동적으로 4개 보기를 생성해 대입하는 컨테이너) -->
-    <div id="quiz-choices-container" class="flex flex-col gap-2.5 w-full">
-      <!-- 동적 버튼들이 자바스크립트에 의해 생성됩니다 -->
-    </div>
+      <!-- Choices Grid -->
+      <div id="quiz-choices-container" class="flex flex-col gap-2.5 w-full">
+        <!-- 동적 보기 버튼 생성 영역 -->
+      </div>
 
+    </div>
   </main>
 
   <!-- Bottom Drawer -->
@@ -1088,28 +1088,63 @@ document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
   renderQuizIndex(currentQuizIndex);
 });
 
-// 6. 대시보드 -> 퀴즈 화면 진입 이벤트 (오늘의 레슨 기준 문제 추출)
+// 6. 대시보드 -> 퀴즈 화면 진입 이벤트 (과거 배운 단원 중 중복 없이 1개 단원 전체 출제)
 document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-  // 현재 접속한 학생의 '오늘 해당 과(currentLessonId)'에 해당하는 데이터 필터링
-  const targetLessonId = Number(currentLessonId);
-  
-  let filteredLessons = lessonsData.filter(l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== "");
-  
-  // 혹시 해당 과에 단어 데이터가 적을 경우, 전체 레슨에서 무작위 보충
-  if (filteredLessons.length < 5) {
-    const additional = lessonsData.filter(l => l.word_kr && l.word_kr.trim() !== "");
-    filteredLessons = [...filteredLessons, ...additional];
+  const currentLessonIdNum = Number(currentLessonId);
+
+  // ① 퀴즈 가능한 과거 단원 범위 계산 (1과부터 오늘 진도 전 단원까지)
+  // 만약 첫 날(1과)이라 과거 단원이 없다면 현재 1과를 출제합니다.
+  let availableLessons = [];
+  if (currentLessonIdNum <= 1) {
+    availableLessons = [1];
+  } else {
+    for (let i = 1; i < currentLessonIdNum; i++) {
+      availableLessons.push(i);
+    }
   }
 
-  // 중복 단어 제거 후 무작위 5개 문제 생성
-  const uniqueLessons = Array.from(new Set(filteredLessons.map(a => a.word_kr)))
-    .map(word => filteredLessons.find(a => a.word_kr === word));
-    
-  const rawProblems = uniqueLessons.sort(() => 0.5 - Math.random()).slice(0, 5);
-  
-  currentQuizList = rawProblems.map(item => generateQuizProblem(item, lessonsData));
+  // ② localStorage에서 이미 풀었던 퀴즈 단원 히스토리 불러오기
+  let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
+  let completedQuizHistory = [];
+  try {
+    completedQuizHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
+  } catch (e) {
+    completedQuizHistory = [];
+  }
+
+  // ③ 과거 범위 중 아직 안 푼 단원 필터링
+  let uncompletedLessons = availableLessons.filter(id => !completedQuizHistory.includes(id));
+
+  // ④ 만약 남은 단원이 없으면(모두 풀었으면) 히스토리 리셋 후 전체 범위 재적용
+  if (uncompletedLessons.length === 0) {
+    completedQuizHistory = [];
+    localStorage.removeItem(historyKey);
+    uncompletedLessons = [...availableLessons];
+  }
+
+  // ⑤ 남은 단원 중 무작위 1개 단원 선택
+  const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
+
+  // ⑥ 선택된 단원을 히스토리에 추가 및 저장
+  completedQuizHistory.push(selectedLessonId);
+  localStorage.setItem(historyKey, JSON.stringify(completedQuizHistory));
+
+  // ⑦ 선택된 단원의 모든 단어 데이터 가져오기 (문항 수 제한 없음)
+  const lessonItems = lessonsData.filter(l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== "");
+
+  if (lessonItems.length === 0) {
+    alert("선택된 단원에 퀴즈 데이터가 없습니다.");
+    return;
+  }
+
+  // ⑧ 선택된 단원의 전체 문항으로 퀴즈 생성
+  currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData));
   currentQuizIndex = 0;
-  
+
+  // ⑨ 선택된 퀴즈 단원 타이틀 정보 업데이트 (예: 초급 1 · 제 5과)
+  const { bookName, lessonNum } = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
+  currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (복습 퀴즈)`;
+
   renderQuizIndex(currentQuizIndex);
   showView('view-quiz');
 });
