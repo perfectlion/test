@@ -1115,65 +1115,75 @@ document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
   renderQuizIndex(currentQuizIndex);
 });
 
-// 6. 대시보드 -> 퀴즈 화면 진입 이벤트 (과거 배운 단원 중 중복 없이 1개 단원 전체 출제)
+// 6. 대시보드 -> 퀴즈 화면 진입 이벤트
 document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-  const currentLessonIdNum = Number(currentLessonId);
-
-  // ① 퀴즈 가능한 과거 단원 범위 계산 (1과부터 오늘 진도 전 단원까지)
-  // 만약 첫 날(1과)이라 과거 단원이 없다면 현재 1과를 출제합니다.
-  let availableLessons = [];
-  if (currentLessonIdNum <= 1) {
-    availableLessons = [1];
-  } else {
-    for (let i = 1; i < currentLessonIdNum; i++) {
-      availableLessons.push(i);
-    }
-  }
-
-  // ② localStorage에서 이미 풀었던 퀴즈 단원 히스토리 불러오기
-  let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
-  let completedQuizHistory = [];
   try {
-    completedQuizHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
-  } catch (e) {
-    completedQuizHistory = [];
+    const currentLessonIdNum = Number(currentLessonId || 1);
+
+    // ① 퀴즈 가능한 과거 단원 범위 계산 (1과부터 오늘 진도 전 단원까지)
+    let availableLessons = [];
+    if (currentLessonIdNum <= 1) {
+      availableLessons = [1];
+    } else {
+      for (let i = 1; i < currentLessonIdNum; i++) {
+        availableLessons.push(i);
+      }
+    }
+
+    // ② localStorage에서 히스토리 불러오기
+    let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
+    let completedQuizHistory = [];
+    try {
+      completedQuizHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
+    } catch (e) {
+      completedQuizHistory = [];
+    }
+
+    // ③ 과거 범위 중 안 푼 단원 필터링
+    let uncompletedLessons = availableLessons.filter(id => !completedQuizHistory.includes(id));
+
+    // ④ 남은 단원 없으면 리셋
+    if (uncompletedLessons.length === 0) {
+      completedQuizHistory = [];
+      localStorage.removeItem(historyKey);
+      uncompletedLessons = [...availableLessons];
+    }
+
+    // ⑤ 무작위 1개 단원 선택
+    const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
+
+    // ⑥ 히스토리 저장
+    completedQuizHistory.push(selectedLessonId);
+    localStorage.setItem(historyKey, JSON.stringify(completedQuizHistory));
+
+    // ⑦ 선택된 단원의 문항 가져오기
+    const lessonItems = (lessonsData || []).filter(l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== "");
+
+    if (lessonItems.length === 0) {
+      alert("선택된 단원에 퀴즈 데이터가 없습니다.");
+      return; // ✅ 함수 내부이므로 정상 작동하는 return입니다.
+    }
+
+    // ⑧ 퀴즈 문제 생성
+    currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
+    currentQuizIndex = 0;
+
+    // ⑨ 타이틀 설정
+    let displayTitle = `복습 퀴즈 (제 ${selectedLessonId}과)`;
+    if (typeof getBookAndLessonTitle === 'function') {
+      const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
+      if (titleObj && titleObj.bookName) {
+        displayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
+      }
+    }
+    currentLessonDisplayTitle = displayTitle;
+
+    renderQuizIndex(currentQuizIndex);
+    showView('view-quiz');
+
+  } catch (err) {
+    console.error("퀴즈 진입 중 오류:", err);
   }
-
-  // ③ 과거 범위 중 아직 안 푼 단원 필터링
-  let uncompletedLessons = availableLessons.filter(id => !completedQuizHistory.includes(id));
-
-  // ④ 만약 남은 단원이 없으면(모두 풀었으면) 히스토리 리셋 후 전체 범위 재적용
-  if (uncompletedLessons.length === 0) {
-    completedQuizHistory = [];
-    localStorage.removeItem(historyKey);
-    uncompletedLessons = [...availableLessons];
-  }
-
-  // ⑤ 남은 단원 중 무작위 1개 단원 선택
-  const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
-
-  // ⑥ 선택된 단원을 히스토리에 추가 및 저장
-  completedQuizHistory.push(selectedLessonId);
-  localStorage.setItem(historyKey, JSON.stringify(completedQuizHistory));
-
-  // ⑦ 선택된 단원의 모든 단어 데이터 가져오기 (문항 수 제한 없음)
-  const lessonItems = lessonsData.filter(l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== "");
-
-  if (lessonItems.length === 0) {
-    alert("선택된 단원에 퀴즈 데이터가 없습니다.");
-    return;
-  }
-
-  // ⑧ 선택된 단원의 전체 문항으로 퀴즈 생성
-  currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData));
-  currentQuizIndex = 0;
-
-  // ⑨ 선택된 퀴즈 단원 타이틀 정보 업데이트 (예: 초급 1 · 제 5과)
-  const { bookName, lessonNum } = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
-  currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (복습 퀴즈)`;
-
-  renderQuizIndex(currentQuizIndex);
-  showView('view-quiz');
 });
   
   // 5. TTS 음성 출력
