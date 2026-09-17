@@ -748,19 +748,19 @@
     let bookName = "초급 1";
     let displayLessonNum = lessonNum;
 
-    if (lessonNum > 20 && lessonNum <= 40) {
-      bookName = "초급 2";
-      displayLessonNum = lessonNum - 20;
-    } else if (lessonNum > 40 && lessonNum <= 60) {
-      bookName = "중급 1";
-      displayLessonNum = lessonNum - 40;
-    } else if (lessonNum > 60) {
-      bookName = "중급 2";
-      displayLessonNum = lessonNum - 60;
-    } else {
-      bookName = "초급 1";
-      displayLessonNum = lessonNum;
-    }
+    if (lessonNum >= 1 && lessonNum <= 20) {
+        bookName = "초급 1";
+        displayLessonNum = lessonNum;
+      } else if (lessonNum >= 21 && lessonNum <= 40) {
+        bookName = "초급 2";
+        displayLessonNum = lessonNum - 20; // 21과 -> 초급 2 제 1과
+      } else if (lessonNum >= 41 && lessonNum <= 60) {
+        bookName = "중급 1";
+        displayLessonNum = lessonNum - 40; // 41과 -> 중급 1 제 1과
+      } else if (lessonNum >= 61 && lessonNum <= 80) {
+        bookName = "중급 2";
+        displayLessonNum = lessonNum - 60; // 61과 -> 중급 2 제 1과
+      }
 
     return {
       bookName: bookName,
@@ -966,6 +966,7 @@
 
     const problem = currentQuizList[index];
 
+    // ① Status Bar (진행도) 업데이트
     const currentStep = index + 1;
     const percent = Math.round((currentStep / total) * 100);
 
@@ -977,20 +978,24 @@
     if (percentElem) percentElem.innerText = `${percent}%`;
     if (barElem) barElem.style.width = `${percent}%`;
 
+    // ② 퀴즈용으로 계산된 타이틀로 상단 태그 업데이트
     const courseTag = document.getElementById('quiz-course-tag');
-    if (courseTag && typeof currentLessonDisplayTitle !== 'undefined') {
-      courseTag.innerText = currentLessonDisplayTitle;
-    }
-
+      if (courseTag && currentLessonDisplayTitle) {
+        courseTag.innerText = currentLessonDisplayTitle;
+      }
+    
+    // 카드 뒤집힘 상태 초기화 (앞면으로)
     const cardInner = document.getElementById('quiz-card-inner');
     isCardFlipped = false;
     cardInner?.classList.remove('rotate-y-180');
 
+    // 문제 문장 대입
     const sentenceKrElem = document.getElementById('quiz-sentence-kr');
     const sentenceJpElem = document.getElementById('quiz-sentence-jp');
     if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
     if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
 
+    // 힌트 제어 (1a, 2a만 노출)
     const userCourse = currentUser?.course || "1a";
     const hintBox = document.getElementById('quiz-hint-box');
     const hintTextElem = document.getElementById('quiz-hint-text');
@@ -1002,6 +1007,7 @@
       if (hintBox) hintBox.classList.add('hidden');
     }
 
+    // 보기 버튼 생성
     const choicesContainer = document.getElementById('quiz-choices-container');
     if (choicesContainer) {
       choicesContainer.innerHTML = '';
@@ -1056,73 +1062,73 @@
     renderQuizIndex(currentQuizIndex);
   });
 
-  // 6. 대시보드 -> 퀴즈 화면 진입 이벤트
-  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-    try {
-      const currentLessonIdNum = Number(currentLessonId || 1);
+ // 6. 대시보드 -> 퀴즈 화면 진입 이벤트 (복습 선택 단원 타이틀 동기화)
+document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
+  try {
+    const currentLessonIdNum = Number(currentLessonId || 1);
 
-      let availableLessons = [];
-      if (currentLessonIdNum <= 1) {
-        availableLessons = [1];
-      } else {
-        for (let i = 1; i < currentLessonIdNum; i++) {
-          availableLessons.push(i);
-        }
+    // 과거 학습 범위 계산 (1과 ~ 오늘 진도 전 단원)
+    let availableLessons = [];
+    if (currentLessonIdNum <= 1) {
+      availableLessons = [1];
+    } else {
+      for (let i = 1; i < currentLessonIdNum; i++) {
+        availableLessons.push(i);
       }
-
-      let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
-      let quizLogs = [];
-      try {
-        quizLogs = JSON.parse(localStorage.getItem(historyKey)) || [];
-      } catch (e) {
-        quizLogs = [];
-      }
-
-      const completedLessonIds = quizLogs.map(log => log.lessonId);
-      let uncompletedLessons = availableLessons.filter(id => !completedLessonIds.includes(id));
-
-      if (uncompletedLessons.length === 0) {
-        quizLogs = [];
-        localStorage.removeItem(historyKey);
-        uncompletedLessons = [...availableLessons];
-      }
-
-      const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
-
-      const lessonItems = (lessonsData || []).filter(
-        l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
-      );
-
-      if (lessonItems.length === 0) {
-        alert(`제 ${selectedLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
-        return;
-      }
-
-      quizLogs.push({
-        timestamp: new Date().toISOString(),
-        lessonId: selectedLessonId
-      });
-      localStorage.setItem(historyKey, JSON.stringify(quizLogs));
-
-      currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
-      currentQuizIndex = 0;
-
-      const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
-      const displayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
-
-      const courseTagElem = document.getElementById('quiz-course-tag');
-      if (courseTagElem) {
-        courseTagElem.innerText = displayTitle;
-      }
-
-      renderQuizIndex(currentQuizIndex);
-      showView('view-quiz');
-
-    } catch (err) {
-      console.error("퀴즈 진입 도중 오류 발생:", err);
     }
-  });
 
+    let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
+    let quizLogs = [];
+    try {
+      quizLogs = JSON.parse(localStorage.getItem(historyKey)) || [];
+    } catch (e) {
+      quizLogs = [];
+    }
+
+    const completedLessonIds = quizLogs.map(log => log.lessonId);
+    let uncompletedLessons = availableLessons.filter(id => !completedLessonIds.includes(id));
+
+    if (uncompletedLessons.length === 0) {
+      quizLogs = [];
+      localStorage.removeItem(historyKey);
+      uncompletedLessons = [...availableLessons];
+    }
+
+    // 복습할 단원 무작위 1개 선택
+    const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
+
+    const lessonItems = (lessonsData || []).filter(
+      l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
+    );
+
+    if (lessonItems.length === 0) {
+      alert(`제 ${selectedLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+      return;
+    }
+
+    // 기록 누적 저장
+    quizLogs.push({
+      timestamp: new Date().toISOString(),
+      lessonId: selectedLessonId
+    });
+    localStorage.setItem(historyKey, JSON.stringify(quizLogs));
+
+    // 선택된 복습 단원으로 문제 생성
+    currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
+    currentQuizIndex = 0;
+
+    // 💡 [핵심] 선택된 selectedLessonId 기준으로 복습 퀴즈 타이틀 전역변수 변경
+    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
+    currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
+
+    renderQuizIndex(currentQuizIndex);
+    showView('view-quiz');
+
+  } catch (err) {
+    console.error("퀴즈 진입 도중 오류 발생:", err);
+  }
+});
+  
   // 7. TTS 음성 출력
   function playTTS(text, rate = 0.8) {
     if ('speechSynthesis' in window && text) {
