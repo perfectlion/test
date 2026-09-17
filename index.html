@@ -882,10 +882,10 @@ function setupDashboardUI(user) {
       if (practiceEvalText) practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 AI가 발음을 분석해 줍니다.";
 
       if (index < totalSentences - 1) {
-        if (nextBtnText) nextBtnText.innerText = "다음 문장으로 (다음 문장으로)";
+        if (nextBtnText) nextBtnText.innerText = "다음 문장 (次の文)";
         if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
       } else {
-        if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (완료)";
+        if (nextBtnText) nextBtnText.innerText = "학습 완료 · 대시보드로 (完了)";
         if (nextBtnIcon) nextBtnIcon.style.display = "none";
       }
     } else {
@@ -919,43 +919,12 @@ function setupDashboardUI(user) {
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
-    // 퀴즈 화면으로 이동
-    document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-      document.getElementById('view-dashboard').classList.add('hidden-view');
-      document.getElementById('view-quiz').classList.remove('hidden-view');
-    });
-    
-    // 퀴즈 화면에서 뒤로가기 버튼 클릭 시 대시보드로 복귀
+
+  // 퀴즈 화면에서 뒤로가기 버튼 클릭 시 대시보드로 복귀
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
       document.getElementById('view-quiz').classList.add('hidden-view');
       document.getElementById('view-dashboard').classList.remove('hidden-view');
     });
-
-function renderQuizIndex(index) {
-  const total = currentQuizList.length;
-
-  if (index >= total) {
-    alert("오늘의 데일리 퀴즈를 모두 완료했습니다! 🎉");
-    showView('view-dashboard');
-    return;
-  }
-
-  const problem = currentQuizList[index];
-
-  // 💡 1. 상태 바 (Status Bar / Progress Bar) 업데이트
-  const currentStep = index + 1;
-  const percent = Math.round((currentStep / total) * 100);
-
-  const textElem = document.getElementById('quiz-progress-text');
-  const percentElem = document.getElementById('quiz-progress-percent');
-  const barElem = document.getElementById('quiz-progress-bar');
-
-  if (textElem) textElem.innerText = `Q ${currentStep} / ${total}`;
-  if (percentElem) percentElem.innerText = `${percent}%`;
-  if (barElem) barElem.style.width = `${percent}%`;
-
-  // ... (이하 카드 데이터 및 선택지 렌더링 로직 동일)
-}
    
 // ==================== 데일리 퀴즈 상태 변수 ====================
 let currentQuizList = [];
@@ -991,7 +960,7 @@ function generateQuizProblem(targetItem, allLessons) {
     candidates = [...candidates, ...backup];
   }
 
-  // 랜더링용 무작위 셔플 후 오답 3개 추출
+  // 무작위 셔플 후 오답 3개 추출
   const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
 
   // 정답 + 오답 3개 무작위 섞기
@@ -1008,16 +977,36 @@ function generateQuizProblem(targetItem, allLessons) {
 
 // 2. 퀴즈 화면 데이터 바인딩 및 렌더링
 function renderQuizIndex(index) {
-  if (index >= currentQuizList.length) {
+  const total = currentQuizList.length;
+
+  if (total === 0 || index >= total) {
     alert("오늘의 데일리 퀴즈를 모두 완료했습니다! 🎉");
     showView('view-dashboard');
     return;
   }
 
   const problem = currentQuizList[index];
-  const cardInner = document.getElementById('quiz-card-inner');
-  
+
+  // 💡 ① Status Bar (진행도 상태 바) 업데이트
+  const currentStep = index + 1;
+  const percent = Math.round((currentStep / total) * 100);
+
+  const textElem = document.getElementById('quiz-progress-text');
+  const percentElem = document.getElementById('quiz-progress-percent');
+  const barElem = document.getElementById('quiz-progress-bar');
+
+  if (textElem) textElem.innerText = `Q ${currentStep} / ${total}`;
+  if (percentElem) percentElem.innerText = `${percent}%`;
+  if (barElem) barElem.style.width = `${percent}%`;
+
+  // 💡 ② 교재 및 과 정보 표시 (예: 초급 1 · 제 1과)
+  const courseTag = document.getElementById('quiz-course-tag');
+  if (courseTag && typeof currentLessonDisplayTitle !== 'undefined') {
+    courseTag.innerText = currentLessonDisplayTitle;
+  }
+
   // 카드 뒤집힘 상태 초기화 (앞면으로)
+  const cardInner = document.getElementById('quiz-card-inner');
   isCardFlipped = false;
   cardInner?.classList.remove('rotate-y-180');
 
@@ -1027,24 +1016,22 @@ function renderQuizIndex(index) {
   if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
   if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
 
-  // 💡 코스(1a, 2a vs 3a, 4a)에 따른 힌트 박스 노출 여부 제어
+  // 💡 ③ 코스(1a, 2a vs 3a, 4a)에 따른 힌트 박스 제어
   const userCourse = currentUser?.course || "1a";
   const hintBox = document.getElementById('quiz-hint-box');
   const hintTextElem = document.getElementById('quiz-hint-text');
 
   if (userCourse === "1a" || userCourse === "2a") {
-    // 1a, 2a는 힌트 표시
     if (hintBox) hintBox.classList.remove('hidden');
     if (hintTextElem) hintTextElem.innerText = `힌트 : ${problem.hintJp}`;
   } else {
-    // 3a, 4a는 힌트 숨김
     if (hintBox) hintBox.classList.add('hidden');
   }
 
-  // 보기 4개 버튼 생성 및 클릭 이벤트 등록
+  // 보기 4개 버튼 동적 생성
   const choicesContainer = document.getElementById('quiz-choices-container');
   if (choicesContainer) {
-    choicesContainer.innerHTML = ''; // 기존 보기 버튼 초기화
+    choicesContainer.innerHTML = '';
 
     problem.choices.forEach((choiceText, idx) => {
       const btn = document.createElement('button');
@@ -1060,7 +1047,6 @@ function renderQuizIndex(index) {
         </div>
       `;
 
-      // 선택지 선택 이벤트
       btn.addEventListener('click', () => handleChoiceSelect(choiceText, problem.correctAnswer, btn));
       choicesContainer.appendChild(btn);
     });
@@ -1089,7 +1075,6 @@ function handleChoiceSelect(selectedChoice, correctAnswer, clickedBtn) {
     // 정답일 때 Bottom Drawer 오픈
     drawer?.classList.remove('hidden');
   } else {
-    // 오답 시 안내 알림
     alert("아쉽네요! 다시 선택해보세요. (違います。もう一度選んでください)");
   }
 }
@@ -1100,13 +1085,24 @@ document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
   renderQuizIndex(currentQuizIndex);
 });
 
-// 6. 대시보드 -> 퀴즈 화면 진입 버튼 이벤트
+// 6. 대시보드 -> 퀴즈 화면 진입 이벤트 (오늘의 레슨 기준 문제 추출)
 document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-  const currentLessonIdNum = Number(currentLessonId);
-  const filteredLessons = lessonsData.filter(l => Number(l.lesson_id) === currentLessonIdNum && l.word_kr);
+  // 현재 접속한 학생의 '오늘 해당 과(currentLessonId)'에 해당하는 데이터 필터링
+  const targetLessonId = Number(currentLessonId);
   
-  // 무작위 5개 단어 문제 생성
-  const rawProblems = filteredLessons.sort(() => 0.5 - Math.random()).slice(0, 5);
+  let filteredLessons = lessonsData.filter(l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== "");
+  
+  // 혹시 해당 과에 단어 데이터가 적을 경우, 전체 레슨에서 무작위 보충
+  if (filteredLessons.length < 5) {
+    const additional = lessonsData.filter(l => l.word_kr && l.word_kr.trim() !== "");
+    filteredLessons = [...filteredLessons, ...additional];
+  }
+
+  // 중복 단어 제거 후 무작위 5개 문제 생성
+  const uniqueLessons = Array.from(new Set(filteredLessons.map(a => a.word_kr)))
+    .map(word => filteredLessons.find(a => a.word_kr === word));
+    
+  const rawProblems = uniqueLessons.sort(() => 0.5 - Math.random()).slice(0, 5);
   
   currentQuizList = rawProblems.map(item => generateQuizProblem(item, lessonsData));
   currentQuizIndex = 0;
