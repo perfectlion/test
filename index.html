@@ -485,7 +485,7 @@
           </div>
         </div>
         <div class="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shadow-sm">
-          <span id="quiz-progress-percent" class="font-label-bold text-label-bold text-primary">0%</span>
+          <span id="quiz-progress-percent" class="font-label-bold text-label-bold text-white">0%</span>
         </div>
       </div>
       
@@ -495,12 +495,12 @@
         <span id="quiz-progress-text" class="font-label-bold text-label-bold text-primary">Q 1 / 5</span>
       </div>
 
-      <!-- Main Focus Learning Card -->
+    <!-- Main Focus Learning Card (클릭 시 3D 뒤집기) -->
       <div id="quiz-card-container" class="perspective-1000 w-full bg-surface-container-lowest rounded-2xl p-space-md shadow-md flex flex-col items-center text-center relative overflow-hidden mb-space-md cursor-pointer select-none">
         
         <div id="quiz-card-inner" class="relative w-full transition-transform duration-500 transform-style-3d">
           
-          <!-- [앞면] 문제 문장 및 안내 -->
+          <!-- [앞면] 문제 문장 및 힌트 -->
           <div class="w-full backface-hidden flex flex-col items-center text-center">
             
             <!-- 1. 상단 안내 영역 -->
@@ -509,35 +509,36 @@
                 <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
                 <p class="font-label-bold text-label-bold text-on-surface">빈칸에 알맞은 단어를 고르세요</p>
               </div>
-              <p class="text-xs text-on-surface-variant/80 font-normal">空欄に入る正しい単語を選んでください</p>
+              <p class="text-xs text-on-surface-variant/80 font-normal">카드를 터치하면 전체 일본어 번역이 보입니다</p>
             </div>
 
-            <!-- 2. 중앙 학습 문장 영역 -->
+            <!-- 2. 중앙 한국어 학습 문장 영역 -->
             <div class="my-space-sm flex flex-col items-center text-center">
               <h2 id="quiz-sentence-kr" class="font-hangul-display text-hangul-display text-primary tracking-tight leading-relaxed">
                 학습 문제를 불러오는 중입니다...
               </h2>
-            </div>
 
-            <!-- 3. 하단 컨트롤 버튼 영역 (파란색 힌트 / 연파랑 터치) -->
-            <div class="flex items-center gap-space-sm w-full max-w-xs justify-center mx-auto mt-space-md">
-              
-              <!-- 힌트 버튼 (메인 파란색 bg-primary) -->
-              <div id="quiz-hint-box" class="flex-1 flex items-center justify-center">
-                <div class="w-full flex items-center justify-center gap-1.5 bg-primary text-on-primary py-2.5 px-3 rounded-lg shadow-sm font-label-bold text-label-bold">
-                  <span id="quiz-hint-text">힌트 : -</span>
-                </div>
+              <!-- 3. 한국어 문장 바로 밑 검은색 작은 글자 힌트 (1a, 2a 전용) -->
+              <div id="quiz-hint-box" class="mt-3 flex items-center justify-center">
+                <p id="quiz-hint-text" class="text-xs text-on-surface/80 font-medium tracking-tight">
+                  힌트 : -
+                </p>
               </div>
-
-              <!-- 터치 - 日本語 버튼 (절반 정도 연한 파란색 bg-primary-container) -->
-              <div class="flex-1 flex items-center justify-center gap-1.5 bg-primary-container text-on-primary-container py-2.5 px-3 rounded-lg shadow-sm font-label-bold text-label-bold">
-                <span class="material-symbols-outlined text-[18px]">touch_app</span>
-                <span>日本語</span>
-              </div>
-
             </div>
 
           </div>
+
+          <!-- [뒷면] 일본어 문장 (sentence_jp) -->
+          <div class="absolute inset-0 w-full h-full p-space-md bg-primary-container text-on-primary-container rounded-2xl backface-hidden rotate-y-180 flex flex-col justify-center items-center text-center">
+            <span class="text-xs font-bold text-primary mb-2">日本語訳 (전체 의미)</span>
+            <p id="quiz-sentence-jp" class="font-bilingual-hint text-body-lg font-semibold leading-relaxed">
+              -
+            </p>
+          </div>
+
+        </div>
+
+      </div>
 
           <!-- [뒷면] 일본어 문장 (sentence_jp) -->
           <div class="absolute inset-0 w-full h-full p-space-md bg-primary-container text-on-primary-container rounded-2xl backface-hidden rotate-y-180 flex flex-col justify-center items-center text-center">
@@ -1014,7 +1015,7 @@ function renderQuizIndex(index) {
   if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
   if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
 
-  // 💡 ③ 코스(1a, 2a vs 3a, 4a)에 따른 힌트 박스 제어
+  // 💡 코스(1a, 2a vs 3a, 4a)에 따른 힌트 박스 제어
   const userCourse = currentUser?.course || "1a";
   const hintBox = document.getElementById('quiz-hint-box');
   const hintTextElem = document.getElementById('quiz-hint-text');
@@ -1083,7 +1084,7 @@ document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
   renderQuizIndex(currentQuizIndex);
 });
 
-// 6. 대시보드 -> 퀴즈 화면 진입 이벤트
+// 6. 대시보드 -> 퀴즈 화면 진입 이벤트 (매번 새로운 퀴즈 생성 + 기록 누적)
 document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
   try {
     const currentLessonIdNum = Number(currentLessonId || 1);
@@ -1098,45 +1099,52 @@ document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
       }
     }
 
-    // ② localStorage에서 히스토리 불러오기
+    // ② localStorage에서 과거 복습 기록 가져오기
     let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
-    let completedQuizHistory = [];
+    let quizLogs = [];
     try {
-      completedQuizHistory = JSON.parse(localStorage.getItem(historyKey)) || [];
+      quizLogs = JSON.parse(localStorage.getItem(historyKey)) || [];
     } catch (e) {
-      completedQuizHistory = [];
+      quizLogs = [];
     }
 
-    // ③ 과거 범위 중 안 푼 단원 필터링
-    let uncompletedLessons = availableLessons.filter(id => !completedQuizHistory.includes(id));
+    // ③ 지금까지 풀었던 레슨 ID 목록만 추출
+    const completedLessonIds = quizLogs.map(log => log.lessonId);
 
-    // ④ 남은 단원 없으면 리셋
+    // ④ 안 푼 단원 필터링
+    let uncompletedLessons = availableLessons.filter(id => !completedLessonIds.includes(id));
+
+    // ⑤ 모든 과거 단원을 한 번씩 다 풀었다면? ➔ 기록 리셋 후 다시 전체 범위 무작위
     if (uncompletedLessons.length === 0) {
-      completedQuizHistory = [];
+      quizLogs = [];
       localStorage.removeItem(historyKey);
       uncompletedLessons = [...availableLessons];
     }
 
-    // ⑤ 무작위 1개 단원 선택
+    // ⑥ 남은 단원 중 무작위 1개 선택
     const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
 
-    // ⑥ 히스토리 저장
-    completedQuizHistory.push(selectedLessonId);
-    localStorage.setItem(historyKey, JSON.stringify(completedQuizHistory));
+    // ⑦ 풀었던 기록 누적 저장 (시간 + 레슨 ID)
+    const newLog = {
+      timestamp: new Date().toISOString(),
+      lessonId: selectedLessonId
+    };
+    quizLogs.push(newLog);
+    localStorage.setItem(historyKey, JSON.stringify(quizLogs));
 
-    // ⑦ 선택된 단원의 문항 가져오기
+    // ⑧ 선택된 단원의 모든 단어 가져오기
     const lessonItems = (lessonsData || []).filter(l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== "");
 
     if (lessonItems.length === 0) {
       alert("선택된 단원에 퀴즈 데이터가 없습니다.");
-      return; // ✅ 함수 내부이므로 정상 작동하는 return입니다.
+      return;
     }
 
-    // ⑧ 퀴즈 문제 생성
+    // ⑨ 퀴즈 문제 목록 생성
     currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
     currentQuizIndex = 0;
 
-    // ⑨ 타이틀 설정
+    // ⑩ 화면 타이틀 설정 (예: 초급 1 · 제 5과 (복습 퀴즈))
     let displayTitle = `복습 퀴즈 (제 ${selectedLessonId}과)`;
     if (typeof getBookAndLessonTitle === 'function') {
       const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
