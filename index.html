@@ -936,11 +936,38 @@ let isCardFlipped = false;
 
 // 1. 코스별 퀴즈 문제 및 유사 글자수 오답 생성 로직
 function generateQuizProblem(targetItem, allLessons) {
-  // ① 문제 문장 만들기 (word_kr 단어를 빈칸 '____'으로 대체)
+  // ① 세련된 파란색 톤의 빈칸 박스로 변경
   const maskedSentence = targetItem.sentence_kr.replace(
     targetItem.word_kr,
-    `<span class="inline-flex items-center justify-center min-w-[60px] h-9 px-2 mx-1 bg-secondary-container text-on-secondary-container font-headline-md text-headline-md rounded-lg shadow-sm border-2 border-dashed border-secondary align-middle">____</span>`
+    `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`
   );
+
+  const targetLen = targetItem.word_kr.length;
+  const otherWords = Array.from(
+    new Set(
+      allLessons
+        .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr !== targetItem.word_kr)
+        .map(l => l.word_kr)
+    )
+  );
+
+  let candidates = otherWords.filter(w => w.length === targetLen);
+  if (candidates.length < 3) {
+    const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
+    candidates = [...candidates, ...backup];
+  }
+
+  const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
+  const choices = [targetItem.word_kr, ...shuffledWrong].sort(() => 0.5 - Math.random());
+
+  return {
+    maskedSentence,
+    correctAnswer: targetItem.word_kr,
+    choices,
+    hintJp: targetItem.word_jp,
+    sentenceJp: targetItem.sentence_jp
+  };
+}
 
   // ② 글자 수가 가장 비슷한 오답 후보 선택
   const targetLen = targetItem.word_kr.length;
