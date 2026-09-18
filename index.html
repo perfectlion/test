@@ -574,122 +574,290 @@
   </div>
 
 </div>
-<!-- ==================== 주간 성과 및 레포트 뷰 ==================== -->
-<main id="view-weekly-stats" class="hidden-view pb-24 min-h-screen bg-surface-container-lowest transition-all duration-300">
+
+  <!-- ==================== VIEW 5: 주간 성과 화면 ==================== -->
+<div id="view-weekly-stats" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
-  <!-- 상단 네비게이션 헤더 -->
-  <header class="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 px-4 py-3 flex items-center justify-between">
-    <button id="back-from-stats" type="button" class="flex items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors">
-      <span class="material-symbols-outlined text-[24px]">arrow_back</span>
-      <span class="font-label-lg text-label-lg">대시보드</span>
-    </button>
-    <h1 class="font-title-md text-title-md font-bold text-on-surface">주간 학습 레포트</h1>
-    <div class="w-8"></div> <!-- 여백 맞춤용 -->
+  <!-- Header -->
+  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
+    <div class="h-16 px-gutter flex items-center justify-between">
+      <div class="flex items-center gap-space-sm">
+        <button id="back-from-stats" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+        </button>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1">
+            <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
+          </div>
+          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Achievement Mode</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-sm">
+        <img id="practice-user-profile-img" class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
+      </div>
+    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   </header>
 
-  <div class="max-w-lg mx-auto px-4 pt-6 space-y-6">
+ <!-- Main Content -->
+  <main class="flex flex-col relative w-full pt-20 pb-28 px-gutter bg-surface flex-grow">
     
-    <!-- 프로필 및 학습 요약 헤더 카드 -->
-    <div class="bg-gradient-to-br from-primary-container/60 via-surface-container-low to-surface-container-lowest border border-outline-variant/40 rounded-3xl p-6 shadow-sm relative overflow-hidden">
-      <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
-      
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-3">
-          <img src="" class="user-profile-img-all w-12 h-12 rounded-full border-2 border-primary/20 object-cover shadow-xs" alt="User Profile">
-          <div>
-            <div class="flex items-center gap-1.5">
-              <span class="font-title-sm text-title-sm font-bold text-on-surface">주간 학습 달성도</span>
-              <span class="bg-primary/10 text-primary text-[11px] font-semibold px-2 py-0.5 rounded-full">Weekly</span>
-            </div>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">이번 주 연속 학습 목표 달성 현황</p>
-          </div>
+    <!-- Progress Header Deck (파란색 메인 스태터스 바) -->
+    <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
+      <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
+        <div id="achievement-progress-bar" class="h-full bg-primary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
+          <div class="absolute inset-0 bg-white/20 rounded-full"></div>
         </div>
       </div>
-
-      <!-- 메인 메트릭: 서클 & 진행률 표시 -->
-      <div class="bg-surface/80 rounded-2xl p-4 border border-outline-variant/30 flex items-center justify-between">
-        <div>
-          <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">주간 출석 / 달성률</p>
-          <div class="flex items-baseline gap-1.5 mt-1">
-            <span id="achievement-progress-percent" class="font-display-md text-display-md font-extrabold text-primary">0%</span>
-            <span id="quiz-progress-text" class="font-title-sm text-title-sm text-on-surface-variant font-medium">0 / 5日</span>
-          </div>
-        </div>
-        
-        <!-- 프로그레스 바 영역 -->
-        <div class="w-32">
-          <div class="w-full bg-surface-container-highest h-3 rounded-full overflow-hidden p-0.5 border border-outline-variant/20">
-            <div id="achievement-progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
-          </div>
-          <p class="text-[11px] text-right text-outline mt-1 font-medium">목표: 주 5회</p>
-        </div>
+      <div class="flex items-center gap-1 bg-primary-container px-2.5 py-1 rounded-full shadow-sm">
+        <span id="achievement-progress-percent" class="font-label-bold text-label-bold text-white">0%</span>
       </div>
     </div>
-
-    <!-- 요일별 학습 현황 (Mon-Fri) 카드 -->
-    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-3xl p-5 shadow-xs space-y-3">
-      <h2 class="font-title-sm text-title-sm font-bold text-on-surface flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary text-[20px]">calendar_view_week</span>
-        요일별 학습 상세
-      </h2>
-
-      <div class="grid grid-cols-5 gap-2 text-center pt-2">
-        <!-- 월 -->
-        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
-          <span class="font-label-sm text-label-sm text-outline font-semibold">월 (月)</span>
-          <div class="w-7 h-7 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs">
-            <span class="material-symbols-outlined text-[16px]">check</span>
-          </div>
-        </div>
-        <!-- 화 -->
-        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
-          <span class="font-label-sm text-label-sm text-outline font-semibold">화 (火)</span>
-          <div class="w-7 h-7 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs">
-            <span class="material-symbols-outlined text-[16px]">check</span>
-          </div>
-        </div>
-        <!-- 수 -->
-        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
-          <span class="font-label-sm text-label-sm text-outline font-semibold">수 (水)</span>
-          <div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-xs">
-            -
-          </div>
-        </div>
-        <!-- 목 -->
-        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
-          <span class="font-label-sm text-label-sm text-outline font-semibold">목 (木)</span>
-          <div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-xs">
-            -
-          </div>
-        </div>
-        <!-- 금 -->
-        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
-          <span class="font-label-sm text-label-sm text-outline font-semibold">금 (金)</span>
-          <div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-xs">
-            -
-          </div>
-        </div>
-      </div>
+    
+    <!-- Lesson Stage Track Indicator -->
+    <div class="flex items-center justify-between px-1 mb-space-sm">
+      <span id="achievement-course-tag" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">초급 2 · 주간 성취도 (週間達成度)</span>
+      <span id="quiz-progress-text" class="font-label-bold text-label-bold text-primary">4 / 5일</span>
     </div>
 
-    <!-- 하단 레포트 제출 및 캡처 버튼 -->
-    <div class="pt-2">
-      <button id="submit-report-btn" type="button" class="w-full py-4 px-6 bg-primary hover:bg-primary/90 active:scale-[0.98] text-on-primary font-title-sm text-title-sm font-bold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-        <span class="material-symbols-outlined text-[20px]">photo_camera</span>
-        <span id="btn-label">주간 학습 레포트 제출 (캡처)</span>
-      </button>
-    </div>
-
+  <!-- Pill Badge & Title Group -->
+  <div class="mt-2.5">
+    
+    <h2 class="text-[19px] font-bold text-slate-900 tracking-tight leading-snug">
+      이번 주 학습 기록을 확인하세요
+    </h2>
+    <p class="text-xs text-slate-500 mt-0.5">
+      月曜日から金曜日までの学習記録と時間です
+    </p>
   </div>
+</header>
+<!-- END: TopHeaderSection -->
+<!-- BEGIN: MainContentSection -->
+<main class="flex-1 px-4 py-3 space-y-4" data-purpose="achievement-body">
+<!-- BEGIN: WeeklyAchievementTable -->
+<section class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden" data-purpose="weekly-matrix-table">
+<!-- Table Header -->
+<div class="grid grid-cols-12 bg-slate-50 border-b border-slate-100 text-slate-500 text-[11px] font-semibold py-2.5 px-3 text-center items-center">
+<div class="col-span-4 text-left pl-1">날짜/요일 (日付)</div>
+<div class="col-span-4">📖 읽기 (Reading)</div>
+<div class="col-span-4">✍️ 퀴즈 (Quiz)</div>
+</div>
+<!-- Matrix Rows -->
+<div class="divide-y divide-slate-100 text-xs">
+<!-- Row 1: 월요일 (Both Completed) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 13일 (월)</span>
+<span class="text-[10px] text-slate-400">05/13 月曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">14분 소요</span>
+</div>
+<!-- Quiz: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">10분 소요</span>
+</div>
+</div>
+<!-- Row 2: 화요일 (Reading Completed, Quiz Not Done) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 14일 (화)</span>
+<span class="text-[10px] text-slate-400">05/14 火曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">16분 소요</span>
+</div>
+<!-- Quiz: Crying Mascot (Incomplete) -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<!-- Cute Crying Mascot Illustration -->
+<div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center relative mb-0.5 shadow-xs">
+<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
+<circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
+<circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
+<!-- Sad mouth -->
+<path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
+<!-- Teardrop -->
+<path d="M16 11.5C16 12.5 15.3 13.5 14.8 13.5C14.3 13.5 14 12.8 14.5 11.8C14.9 11.2 16 11 16 11.5Z" fill="#38BDF8"></path>
+</svg>
+</div>
+<span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
+</div>
+</div>
+<!-- Row 3: 수요일 (Both Completed) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 15일 (수)</span>
+<span class="text-[10px] text-slate-400">05/15 水曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">12분 소요</span>
+</div>
+<!-- Quiz: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">15분 소요</span>
+</div>
+</div>
+<!-- Row 4: 목요일 (Both Incomplete - Crying Mascots) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors bg-amber-50/20">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 16일 (목)</span>
+<span class="text-[10px] text-slate-400">05/16 木曜日</span>
+</div>
+<!-- Reading: Crying Mascot -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
+<circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
+<circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
+<path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
+<path d="M8 11.5C8 12.5 8.7 13.5 9.2 13.5C9.7 13.5 10 12.8 9.5 11.8C9.1 11.2 8 11 8 11.5Z" fill="#38BDF8"></path>
+</svg>
+</div>
+<span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
+</div>
+<!-- Quiz: Crying Mascot -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
+<circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
+<circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
+<path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
+<path d="M16 11.5C16 12.5 15.3 13.5 14.8 13.5C14.3 13.5 14 12.8 14.5 11.8C14.9 11.2 16 11 16 11.5Z" fill="#38BDF8"></path>
+</svg>
+</div>
+<span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
+</div>
+</div>
+<!-- Row 5: 금요일 (Both Completed) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 17일 (금)</span>
+<span class="text-[10px] text-slate-400">05/17 金曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">20분 소요</span>
+</div>
+<!-- Quiz: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">18분 소요</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: WeeklyAchievementTable -->
+<!-- BEGIN: WeeklyInsightCard -->
+<section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3" data-purpose="summary-card">
+<div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+<span class="text-xs font-semibold text-slate-500">주간 학습 통계 (週間統計)</span>
+<span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">우수 학습자</span>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Metric 1: 총 학습 시간 -->
+<div class="bg-slate-50/80 rounded-xl p-3">
+<span class="text-[11px] text-slate-400 block mb-0.5">총 학습 시간 (総時間)</span>
+<div class="flex items-baseline space-x-1">
+<span class="text-lg font-bold text-slate-800 tracking-tight">1시간 45분</span>
+</div>
+</div>
+<!-- Metric 2: 스트릭 -->
+<div class="bg-slate-50/80 rounded-xl p-3">
+<span class="text-[11px] text-slate-400 block mb-0.5">연속 학습 스트릭</span>
+<div class="flex items-center space-x-1">
+<span class="text-lg font-bold text-amber-600 tracking-tight">3일 달성</span>
+<span class="text-sm">🔥</span>
+</div>
+</div>
+</div>
+<!-- Motivational Message Box -->
+<div class="bg-amber-50/60 rounded-xl p-3 border border-amber-200/50 flex items-start space-x-2.5">
+<span class="text-base leading-tight">💡</span>
+<div>
+<p class="text-[12px] font-semibold text-amber-900 leading-snug">
+              금요일까지 멋지게 완료했어요! ✨
+            </p>
 
-  <!-- 카메라 셔터 효과용 플래시 레이어 -->
-  <div id="camera-flash" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-50 transition-opacity duration-100"></div>
+</div>
+</div>
+</section>
+<!-- END: WeeklyInsightCard -->
+</main>
+<!-- END: MainContentSection -->
+<!-- BEGIN: BottomActionSection -->
+<footer class="p-4 bg-white/95 backdrop-blur-xs border-t border-slate-100 sticky bottom-0 z-20" data-purpose="bottom-action-container">
+<button id="submit-report-btn" onclick="handleReportSubmit()" class="w-full h-13 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all rounded-2xl flex items-center justify-center space-x-2 shadow-sm text-white font-bold text-[15px]" type="button">
+<span class="text-lg leading-tight">📸</span>
+<span id="btn-label" class="">레포트 제출 (レポート提出)</span>
+<svg id="btn-arrow-icon" class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</footer>
+<!-- END: BottomActionSection -->
+<!-- Camera Shutter Flash Overlay -->
+<div id="camera-flash" class="pointer-events-none fixed inset-0 z-50 bg-white opacity-0 transition-opacity duration-200"></div>
 
-  <!-- 제출 완료 토스트 메시지 -->
-  <div id="submission-toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300 -translate-y-20 opacity-0 pointer-events-none z-50">
-    <span class="material-symbols-outlined text-emerald-400 text-[22px]">check_circle</span>
-    <span class="font-label-lg text-label-lg">레포트가 이미지로 저장되었습니다!</span>
-  </div>
+<!-- Submission Toast / Modal Notification -->
+<div id="submission-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm bg-white/95 backdrop-blur-md border border-emerald-200/80 rounded-2xl shadow-xl p-4 flex items-start space-x-3 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none">
+<div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0 flex items-center justify-center font-bold text-lg">
+✓
+</div>
+<div class="flex-1 text-left">
+<div class="flex items-center space-x-1.5">
+<span class="text-xs font-bold text-emerald-800">📸 캡처 &amp; 완료!</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-700 font-semibold rounded-full">전송 성공</span>
+</div>
+<p class="text-[12px] font-semibold text-slate-800 mt-1 leading-snug">
+학습 레포트가 캡처되었어요. 선생님께 보내주세요!
+</p>
+<p class="text-[10.5px] text-slate-500 mt-0.5">
+画面が保存され、先生に送ってください ✨
+</p>
+</div>
+</div>
+
 
 </main>
 
