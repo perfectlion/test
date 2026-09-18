@@ -1193,17 +1193,37 @@
       if (practiceRecognizedText) practiceRecognizedText.innerText = "음성 인식 중...";
     };
 
+// 💡 수정된 부분: 음성 인식 결과를 정확히 추출하도록 변경
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results).map(r => r[0]).map(r => r.transcript).join('');
-      if (practiceRecognizedText) practiceRecognizedText.innerText = `"${transcript}"`;
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      if (practiceRecognizedText && transcript) {
+        practiceRecognizedText.innerText = `"${transcript}"`;
+      }
     };
 
     recognition.onerror = () => stopPracticeRecordingUI();
+    
+    // 💡 수정된 부분: undefined 및 예외 문자열 필터링 강화
     recognition.onend = () => {
       stopPracticeRecordingUI();
-      const spokenText = practiceRecognizedText?.innerText.replace(/"/g, '') || '';
-      if (spokenText && !spokenText.includes("음성 인식 중") && !spokenText.includes("마이크 버튼")) {
+      const rawText = practiceRecognizedText?.innerText || '';
+      const spokenText = rawText.replace(/"/g, '').trim();
+
+      // "undefined", "음성 인식 중", "마이크 버튼" 등의 예외 케이스 및 빈 값 검증
+      if (
+        spokenText &&
+        spokenText !== "undefined" &&
+        !spokenText.includes("음성 인식 중") &&
+        !spokenText.includes("마이크 버튼")
+      ) {
         evaluatePronunciationAI(practiceSentence?.innerText || '', spokenText);
+      } else {
+        if (practiceRecognizedText) {
+          practiceRecognizedText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
+        }
       }
     };
   }
