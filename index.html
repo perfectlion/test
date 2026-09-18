@@ -339,7 +339,7 @@
     </nav>
   </div>
 
-  <!-- ==================== VIEW 3: 말하기 인터랙티브 학습 화면 ==================== -->
+  <!-- ==================== VIEW 3: 말하기 학습 화면 ==================== -->
   <div id="view-practice" class="hidden-view flex flex-col min-h-screen w-full bg-surface">
     <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
       <div class="h-16 px-gutter flex items-center justify-between">
@@ -575,10 +575,10 @@
 
 </div>
 
-  <!-- ==================== VIEW 5: 주간 성과 화면 ==================== -->
+<!-- ==================== VIEW 5: 주간 성과 화면 ==================== -->
 <div id="view-weekly-stats" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
-  <!-- Header -->
+  <!-- Header (VIEW 3, VIEW 4와 동일한 구조) -->
   <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
     <div class="h-16 px-gutter flex items-center justify-between">
       <div class="flex items-center gap-space-sm">
@@ -593,16 +593,15 @@
         </div>
       </div>
       <div class="flex items-center gap-space-sm">
-        <img id="practice-user-profile-img" class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
+        <img class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
       </div>
     </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   </header>
 
- <!-- Main Content -->
+  <!-- Main Content (고정 헤더 아래에서 시작하도록 pt-20 설정) -->
   <main class="flex flex-col relative w-full pt-20 pb-28 px-gutter bg-surface flex-grow">
     
-    <!-- Progress Header Deck (파란색 메인 스태터스 바) -->
+    <!-- Progress Header Deck -->
     <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
       <div class="flex-1 h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5 shadow-inner">
         <div id="achievement-progress-bar" class="h-full bg-primary rounded-full transition-all duration-500 relative flex items-center" style="width: 0%;">
@@ -617,31 +616,28 @@
     <!-- Lesson Stage Track Indicator -->
     <div class="flex items-center justify-between px-1 mb-space-sm">
       <span id="achievement-course-tag" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">초급 2 · 주간 성취도 (週間達成度)</span>
-      <span id="quiz-progress-text" class="font-label-bold text-label-bold text-primary">4 / 5일</span>
+      <span class="font-label-bold text-label-bold text-primary">4 / 5일</span>
     </div>
 
-  <!-- Pill Badge & Title Group -->
-  <div class="mt-2.5">
-    
-    <h2 class="text-[19px] font-bold text-slate-900 tracking-tight leading-snug">
-      이번 주 학습 기록을 확인하세요
-    </h2>
-    <p class="text-xs text-slate-500 mt-0.5">
-      月曜日から金曜日までの学習記録と時間です
-    </p>
-  </div>
-</header>
-<!-- END: TopHeaderSection -->
-<!-- BEGIN: MainContentSection -->
-<main class="flex-1 px-4 py-3 space-y-4" data-purpose="achievement-body">
-<!-- BEGIN: WeeklyAchievementTable -->
-<section class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden" data-purpose="weekly-matrix-table">
-<!-- Table Header -->
-<div class="grid grid-cols-12 bg-slate-50 border-b border-slate-100 text-slate-500 text-[11px] font-semibold py-2.5 px-3 text-center items-center">
-<div class="col-span-4 text-left pl-1">날짜/요일 (日付)</div>
-<div class="col-span-4">📖 읽기 (Reading)</div>
-<div class="col-span-4">✍️ 퀴즈 (Quiz)</div>
-</div>
+    <!-- Title Group -->
+    <div class="mt-2.5 mb-4">
+      <h2 class="text-[19px] font-bold text-slate-900 tracking-tight leading-snug">
+        이번 주 학습 기록을 확인하세요
+      </h2>
+      <p class="text-xs text-slate-500 mt-0.5">
+        月曜日から金曜日までの学習記録と時間です
+      </p>
+    </div>
+
+    <!-- Weekly Achievement Table -->
+    <section class="bg-white rounded-2xl shadow-xs border border-slate-100 overflow-hidden" data-purpose="weekly-matrix-table">
+      <!-- Table Header -->
+      <div class="grid grid-cols-12 bg-slate-50 border-b border-slate-100 text-slate-500 text-[11px] font-semibold py-2.5 px-3 text-center items-center">
+        <div class="col-span-4 text-left pl-1">날짜/요일 (日付)</div>
+        <div class="col-span-4">📖 읽기 (Reading)</div>
+        <div class="col-span-4">✍️ 퀴즈 (Quiz)</div>
+      </div>
+      
 <!-- Matrix Rows -->
 <div class="divide-y divide-slate-100 text-xs">
 <!-- Row 1: 월요일 (Both Completed) -->
@@ -1016,6 +1012,15 @@
       showView('view-quiz');
     });
 
+document.getElementById('back-from-stats')?.addEventListener('click', () => {
+  // 모든 view 숨기기
+  document.querySelectorAll('main, div[id^="view-"]').forEach(view => {
+    view.classList.add('hidden-view');
+  });
+  // 대시보드 화면 보이기
+  document.getElementById('view-dashboard').classList.remove('hidden-view');
+});
+    
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
       showView('view-dashboard');
     });
