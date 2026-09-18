@@ -754,6 +754,7 @@
   const viewLogin = document.getElementById('view-login');
   const viewDashboard = document.getElementById('view-dashboard');
   const viewPractice = document.getElementById('view-practice');
+  const viewStats = document.getElementById('view-weekly-stats');
 
   // 로그인 관련
   const loginForm = document.getElementById('login-form');
@@ -1310,6 +1311,144 @@
       console.error("퀴즈 진입 도중 오류 발생:", err);
     }
   });
+
+// LocalStorage 데이터 키 예시 구조
+// localStorage.setItem('weekly_achievement', JSON.stringify({
+//   mon: { readingTime: 14, quizDone: true, quizTime: 10 },
+//   tue: { readingTime: 16, quizDone: false, quizTime: 0 },
+//   ...
+// }));
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadAchievementData();
+});
+
+/**
+ * 1. LocalStorage에서 주간 데이터 읽어와 화면에 반영
+ */
+function loadAchievementData() {
+  const savedData = JSON.parse(localStorage.getItem('weekly_achievement') || '{}');
+  
+  // 데이터 파싱 및 UI 업데이트 예시 (상황에 맞춰 키 이름을 조정하세요)
+  let totalMinutes = 0;
+  let completedDays = 0;
+
+  // 요일별 ID 또는 데이터 매핑 처리
+  const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
+  days.forEach(day => {
+    if (savedData[day]) {
+      const { readingTime = 0, quizDone = false, quizTime = 0 } = savedData[day];
+      totalMinutes += (readingTime + quizTime);
+      if (readingTime > 0 || quizDone) completedDays++;
+    }
+  });
+
+  // 상단 진행률 바 및 텍스트 갱신
+  const progressPercent = Math.round((completedDays / 5) * 100);
+  const progressBar = document.getElementById('achievement-progress-bar');
+  const progressPercentText = document.getElementById('achievement-progress-percent');
+  const progressDaysText = document.getElementById('quiz-progress-text');
+
+  if (progressBar) progressBar.style.width = `${progressPercent}%`;
+  if (progressPercentText) progressPercentText.innerText = `${progressPercent}%`;
+  if (progressDaysText) progressDaysText.innerText = `${completedDays} / 5日`;
+}
+
+/**
+ * 2. 스크린샷 생성 및 레포트 제출
+ */
+async function handleReportSubmit() {
+  const btn = document.getElementById('submit-report-btn');
+  const btnLabel = document.getElementById('btn-label');
+  const flash = document.getElementById('camera-flash');
+  const toast = document.getElementById('submission-toast');
+  const targetArea = document.getElementById('view-achievement'); // 캡처할 메인 뷰
+  
+  if (!btn || btn.dataset.submitting === 'true') return;
+  btn.dataset.submitting = 'true';
+  
+  // 버튼 시각 상태: 캡처 중
+  btnLabel.innerText = '화면 캡처 중... (撮影中)';
+  btn.classList.add('bg-slate-700');
+  btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+  
+  // 셔터 애니메이션 효과
+  flash.classList.remove('opacity-0');
+  flash.classList.add('opacity-90');
+  setTimeout(() => {
+    flash.classList.remove('opacity-90');
+    flash.classList.add('opacity-0');
+  }, 120);
+
+  try {
+    // html2canvas 옵션 설정 (하단 버튼 및 플래시 레이어 제외)
+    const canvas = await html2canvas(targetArea, {
+      scale: 2, // 고해상도 캡처
+      useCORS: true, // 이미지 전송 에러 방지
+      ignoreElements: (element) => {
+        // 하단 버튼, 토스트, 카메라 플래시는 이미지 캡처에서 제외
+        return element.id === 'submit-report-btn' || 
+               element.id === 'submission-toast' || 
+               element.id === 'camera-flash' ||
+               element.tagName === 'FOOTER';
+      }
+    });
+
+    // 이미지 파일 다운로드 처리
+    const image = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    const today = new Date().toISOString().slice(0, 10);
+    
+    link.href = image;
+    link.download = `세종학당_주간학습레포트_${today}.png`;
+    link.click();
+
+    // 성공 완료 처리
+    btnLabel.innerText = '캡처 완료! (撮影完了)';
+    btn.classList.remove('bg-slate-700');
+    btn.classList.add('bg-emerald-700');
+    
+    // 안내 토스트 노출
+    toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    
+    setTimeout(() => {
+      toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      btnLabel.innerText = '레포트 다시 제출 (再提出)';
+      btn.classList.remove('bg-emerald-700');
+      btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+      btn.dataset.submitting = 'false';
+    }, 3200);
+
+  } catch (error) {
+    console.error("스크린샷 생성 실패:", error);
+    alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
+    btnLabel.innerText = '레포트 제출 (レポート提出)';
+    btn.classList.remove('bg-slate-700');
+    btn.classList.add('bg-emerald-600');
+    btn.dataset.submitting = 'false';
+  }
+}
+  
+// 대시보드 -> 주간 성과 화면 이동 (네비게이션 '학습기록' 클릭 시)
+document.querySelector('a[onclick*="학습 기록"]').addEventListener('click', (e) => {
+  e.preventDefault();
+  viewDashboard.classList.add('hidden-view');
+  viewStats.classList.remove('hidden-view');
+});
+
+// 주간 성과 -> 대시보드 이동 (뒤로가기 및 네비게이션 '오늘의 학습' 클릭 시)
+document.getElementById('back-from-stats').addEventListener('click', () => {
+  viewStats.classList.add('hidden-view');
+  viewDashboard.classList.remove('hidden-view');
+});
+
+document.getElementById('nav-to-dashboard').addEventListener('click', () => {
+  viewStats.classList.add('hidden-view');
+  viewDashboard.classList.remove('hidden-view');
+});
+  
 
   // ==================== TTS 및 음성 인식(STT) ====================
   
