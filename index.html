@@ -329,11 +329,11 @@
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
         </a>
         <a id="nav-weekly-stats" 
-               class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
-               href="javascript:void(0);" 
-               onclick="document.querySelectorAll('main').forEach(el => el.classList.add('hidden-view')); document.getElementById('view-weekly-stats').classList.remove('hidden-view');">
-              <span class="material-symbols-outlined text-[24px] mb-0.5">monitoring</span>
-              <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">学習記録</span>
+           class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
+           href="javascript:void(0);" 
+           onclick="document.getElementById('view-dashboard').classList.add('hidden-view'); document.getElementById('view-weekly-stats').classList.remove('hidden-view');">
+          <span class="material-symbols-outlined text-[24px] mb-0.5">monitoring</span>
+          <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">学習記録</span>
         </a>
       </div>
     </nav>
@@ -1012,12 +1012,11 @@
       showView('view-quiz');
     });
 
-document.getElementById('back-from-stats')?.addEventListener('click', () => {
+  document.getElementById('back-from-stats')?.addEventListener('click', () => {
   // 모든 view 숨기기
-  document.querySelectorAll('main, div[id^="view-"]').forEach(view => {
-    view.classList.add('hidden-view');
-  });
-  // 대시보드 화면 보이기
+  document.getElementById('view-weekly-stats').classList.add('hidden-view');
+  // VIEW 2(대시보드) 표시하기
+    // 대시보드 화면 보이기
   document.getElementById('view-dashboard').classList.remove('hidden-view');
 });
     
