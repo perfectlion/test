@@ -328,9 +328,10 @@
           <span class="material-symbols-outlined text-[24px] mb-0.5">replay</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
         </a>
-        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group" href="#" onclick="alert('학습 기록 페이지입니다.')">
+        <a id="nav-weekly-stats" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group" href="#view-weekly-stats">
           <span class="material-symbols-outlined text-[24px] mb-0.5">monitoring</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">学習記録</span>
+        </a>
         </a>
       </div>
     </nav>
@@ -571,162 +572,124 @@
   </div>
 
 </div>
-<!-- ==================== VIEW 5: 주간 성과 (학습 기록) 화면 ==================== -->
-<div id="view-weekly-stats" class="hidden-view flex flex-col min-h-screen w-full bg-surface">
+<!-- ==================== 주간 성과 및 레포트 뷰 ==================== -->
+<main id="view-weekly-stats" class="hidden-view pb-24 min-h-screen bg-surface-container-lowest transition-all duration-300">
   
-  <!-- Header -->
-  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
-    <div class="h-16 px-gutter flex items-center justify-between">
-      <div class="flex items-center gap-space-sm">
-        <button id="back-from-stats" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
-          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
-        </button>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-1">
-            <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
-          </div>
-          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Weekly Summary</span>
-        </div>
-      </div>
-      <div class="flex items-center gap-space-sm">
-        <img class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
-      </div>
-    </div>
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 px-4 py-3 flex items-center justify-between">
+    <button id="back-from-stats" type="button" class="flex items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors">
+      <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+      <span class="font-label-lg text-label-lg">대시보드</span>
+    </button>
+    <h1 class="font-title-md text-title-md font-bold text-on-surface">주간 학습 레포트</h1>
+    <div class="w-8"></div> <!-- 여백 맞춤용 -->
   </header>
 
-  <!-- Main Content -->
-  <main class="flex flex-col relative w-full pt-20 pb-24 px-gutter bg-surface flex-grow gap-space-md">
+  <div class="max-w-lg mx-auto px-4 pt-6 space-y-6">
     
-    <!-- Title Card -->
-    <section class="flex flex-col gap-1 bg-surface-container-lowest p-space-md rounded-2xl shadow-md">
-      <div class="flex items-center justify-between">
-        <span class="px-2.5 py-0.5 rounded-md bg-primary-fixed text-on-primary-fixed font-label-caps text-label-caps">WEEKLY REPORT</span>
-        <span class="text-xs text-on-surface-variant font-medium">이번 주 학습 현황</span>
-      </div>
-      <h2 class="font-headline-lg text-headline-lg text-primary tracking-tight mt-1">주간 성과 리포트</h2>
-      <p class="font-kana-subtext text-kana-subtext text-on-surface-variant">今週の学習成果と記録です</p>
-    </section>
-
-    <!-- Stat Highlights Grid (2x2) -->
-    <section class="grid grid-cols-2 gap-space-sm">
-      <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col items-start">
-        <div class="w-9 h-9 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container mb-2">
-          <span class="material-symbols-outlined text-[20px]">local_fire_department</span>
-        </div>
-        <span class="text-xs text-on-surface-variant font-kana-subtext">연속 학습 (連続)</span>
-        <span id="stat-streak-days" class="font-headline-lg text-headline-lg text-on-surface mt-0.5">5일</span>
-      </div>
-
-      <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col items-start">
-        <div class="w-9 h-9 rounded-xl bg-primary-fixed flex items-center justify-center text-on-primary-fixed mb-2">
-          <span class="material-symbols-outlined text-[20px]">mic</span>
-        </div>
-        <span class="text-xs text-on-surface-variant font-kana-subtext">완료한 문장 (文数)</span>
-        <span id="stat-completed-sentences" class="font-headline-lg text-headline-lg text-on-surface mt-0.5">42개</span>
-      </div>
-
-      <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col items-start">
-        <div class="w-9 h-9 rounded-xl bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed mb-2">
-          <span class="material-symbols-outlined text-[20px]">quiz</span>
-        </div>
-        <span class="text-xs text-on-surface-variant font-kana-subtext">퀴즈 정답률 (正解率)</span>
-        <span id="stat-quiz-accuracy" class="font-headline-lg text-headline-lg text-on-surface mt-0.5">88%</span>
-      </div>
-
-      <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col items-start">
-        <div class="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center text-primary mb-2">
-          <span class="material-symbols-outlined text-[20px]">schedule</span>
-        </div>
-        <span class="text-xs text-on-surface-variant font-kana-subtext">총 학습 시간 (時間)</span>
-        <span id="stat-total-time" class="font-headline-lg text-headline-lg text-on-surface mt-0.5">2.5시간</span>
-      </div>
-    </section>
-
-    <!-- Weekly Attendance Chart / Visual Bar -->
-    <section class="bg-surface-container-lowest p-space-md rounded-2xl shadow-md flex flex-col gap-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-primary text-[20px]">calendar_today</span>
-          <span>주간 출석 체크</span>
-        </h3>
-        <span class="text-xs text-secondary font-bold">5 / 7일 달성</span>
-      </div>
-
-      <!-- Weekly Days Bar Graph -->
-      <div class="grid grid-cols-7 gap-1.5 pt-2 text-center">
-        <!-- 월 -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-secondary-container rounded-lg flex items-end justify-center pb-1">
-            <span class="material-symbols-outlined text-on-secondary-container text-[18px]">check</span>
+    <!-- 프로필 및 학습 요약 헤더 카드 -->
+    <div class="bg-gradient-to-br from-primary-container/60 via-surface-container-low to-surface-container-lowest border border-outline-variant/40 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+      <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <img src="" class="user-profile-img-all w-12 h-12 rounded-full border-2 border-primary/20 object-cover shadow-xs" alt="User Profile">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-title-sm text-title-sm font-bold text-on-surface">주간 학습 달성도</span>
+              <span class="bg-primary/10 text-primary text-[11px] font-semibold px-2 py-0.5 rounded-full">Weekly</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">이번 주 연속 학습 목표 달성 현황</p>
           </div>
-          <span class="text-xs font-bold text-on-surface-variant">월</span>
+        </div>
+      </div>
+
+      <!-- 메인 메트릭: 서클 & 진행률 표시 -->
+      <div class="bg-surface/80 rounded-2xl p-4 border border-outline-variant/30 flex items-center justify-between">
+        <div>
+          <p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">주간 출석 / 달성률</p>
+          <div class="flex items-baseline gap-1.5 mt-1">
+            <span id="achievement-progress-percent" class="font-display-md text-display-md font-extrabold text-primary">0%</span>
+            <span id="quiz-progress-text" class="font-title-sm text-title-sm text-on-surface-variant font-medium">0 / 5日</span>
+          </div>
+        </div>
+        
+        <!-- 프로그레스 바 영역 -->
+        <div class="w-32">
+          <div class="w-full bg-surface-container-highest h-3 rounded-full overflow-hidden p-0.5 border border-outline-variant/20">
+            <div id="achievement-progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+          </div>
+          <p class="text-[11px] text-right text-outline mt-1 font-medium">목표: 주 5회</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 요일별 학습 현황 (Mon-Fri) 카드 -->
+    <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-3xl p-5 shadow-xs space-y-3">
+      <h2 class="font-title-sm text-title-sm font-bold text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[20px]">calendar_view_week</span>
+        요일별 학습 상세
+      </h2>
+
+      <div class="grid grid-cols-5 gap-2 text-center pt-2">
+        <!-- 월 -->
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
+          <span class="font-label-sm text-label-sm text-outline font-semibold">월 (月)</span>
+          <div class="w-7 h-7 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs">
+            <span class="material-symbols-outlined text-[16px]">check</span>
+          </div>
         </div>
         <!-- 화 -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-secondary-container rounded-lg flex items-end justify-center pb-1">
-            <span class="material-symbols-outlined text-on-secondary-container text-[18px]">check</span>
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
+          <span class="font-label-sm text-label-sm text-outline font-semibold">화 (火)</span>
+          <div class="w-7 h-7 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs">
+            <span class="material-symbols-outlined text-[16px]">check</span>
           </div>
-          <span class="text-xs font-bold text-on-surface-variant">화</span>
         </div>
         <!-- 수 -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-secondary-container rounded-lg flex items-end justify-center pb-1">
-            <span class="material-symbols-outlined text-on-secondary-container text-[18px]">check</span>
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
+          <span class="font-label-sm text-label-sm text-outline font-semibold">수 (水)</span>
+          <div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-xs">
+            -
           </div>
-          <span class="text-xs font-bold text-on-surface-variant">수</span>
         </div>
         <!-- 목 -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-secondary-container rounded-lg flex items-end justify-center pb-1">
-            <span class="material-symbols-outlined text-on-secondary-container text-[18px]">check</span>
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
+          <span class="font-label-sm text-label-sm text-outline font-semibold">목 (木)</span>
+          <div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-xs">
+            -
           </div>
-          <span class="text-xs font-bold text-on-surface-variant">목</span>
         </div>
-        <!-- 금 (오늘) -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-primary text-on-primary rounded-lg flex items-end justify-center pb-1 shadow-sm">
-            <span class="material-symbols-outlined text-[18px]">star</span>
+        <!-- 금 -->
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-2.5 flex flex-col items-center gap-1.5">
+          <span class="font-label-sm text-label-sm text-outline font-semibold">금 (金)</span>
+          <div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-xs">
+            -
           </div>
-          <span class="text-xs font-bold text-primary">금</span>
-        </div>
-        <!-- 토 -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-surface-container rounded-lg flex items-end justify-center pb-1">
-            <span class="text-xs text-outline">-</span>
-          </div>
-          <span class="text-xs font-bold text-outline">토</span>
-        </div>
-        <!-- 일 -->
-        <div class="flex flex-col items-center gap-1.5">
-          <div class="w-full h-16 bg-surface-container rounded-lg flex items-end justify-center pb-1">
-            <span class="text-xs text-outline">-</span>
-          </div>
-          <span class="text-xs font-bold text-outline">일</span>
         </div>
       </div>
-    </section>
+    </div>
 
-  </main>
-
-  <!-- Bottom Navigation -->
-  <nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.05)]">
-    <div class="h-16 px-gutter flex justify-around items-center">
-      <button id="nav-to-dashboard" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" type="button">
-        <span class="material-symbols-outlined text-[24px] mb-0.5">school</span>
-        <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">今日の学習</span>
-      </button>
-      <button class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" type="button" onclick="alert('복습 모드 준비 중입니다.')">
-        <span class="material-symbols-outlined text-[24px] mb-0.5">replay</span>
-        <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
-      </button>
-      <button class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-primary font-bold transition-colors group cursor-pointer" type="button">
-        <span class="material-symbols-outlined text-[24px] mb-0.5" style="font-variation-settings: 'FILL' 1;">monitoring</span>
-        <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">学習記録</span>
+    <!-- 하단 레포트 제출 및 캡처 버튼 -->
+    <div class="pt-2">
+      <button id="submit-report-btn" type="button" class="w-full py-4 px-6 bg-primary hover:bg-primary/90 active:scale-[0.98] text-on-primary font-title-sm text-title-sm font-bold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+        <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+        <span id="btn-label">주간 학습 레포트 제출 (캡처)</span>
       </button>
     </div>
-  </nav>
 
-</div>
+  </div>
+
+  <!-- 카메라 셔터 효과용 플래시 레이어 -->
+  <div id="camera-flash" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-50 transition-opacity duration-100"></div>
+
+  <!-- 제출 완료 토스트 메시지 -->
+  <div id="submission-toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300 -translate-y-20 opacity-0 pointer-events-none z-50">
+    <span class="material-symbols-outlined text-emerald-400 text-[22px]">check_circle</span>
+    <span class="font-label-lg text-label-lg">레포트가 이미지로 저장되었습니다!</span>
+  </div>
+
+</main>
 
 </body>
 </html>
