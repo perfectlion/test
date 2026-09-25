@@ -875,8 +875,13 @@
   let lessonSentencesList = [];
   let currentSentenceIndex = 0;
 
+  // 녹음 관련 전역 변수 (중복 선언 방지를 위해 상단에만 1회 선언)
+  let isRecording = false; 
+  let mediaRecorder = null;
+  let recognition = null;
+
   // Gemini API 설정
-  const GEMINI_MODEL = "gemini-1.5-flash"; // 최신 모델명 권장 (gemini-1.5-flash)
+  const GEMINI_MODEL = "gemini-1.5-flash";
 
   // ==================== DOM 요소 참조 ====================
   // 뷰 화면
@@ -926,11 +931,47 @@
   const practiceMatchBadge = document.getElementById('practice-match-badge');
   const practiceEvalText = document.getElementById('practice-eval-text');
 
-  // ==================== 유티리티: 레벤슈타인 거리 및 유사도 계산 ====================
-  
+  // ==================== 주간 데이터 저장 헬퍼 함수 ====================
   /**
-   * 두 문자열 간의 레벤슈타인 거리(Levenshtein Distance)를 계산합니다.
+   * 학습 완료시 오늘 날짜의 주간 성취 데이터를 저장합니다.
+   * @param {'reading' | 'quiz'} type - 학습 유형
+   * @param {number} timeSpentMinutes - 소요 시간 (기본값 10분)
    */
+  function saveTodayLearningData(type, timeSpentMinutes = 10) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const monthStr = String(today.getMonth() + 1).padStart(2, '0');
+    const dateStr = String(today.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${monthStr}-${dateStr}`;
+
+    const storedData = JSON.parse(localStorage.getItem('weeklyLearningData') || '{}');
+
+    if (!storedData[dateKey]) {
+      storedData[dateKey] = {
+        readingDone: false,
+        readingTime: 0,
+        quizDone: false,
+        quizTime: 0
+      };
+    }
+
+    if (type === 'reading') {
+      storedData[dateKey].readingDone = true;
+      storedData[dateKey].readingTime = (storedData[dateKey].readingTime || 0) + timeSpentMinutes;
+    } else if (type === 'quiz') {
+      storedData[dateKey].quizDone = true;
+      storedData[dateKey].quizTime = (storedData[dateKey].quizTime || 0) + timeSpentMinutes;
+    }
+
+    localStorage.setItem('weeklyLearningData', JSON.stringify(storedData));
+    
+    // UI 업데이트 함수가 있으면 즉시 반영
+    if (typeof renderWeeklyStatsView === 'function') {
+      renderWeeklyStatsView();
+    }
+  }
+
+  // ==================== 유틸리티: 레벤슈타인 거리 및 유사도 계산 ====================
   function getLevenshteinDistance(str1, str2) {
     const len1 = str1.length;
     const len2 = str2.length;
@@ -943,20 +984,16 @@
       for (let j = 1; j <= len2; j++) {
         const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
         matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,      // 삭제
-          matrix[i][j - 1] + 1,      // 삽입
-          matrix[i - 1][j - 1] + cost // 대치
+          matrix[i - 1][j] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j - 1] + cost
         );
       }
     }
     return matrix[len1][len2];
   }
 
-  /**
-   * 목표 문장과 인식된 문장 간의 유사도를 퍼센트(0~100%)로 환산합니다.
-   */
   function calculateSimilarity(targetStr, spokenStr) {
-    // 공백 및 문장부호 제거 후 정규화
     const cleanTarget = targetStr.replace(/[^a-zA-Z0-9가-힣]/g, '');
     const cleanSpoken = spokenStr.replace(/[^a-zA-Z0-9가-힣]/g, '');
 
@@ -972,8 +1009,6 @@
   }
 
   // ==================== 초기화 및 이벤트 등록 ====================
-
-  // 비밀번호 보이기/숨기기
   togglePwBtn?.addEventListener('click', () => {
     if (!userPwInput) return;
     const isPassword = userPwInput.getAttribute('type') === 'password';
@@ -981,9 +1016,8 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
-  // 뷰 전환 전용 함수
   function showView(targetViewId) {
-    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz'];
+    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats'];
     views.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden-view');
@@ -998,7 +1032,6 @@
     }
   }
 
-  // 이벤트 리스너 등록
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('go-practice-btn')?.addEventListener('click', () => {
       showView('view-practice');
@@ -1012,20 +1045,15 @@
       showView('view-quiz');
     });
 
-  document.getElementById('back-from-stats')?.addEventListener('click', () => {
-  // 모든 view 숨기기
-  document.getElementById('view-weekly-stats').classList.add('hidden-view');
-  // VIEW 2(대시보드) 표시하기
-    // 대시보드 화면 보이기
-  document.getElementById('view-dashboard').classList.remove('hidden-view');
-});
+    document.getElementById('back-from-stats')?.addEventListener('click', () => {
+      showView('view-dashboard');
+    });
     
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
       showView('view-dashboard');
     });
   });
 
-  // 1. JSON 데이터베이스 로드 및 세션 복원
   async function loadAllDatabases() {
     try {
       const [uRes, sRes, lRes, cRes] = await Promise.all([
@@ -1047,7 +1075,6 @@
   }
   loadAllDatabases();
 
-  // 자동 로그인 체크
   function checkAutoLogin() {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -1064,7 +1091,6 @@
     }
   }
 
-  // 2. 학생 course와 날짜에 따른 lesson_id 연산
   function getLessonIdForUser(userCourse) {
     const todayStr = new Date().toISOString().split('T')[0];
     
@@ -1083,7 +1109,6 @@
     return minId;
   }
 
-  // 레슨 ID를 책 이름과 과 번호로 변환하는 함수
   function getBookAndLessonTitle(course, absoluteLessonId) {
     const lessonNum = Number(absoluteLessonId);
     let bookName = "초급 1";
@@ -1103,26 +1128,19 @@
       displayLessonNum = lessonNum - 60;
     }
 
-    return {
-      bookName: bookName,
-      lessonNum: displayLessonNum
-    };
+    return { bookName: bookName, lessonNum: displayLessonNum };
   }
 
-  // 대시보드 데이터 및 UI 세팅
   function setupDashboardUI(user) {
     const userName = user.Name || user.ID || "학생";
     if (welcomeTitle) welcomeTitle.innerText = `안녕하세요, ${userName} 님!`;
 
     if (userProfileImgs && userProfileImgs.length > 0) {
       const photoUrl = user.profile_img || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D9488&color=fff`;
-      userProfileImgs.forEach(img => {
-        img.src = photoUrl;
-      });
+      userProfileImgs.forEach(img => { img.src = photoUrl; });
     }
 
     currentLessonId = getLessonIdForUser(user.course || "1a");
-
     const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
     const { bookName, lessonNum } = getBookAndLessonTitle(user.course || "1a", currentLessonId);
 
@@ -1138,7 +1156,6 @@
     if (targetSentenceElem) targetSentenceElem.innerText = currentTargetSentence;
   }
 
-  // 3. 로그인 및 로그아웃
   loginForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     const inputId = userIdInput.value.trim();
@@ -1173,7 +1190,7 @@
     showView('view-login');
   });
 
-  // 4. 연습하기 진입 및 진행
+  // 연습하기
   goPracticeBtn?.addEventListener('click', () => {
     const targetId = Number(currentLessonId);
 
@@ -1232,11 +1249,29 @@
     }
   }
 
+  // 안전한 녹음 종료 함수
+  function stopPracticeRecordingUI() {
+    if (typeof isRecording !== 'undefined' && isRecording) {
+      isRecording = false;
+      if (recognition) {
+        try { recognition.stop(); } catch(e){}
+      }
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch(e){}
+      }
+    }
+  }
+
+  // 대시보드로 돌아갈 때 (읽기 완료 처리 반영)
   function returnToDashboard() {
     stopPracticeRecordingUI();
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+
+    // [읽기 학습 완료 데이터 저장] 10분 소요 처리
+    saveTodayLearningData('reading', 10);
+
     showView('view-dashboard');
   }
 
@@ -1252,7 +1287,7 @@
   backToDashboard?.addEventListener('click', returnToDashboard);
   closePracticeBtn?.addEventListener('click', returnToDashboard);
 
-  // ==================== 데일리 퀴즈 상태 변수 및 로직 ====================
+  // ==================== 데일리 퀴즈 로직 ====================
   let currentQuizList = [];
   let currentQuizIndex = 0;
   let isCardFlipped = false;
@@ -1295,6 +1330,10 @@
 
     if (total === 0 || index >= total) {
       alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
+      
+      // [퀴즈 학습 완료 데이터 저장] 10분 소요 처리
+      saveTodayLearningData('quiz', 10);
+
       showView('view-dashboard');
       return;
     }
@@ -1375,7 +1414,6 @@
 
   function handleChoiceSelect(selectedChoice, correctAnswer, clickedBtn) {
     const drawer = document.getElementById('quiz-bottom-drawer');
-    
     if (selectedChoice === correctAnswer) {
       drawer?.classList.remove('hidden');
     } else {
@@ -1449,15 +1487,13 @@
     }
   });
 
-// ==========================================
+  // ==========================================
   // VIEW 5: 주간 성과 데이터 동적 연동 로직
   // ==========================================
   function renderWeeklyStatsView() {
-    // 1. 이번 주 월요일 ~ 금요일 날짜 계산
     const today = new Date();
     const currentDay = today.getDay(); // 0: 일, 1: 월, ... 6: 토
     
-    // 이번 주 월요일 구하기 (일요일인 경우 지난주 월요일로 처리)
     const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
     const monday = new Date(today);
     monday.setDate(today.getDate() + distanceToMonday);
@@ -1465,11 +1501,10 @@
     const daysOfWeek = ['월', '화', '수', '목', '금'];
     const daysOfWeekJa = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日'];
 
-    // 2. 저장된 데이터 불러오기 (localStorage)
     const storedData = JSON.parse(localStorage.getItem('weeklyLearningData') || '{}');
 
     let totalMinutes = 0;
-    let completedTasksCount = 0; // 총 10개(읽기 5 + 퀴즈 5) 중 완료 수
+    let completedTasksCount = 0;
     let activeDaysSet = new Set();
     let streakCount = 0;
     let isStreakBroken = false;
@@ -1477,9 +1512,8 @@
     const rowsContainer = document.querySelector('[data-purpose="weekly-matrix-table"] .divide-y');
     if (!rowsContainer) return;
 
-    rowsContainer.innerHTML = ''; // 기존 행 초기화
+    rowsContainer.innerHTML = '';
 
-    // 3. 월~금 5일간 반복 생성
     for (let i = 0; i < 5; i++) {
       const targetDate = new Date(monday);
       targetDate.setDate(monday.getDate() + i);
@@ -1512,7 +1546,6 @@
         activeDaysSet.add(dateKey);
       }
 
-      // 연속 스트릭 계산
       const hasLearnedToday = dayData.readingDone || dayData.quizDone;
       if (hasLearnedToday && !isStreakBroken) {
         streakCount++;
@@ -1520,7 +1553,6 @@
         isStreakBroken = true;
       }
 
-      // 셀 HTML 생성 함수
       const createStatusCellHtml = (isDone, timeSpent) => {
         if (isDone) {
           return `
@@ -1566,137 +1598,103 @@
       rowsContainer.insertAdjacentHTML('beforeend', rowHtml);
     }
 
-    // 4. 프로그래스 바 & 퍼센트 계산 (총 10개 중)
     const percentage = Math.round((completedTasksCount / 10) * 100);
     const progressBar = document.getElementById('achievement-progress-bar');
     const progressPercentText = document.getElementById('achievement-progress-percent');
     if (progressBar) progressBar.style.width = `${percentage}%`;
     if (progressPercentText) progressPercentText.innerText = `${percentage}%`;
 
-    // 5. N / 5일 표시
     const daysIndicator = document.querySelector('#view-weekly-stats .font-label-bold.text-primary');
     if (daysIndicator) daysIndicator.innerText = `${activeDaysSet.size} / 5일`;
 
-    // 6. 총 학습 시간 계산 (시간 + 분)
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
     const timeFormatted = hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`;
     const totalTimeElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-slate-800');
     if (totalTimeElement) totalTimeElement.innerText = timeFormatted;
 
-    // 7. 스트릭 표시
     const streakElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-amber-600');
     if (streakElement) streakElement.innerText = `${streakCount}일 달성`;
   }
 
-  // VIEW 2에서 VIEW 5 버튼을 누를 때 renderWeeklyStatsView()를 실행하도록 연결
   document.getElementById('nav-weekly-stats')?.addEventListener('click', () => {
     renderWeeklyStatsView();
+    showView('view-weekly-stats');
   });
 
-  // 페이지 로드 완료 시 초기 1회 실행
   document.addEventListener('DOMContentLoaded', () => {
     renderWeeklyStatsView();
   });
 
-/**
- * 2. 스크린샷 생성 및 레포트 제출
- */
-async function handleReportSubmit() {
-  const btn = document.getElementById('submit-report-btn');
-  const btnLabel = document.getElementById('btn-label');
-  const flash = document.getElementById('camera-flash');
-  const toast = document.getElementById('submission-toast');
-  const targetArea = document.getElementById('view-achievement'); // 캡처할 메인 뷰
-  
-  if (!btn || btn.dataset.submitting === 'true') return;
-  btn.dataset.submitting = 'true';
-  
-  // 버튼 시각 상태: 캡처 중
-  btnLabel.innerText = '화면 캡처 중... (撮影中)';
-  btn.classList.add('bg-slate-700');
-  btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-  
-  // 셔터 애니메이션 효과
-  flash.classList.remove('opacity-0');
-  flash.classList.add('opacity-90');
-  setTimeout(() => {
-    flash.classList.remove('opacity-90');
-    flash.classList.add('opacity-0');
-  }, 120);
-
-  try {
-    // html2canvas 옵션 설정 (하단 버튼 및 플래시 레이어 제외)
-    const canvas = await html2canvas(targetArea, {
-      scale: 2, // 고해상도 캡처
-      useCORS: true, // 이미지 전송 에러 방지
-      ignoreElements: (element) => {
-        // 하단 버튼, 토스트, 카메라 플래시는 이미지 캡처에서 제외
-        return element.id === 'submit-report-btn' || 
-               element.id === 'submission-toast' || 
-               element.id === 'camera-flash' ||
-               element.tagName === 'FOOTER';
-      }
-    });
-
-    // 이미지 파일 다운로드 처리
-    const image = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    const today = new Date().toISOString().slice(0, 10);
+  // 스크린샷 생성 및 레포트 제출
+  async function handleReportSubmit() {
+    const btn = document.getElementById('submit-report-btn');
+    const btnLabel = document.getElementById('btn-label');
+    const flash = document.getElementById('camera-flash');
+    const toast = document.getElementById('submission-toast');
+    const targetArea = document.getElementById('view-weekly-stats');
     
-    link.href = image;
-    link.download = `세종학당_주간학습레포트_${today}.png`;
-    link.click();
-
-    // 성공 완료 처리
-    btnLabel.innerText = '캡처 완료! (撮影完了)';
-    btn.classList.remove('bg-slate-700');
-    btn.classList.add('bg-emerald-700');
+    if (!btn || btn.dataset.submitting === 'true') return;
+    btn.dataset.submitting = 'true';
     
-    // 안내 토스트 노출
-    toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
-    toast.classList.add('translate-y-0', 'opacity-100');
+    btnLabel.innerText = '화면 캡처 중... (撮影中)';
+    btn.classList.add('bg-slate-700');
+    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
     
+    flash.classList.remove('opacity-0');
+    flash.classList.add('opacity-90');
     setTimeout(() => {
-      toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
-      toast.classList.remove('translate-y-0', 'opacity-100');
-      btnLabel.innerText = '레포트 다시 제출 (再提出)';
-      btn.classList.remove('bg-emerald-700');
-      btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+      flash.classList.remove('opacity-90');
+      flash.classList.add('opacity-0');
+    }, 120);
+
+    try {
+      const canvas = await html2canvas(targetArea, {
+        scale: 2,
+        useCORS: true,
+        ignoreElements: (element) => {
+          return element.id === 'submit-report-btn' || 
+                 element.id === 'submission-toast' || 
+                 element.id === 'camera-flash' ||
+                 element.tagName === 'FOOTER';
+        }
+      });
+
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const today = new Date().toISOString().slice(0, 10);
+      
+      link.href = image;
+      link.download = `세종학당_주간학습레포트_${today}.png`;
+      link.click();
+
+      btnLabel.innerText = '캡처 완료! (撮影完了)';
+      btn.classList.remove('bg-slate-700');
+      btn.classList.add('bg-emerald-700');
+      
+      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        btnLabel.innerText = '레포트 다시 제출 (再提出)';
+        btn.classList.remove('bg-emerald-700');
+        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+        btn.dataset.submitting = 'false';
+      }, 3200);
+
+    } catch (error) {
+      console.error("스크린샷 생성 실패:", error);
+      alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
+      btnLabel.innerText = '레포트 제출 (レポート提出)';
+      btn.classList.remove('bg-slate-700');
+      btn.classList.add('bg-emerald-600');
       btn.dataset.submitting = 'false';
-    }, 3200);
-
-  } catch (error) {
-    console.error("스크린샷 생성 실패:", error);
-    alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
-    btnLabel.innerText = '레포트 제출 (レポート提出)';
-    btn.classList.remove('bg-slate-700');
-    btn.classList.add('bg-emerald-600');
-    btn.dataset.submitting = 'false';
+    }
   }
-}
-  
-// 대시보드 -> 주간 성과 화면 이동 (네비게이션 '학습기록' 클릭 시)
-document.querySelector('a[onclick*="학습 기록"]').addEventListener('click', (e) => {
-  e.preventDefault();
-  viewDashboard.classList.add('hidden-view');
-  viewStats.classList.remove('hidden-view');
-});
-
-// 주간 성과 -> 대시보드 이동 (뒤로가기 및 네비게이션 '오늘의 학습' 클릭 시)
-document.getElementById('back-from-stats').addEventListener('click', () => {
-  viewStats.classList.add('hidden-view');
-  viewDashboard.classList.remove('hidden-view');
-});
-
-document.getElementById('nav-to-dashboard').addEventListener('click', () => {
-  viewStats.classList.add('hidden-view');
-  viewDashboard.classList.remove('hidden-view');
-});
-  
 
   // ==================== TTS 및 음성 인식(STT) ====================
-  
   function playTTS(text, rate = 0.8) {
     if ('speechSynthesis' in window && text) {
       window.speechSynthesis.cancel();
@@ -1711,211 +1709,53 @@ document.getElementById('nav-to-dashboard').addEventListener('click', () => {
   btnAudioNormal?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
-  let isRecording = false;
 
   if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = 'ko-KR';
-    recognition.interimResults = true;
-    recognition.continuous = false;
 
-    recognition.onstart = () => {
-      isRecording = true;
-      micPulseRing?.classList.remove('opacity-60', 'bg-secondary/20');
-      micPulseRing?.classList.add('opacity-100', 'bg-error/30');
-      micRecordBtn?.classList.remove('bg-secondary');
-      micRecordBtn?.classList.add('bg-error');
-      
-      if (recordCaption) {
-        recordCaption.textContent = '聞いています... (お話しください)';
-        recordCaption.classList.remove('text-secondary');
-        recordCaption.classList.add('text-error');
-      }
-      if (micIcon) micIcon.textContent = 'graphic_eq';
-      if (practiceRecognizedText) practiceRecognizedText.innerText = "음성 인식 중...";
-    };
-
-// 💡 수정된 부분: 음성 인식 결과를 정확히 추출하도록 변경
     recognition.onresult = (event) => {
-      let transcript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      if (practiceRecognizedText && transcript) {
-        practiceRecognizedText.innerText = `"${transcript}"`;
+      const spokenText = event.results[0][0].transcript;
+      if (practiceRecognizedText) practiceRecognizedText.innerText = spokenText;
+      
+      const targetText = practiceSentence?.innerText || "";
+      const score = calculateSimilarity(targetText, spokenText);
+      
+      if (practiceMatchBadge) practiceMatchBadge.innerText = `🎯 일치율 ${score}%`;
+      if (practiceEvalText) {
+        if (score >= 80) practiceEvalText.innerText = "🎉 훌륭합니다! 정확한 발음입니다.";
+        else if (score >= 50) practiceEvalText.innerText = "👍 아주 좋아요! 조금만 더 명확하게 발음해보세요.";
+        else practiceEvalText.innerText = "💪 다시 한번 천천히 발음해볼까요?";
       }
     };
 
-    recognition.onerror = () => stopPracticeRecordingUI();
-    
-    // 💡 수정된 부분: undefined 및 예외 문자열 필터링 강화
+    recognition.onerror = () => {
+      if (practiceRecognizedText) practiceRecognizedText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
+    };
+
     recognition.onend = () => {
-      stopPracticeRecordingUI();
-      const rawText = practiceRecognizedText?.innerText || '';
-      const spokenText = rawText.replace(/"/g, '').trim();
-
-      // "undefined", "음성 인식 중", "마이크 버튼" 등의 예외 케이스 및 빈 값 검증
-      if (
-        spokenText &&
-        spokenText !== "undefined" &&
-        !spokenText.includes("음성 인식 중") &&
-        !spokenText.includes("마이크 버튼")
-      ) {
-        evaluatePronunciationAI(practiceSentence?.innerText || '', spokenText);
-      } else {
-        if (practiceRecognizedText) {
-          practiceRecognizedText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
-        }
-      }
+      isRecording = false;
+      micPulseRing?.classList.add('hidden');
+      if (recordCaption) recordCaption.innerText = "마이크를 누르고 말하기";
     };
-  }
-
-  function stopPracticeRecordingUI() {
-    if (isRecording && recognition) {
-      try { recognition.stop(); } catch(e) {}
-    }
-    isRecording = false;
-    micPulseRing?.classList.remove('opacity-100', 'bg-error/30');
-    micPulseRing?.classList.add('opacity-60', 'bg-secondary/20');
-    micRecordBtn?.classList.remove('bg-error');
-    micRecordBtn?.classList.add('bg-secondary');
-    
-    if (recordCaption) {
-      recordCaption.textContent = 'タップして発音をチェック';
-      recordCaption.classList.remove('text-error');
-      recordCaption.classList.add('text-secondary');
-    }
-    if (micIcon) micIcon.textContent = 'mic';
   }
 
   micRecordBtn?.addEventListener('click', () => {
     if (!recognition) {
-      alert("이 브라우저는 음성 인식을 지원하지 않습니다.");
+      alert("이 브라우저는 음성 인식을 지원하지 않습니다. (Chrome/Safari 권장)");
       return;
     }
+
     if (!isRecording) {
+      isRecording = true;
       recognition.start();
+      micPulseRing?.classList.remove('hidden');
+      if (recordCaption) recordCaption.innerText = "듣고 있습니다...";
     } else {
-      recognition.stop();
+      stopPracticeRecordingUI();
     }
   });
-
-/**
-   * 레벤슈타인 거리(Levenshtein Distance) 알고리즘
-   * 두 문자열 간의 유사도를 0 ~ 100점 사이로 계산합니다.
-   */
-  function calculateSimilarity(str1, str2) {
-    if (!str1 || !str2) return 0;
-    
-    // 공백 및 특수문자 제거 후 비교
-    const s1 = str1.replace(/\s+/g, '').trim();
-    const s2 = str2.replace(/\s+/g, '').trim();
-    
-    if (s1 === s2) return 100;
-    if (s1.length === 0 || s2.length === 0) return 0;
-
-    const track = Array(s2.length + 1).fill(null).map(() =>
-      Array(s1.length + 1).fill(null)
-    );
-
-    for (let i = 0; i <= s1.length; i += 1) track[0][i] = i;
-    for (let j = 0; j <= s2.length; j += 1) track[j][0] = j;
-
-    for (let j = 1; j <= s2.length; j += 1) {
-      for (let i = 1; i <= s1.length; i += 1) {
-        const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
-        track[j][i] = Math.min(
-          track[j][i - 1] + 1, // 삽입
-          track[j - 1][i] + 1, // 삭제
-          track[j - 1][i - 1] + indicator // 수정
-        );
-      }
-    }
-
-    const distance = track[s2.length][s1.length];
-    const maxLength = Math.max(s1.length, s2.length);
-    const similarity = ((maxLength - distance) / maxLength) * 100;
-    
-    return Math.max(0, Math.round(similarity));
-  }
-
-  /**
-   * Vercel API 연동 및 레벤슈타인 유사도 평가 함수
-   */
-async function evaluatePronunciationAI(target, spoken) {
-  // 1. 입력값 기본 검증
-  if (!target || !spoken) {
-    if (practiceMatchBadge) practiceMatchBadge.innerHTML = "🎯 0% 一致";
-    if (practiceEvalText) practiceEvalText.innerText = "음성이 정상적으로 인식되지 않았습니다.";
-    return;
-  }
-
-  if (practiceMatchBadge) practiceMatchBadge.innerHTML = "🎯 분석 중...";
-  if (practiceEvalText) practiceEvalText.innerText = "발음을 분석하고 있습니다...";
-
-  // [본인의 Vercel API 주소로 변경하세요]
-  const VERCEL_API_URL = "https://sejong-bongsense.vercel.app/api/evaluate";
-
-  try {
-    const response = await fetch(VERCEL_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ target: target, spoken: spoken })
-    });
-
-    if (!response.ok) throw new Error(`API 오류 (Status: ${response.status})`);
-
-    const data = await response.json();
-    let score = null;
-    let evaluation = null;
-
-    // API 응답 형태 1: { score: 90, evaluation: "..." }
-    if (data && typeof data.score === 'number') {
-      score = data.score;
-      evaluation = data.evaluation;
-    } 
-    // API 응답 형태 2: Gemini / OpenAI 원문 JSON 텍스트 파싱
-    else if (data && data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-      const rawText = data.candidates[0].content.parts[0].text
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim();
-      
-      const parsed = JSON.parse(rawText);
-      score = parsed.score;
-      evaluation = parsed.evaluation;
-    }
-
-    // 파싱 실패 시 fallback
-    if (score === null || score === undefined) {
-      throw new Error("API 응답 구조에서 score를 찾을 수 없습니다.");
-    }
-
-    if (practiceMatchBadge) practiceMatchBadge.innerHTML = `🎯 ${score}% 一致`;
-    if (practiceEvalText) practiceEvalText.innerText = evaluation || "평가가 완료되었습니다.";
-
-  } catch (err) {
-    // 💡 API 실패, 네트워크 에러, 파싱 에러 발생 시 자바스크립트 유사도 알고리즘으로 자동 계산
-    console.warn("API 연동 실패로 인해 오프라인 유사도 알고리즘으로 대체합니다:", err);
-
-    const score = calculateSimilarity(target, spoken);
-    let evaluationText = "";
-
-    if (score >= 90) {
-      evaluationText = "발음 정확도: 完璧です！ (완벽합니다!)";
-    } else if (score >= 70) {
-      evaluationText = "발음 정확도: 良好 (아주 잘하셨습니다)";
-    } else if (score >= 40) {
-      evaluationText = "발음 정확도: 惜しいです！ (조금 더 명확히 발음해 보세요)";
-    } else {
-      evaluationText = "발음 정확도: もう一度練習してみましょう (다시 시도해 보세요)";
-    }
-
-    if (practiceMatchBadge) practiceMatchBadge.innerHTML = `🎯 ${score}% 一致`;
-    if (practiceEvalText) practiceEvalText.innerText = evaluationText;
-  }
-}
 </script>
+
 </body>
 </html>
