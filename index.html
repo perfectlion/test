@@ -787,7 +787,6 @@
 <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3" data-purpose="summary-card">
 <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
 <span class="text-xs font-semibold text-slate-500">주간 학습 통계 (週間統計)</span>
-<span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">우수 학습자</span>
 </div>
 <!-- Metrics Grid -->
 <div class="grid grid-cols-2 gap-2.5">
@@ -805,16 +804,6 @@
 <span class="text-lg font-bold text-amber-600 tracking-tight">3일 달성</span>
 <span class="text-sm">🔥</span>
 </div>
-</div>
-</div>
-<!-- Motivational Message Box -->
-<div class="bg-amber-50/60 rounded-xl p-3 border border-amber-200/50 flex items-start space-x-2.5">
-<span class="text-base leading-tight">💡</span>
-<div>
-<p class="text-[12px] font-semibold text-amber-900 leading-snug">
-              금요일까지 멋지게 완료했어요! ✨
-            </p>
-
 </div>
 </div>
 </section>
@@ -875,10 +864,13 @@
   let lessonSentencesList = [];
   let currentSentenceIndex = 0;
 
-  // 녹음 관련 전역 변수 (중복 선언 방지를 위해 상단에만 1회 선언)
+  // 녹음 관련 전역 변수 
   let isRecording = false; 
   let mediaRecorder = null;
   let recognition = null;
+
+  let practiceStartTime = null; // 읽기 학습 시작 시각
+  let quizStartTime = null;     // 퀴즈 학습 시작 시각
 
   // Gemini API 설정
   const GEMINI_MODEL = "gemini-1.5-flash";
@@ -1194,6 +1186,11 @@
   goPracticeBtn?.addEventListener('click', () => {
     const targetId = Number(currentLessonId);
 
+    practiceStartTime = Date.now(); // ⏱️ 읽기 시작 시각 기록
+    currentSentenceIndex = 0;
+    loadPracticeSentenceAtIndex(currentSentenceIndex);
+    showView('view-practice');
+    
     lessonSentencesList = lessonsData
       .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
       .map(l => ({
@@ -1263,17 +1260,24 @@
   }
 
   // 대시보드로 돌아갈 때 (읽기 완료 처리 반영)
-  function returnToDashboard() {
-    stopPracticeRecordingUI();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-
-    // [읽기 학습 완료 데이터 저장] 10분 소요 처리
-    saveTodayLearningData('reading', 10);
-
-    showView('view-dashboard');
+function returnToDashboard() {
+  stopPracticeRecordingUI();
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
   }
+
+  // ⏱️ 실제 소요 시간 계산 (초 단위 -> 분 단위 올림/반올림)
+  if (practiceStartTime) {
+    const elapsedMs = Date.now() - practiceStartTime;
+    // 최소 1분 단위로 계산 (초 단위 측정 후 분으로 환산, 예: 30초 이상 학습 시 1분)
+    const elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
+    
+    saveTodayLearningData('reading', elapsedMinutes);
+    practiceStartTime = null; // 초기화
+  }
+
+  showView('view-dashboard');
+}
 
   btnNextSentence?.addEventListener('click', () => {
     if (currentSentenceIndex < lessonSentencesList.length - 1) {
@@ -1325,18 +1329,24 @@
     };
   }
 
-  function renderQuizIndex(index) {
-    const total = currentQuizList.length;
+function renderQuizIndex(index) {
+  const total = currentQuizList.length;
 
-    if (total === 0 || index >= total) {
-      alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
+  if (total === 0 || index >= total) {
+    alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
+    
+    // ⏱️ 실제 퀴즈 소요 시간 계산
+    if (quizStartTime) {
+      const elapsedMs = Date.now() - quizStartTime;
+      const elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       
-      // [퀴즈 학습 완료 데이터 저장] 10분 소요 처리
-      saveTodayLearningData('quiz', 10);
-
-      showView('view-dashboard');
-      return;
+      saveTodayLearningData('quiz', elapsedMinutes);
+      quizStartTime = null; // 초기화
     }
+
+    showView('view-dashboard');
+    return;
+  }
 
     const problem = currentQuizList[index];
 
@@ -1430,6 +1440,11 @@
     try {
       const currentLessonIdNum = Number(currentLessonId || 1);
 
+      quizStartTime = Date.now(); // ⏱️ 퀴즈 시작 시각 기록
+          
+      renderQuizIndex(currentQuizIndex);
+      showView('view-quiz');
+      
       let availableLessons = [];
       if (currentLessonIdNum <= 1) {
         availableLessons = [1];
