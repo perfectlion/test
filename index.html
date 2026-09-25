@@ -108,6 +108,9 @@
     }
   </script>
 
+<!-- html2canvas 라이브러리 (head 태그 상단에 필수 위치) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
 <style>
     /* Material Symbols 기본 클래스 설정 */
     .material-symbols-outlined {
@@ -1641,68 +1644,106 @@ function renderQuizIndex(index) {
     renderWeeklyStatsView();
   });
 
-  // 스크린샷 생성 및 레포트 제출
-  async function handleReportSubmit() {
-    const btn = document.getElementById('submit-report-btn');
-    const btnLabel = document.getElementById('btn-label');
-    const flash = document.getElementById('camera-flash');
-    const toast = document.getElementById('submission-toast');
-    const targetArea = document.getElementById('view-weekly-stats');
-    
-    if (!btn || btn.dataset.submitting === 'true') return;
-    btn.dataset.submitting = 'true';
-    
-    btnLabel.innerText = '화면 캡처 중... (撮影中)';
+// 스크린샷 생성 및 레포트 제출
+async function handleReportSubmit() {
+  // 1. html2canvas 라이브러리 로드 여부 검증
+  if (typeof html2canvas === 'undefined') {
+    alert("화면 캡처 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.");
+    return;
+  }
+
+  const btn = document.getElementById('submit-report-btn');
+  const btnLabel = document.getElementById('btn-label');
+  const flash = document.getElementById('camera-flash');
+  const toast = document.getElementById('submission-toast');
+  const targetArea = document.getElementById('view-weekly-stats');
+
+  if (!targetArea) {
+    alert("캡처할 화면 영역을 찾을 수 없습니다.");
+    return;
+  }
+
+  if (btn && btn.dataset.submitting === 'true') return;
+  if (btn) btn.dataset.submitting = 'true';
+
+  if (btnLabel) btnLabel.innerText = '화면 캡처 중... (撮影中)';
+  if (btn) {
     btn.classList.add('bg-slate-700');
     btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-    
+  }
+
+  // 셔터 애니메이션 효과 (Null Safety)
+  if (flash) {
     flash.classList.remove('opacity-0');
     flash.classList.add('opacity-90');
     setTimeout(() => {
       flash.classList.remove('opacity-90');
       flash.classList.add('opacity-0');
     }, 120);
+  }
 
-    try {
-      const canvas = await html2canvas(targetArea, {
-        scale: 2,
-        useCORS: true,
-        ignoreElements: (element) => {
-          return element.id === 'submit-report-btn' || 
-                 element.id === 'submission-toast' || 
-                 element.id === 'camera-flash' ||
-                 element.tagName === 'FOOTER';
-        }
-      });
+  try {
+    // 캡처 전 스크롤 위치 최상단 보정 (스크롤 위치에 따른 캡처 깨짐 방지)
+    window.scrollTo(0, 0);
 
-      const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      const today = new Date().toISOString().slice(0, 10);
-      
-      link.href = image;
-      link.download = `세종학당_주간학습레포트_${today}.png`;
-      link.click();
+    // html2canvas 옵션 강화
+    const canvas = await html2canvas(targetArea, {
+      scale: 2, // 고해상도 Render
+      useCORS: true, // 외부 이미지 CORS 허용
+      allowTaint: true,
+      backgroundColor: '#ffffff', // 배경색 흰색 지정
+      windowWidth: targetArea.scrollWidth,
+      windowHeight: targetArea.scrollHeight,
+      ignoreElements: (element) => {
+        return (
+          element.id === 'submit-report-btn' ||
+          element.id === 'submission-toast' ||
+          element.id === 'camera-flash' ||
+          element.tagName === 'FOOTER'
+        );
+      }
+    });
 
-      btnLabel.innerText = '캡처 완료! (撮影完了)';
+    // 이미지 다운로드
+    const image = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    const today = new Date().toISOString().slice(0, 10);
+
+    link.href = image;
+    link.download = `세종학당_주간학습레포트_${today}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (btnLabel) btnLabel.innerText = '캡처 완료! (撮影完了)';
+    if (btn) {
       btn.classList.remove('bg-slate-700');
       btn.classList.add('bg-emerald-700');
-      
+    }
+
+    if (toast) {
       toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
       toast.classList.add('translate-y-0', 'opacity-100');
-      
-      setTimeout(() => {
+    }
+
+    setTimeout(() => {
+      if (toast) {
         toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
         toast.classList.remove('translate-y-0', 'opacity-100');
-        btnLabel.innerText = '레포트 다시 제출 (再提出)';
+      }
+      if (btnLabel) btnLabel.innerText = '레포트 다시 제출 (再提出)';
+      if (btn) {
         btn.classList.remove('bg-emerald-700');
         btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
         btn.dataset.submitting = 'false';
-      }, 3200);
+      }
+    }, 3200);
 
-    } catch (error) {
-      console.error("스크린샷 생성 실패:", error);
-      alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
-      btnLabel.innerText = '레포트 제출 (レポート提出)';
+  } catch (error) {
+    console.error("스크린샷 생성 실패 상세 정보:", error);
+    alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
+    if (btnLabel) btnLabel.innerText = '레포트 제출 (レポート提出)';
+    if (btn) {
       btn.classList.remove('bg-slate-700');
       btn.classList.add('bg-emerald-600');
       btn.dataset.submitting = 'false';
