@@ -618,8 +618,10 @@
     
     <!-- Lesson Stage Track Indicator -->
     <div class="flex items-center justify-between px-1 mb-space-sm">
-      <span id="achievement-course-tag" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">초급 2 · 주간 성취도 (週間達成度)</span>
-      <span class="font-label-bold text-label-bold text-primary">4 / 5일</span>
+      <span id="achievement-course-tag" class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+        주간 성취도 (週間達成度)
+      </span>
+      <span class="font-label-bold text-label-bold text-primary">0 / 5일</span>
     </div>
 
     <!-- Title Group -->
@@ -1551,7 +1553,17 @@ function generateQuizProblem(targetItem, allLessons) {
   // ==========================================
   // VIEW 5: 주간 성과 데이터 동적 연동 로직
   // ==========================================
-  function renderWeeklyStatsView() {
+function renderWeeklyStatsView() {
+    // ----------------------------------------------------
+    // [추가] 현재 학생 코스(레벨) 태그 동적 연동
+    // ----------------------------------------------------
+    const courseTag = document.getElementById('achievement-course-tag');
+    if (courseTag) {
+      const userCourse = currentUser?.course || "1a";
+      const { bookName } = getBookAndLessonTitle(userCourse, currentLessonId || 1);
+      courseTag.innerText = `${bookName} · 주간 성취도 (週間達成度)`;
+    }
+
     const today = new Date();
     const currentDay = today.getDay(); // 0: 일, 1: 월, ... 6: 토
     
