@@ -327,11 +327,16 @@
           <span class="material-symbols-outlined text-[24px] mb-0.5" style="font-variation-settings: 'FILL' 1;">school</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">今日の学習</span>
         </a>
-        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
-           onclick="openReviewMode()">
+        <!-- 復習モード (복습 모드) -->
+        <a id="nav-review-mode" 
+           class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
+           href="javascript:void(0);" 
+           onclick="document.getElementById('view-dashboard').classList.add('hidden-view'); document.getElementById('view-review').classList.remove('hidden-view'); if(typeof renderReviewScreen === 'function') renderReviewScreen();">
           <span class="material-symbols-outlined text-[24px] mb-0.5">replay</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
         </a>
+        
+        <!-- 学習記録 (주간 성과) -->
         <a id="nav-weekly-stats" 
            class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
            href="javascript:void(0);" 
