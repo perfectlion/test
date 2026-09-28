@@ -1884,15 +1884,23 @@ let currentSelectedLevel = 'lvl-1'; // 기본 선택된 레벨
 
 // 2. 전체 복습 화면 진입 함수 (대시보드 버튼 클릭 시 호출)
 function openReviewMode() {
-  // 기존 view 조절 함수가 있다면 활용하고, 복습 화면을 보여줍니다.
-  if (typeof showView === 'function') {
-    showView('view-review');
+  // 1. 모든 view 화면 숨기기 (hidden 추가 & flex 제거)
+  document.querySelectorAll('[id^="view-"]').forEach(v => {
+    v.classList.add('hidden');
+    v.classList.remove('flex');
+  });
+
+  // 2. view-review 화면 강제 표시 (hidden 제거 & flex/block 추가)
+  const reviewEl = document.getElementById('view-review');
+  if (reviewEl) {
+    reviewEl.classList.remove('hidden');
+    reviewEl.classList.add('flex'); // 화면 레이아웃에 맞춰 flex 또는 block
   } else {
-    document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.add('hidden'));
-    document.getElementById('view-review').classList.remove('hidden');
+    console.error("id가 'view-review'인 요소를 찾을 수 없습니다.");
+    return;
   }
-  
-  // 탭 및 초기 레벨(초급 1)의 단원 리스트 렌더링
+
+  // 3. 탭 및 단원 목록 동적 렌더링
   renderLevelTabs();
   selectLevel(currentSelectedLevel);
 }
