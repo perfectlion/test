@@ -1738,38 +1738,11 @@
     const mins = totalMinutes % 60;
   }
 
-  // ==========================================
-  // VIEW 6: 전체 복습 화면 탭/아코디언/학습 제어
-  // ==========================================
-  
-  // 1. 레벨 탭 전환 (초급 1 ~ 중급 2)
-  function switchLevel(levelId) {
-    const panels = document.querySelectorAll('.level-panel');
-    const tabBtns = document.querySelectorAll('.level-tab-btn');
+// ==========================================
+// VIEW 6: 전체 복습 화면 탭/아코디언/학습 제어
+// ==========================================
 
-    panels.forEach(panel => {
-      panel.classList.add('hidden');
-      panel.classList.remove('flex');
-    });
-
-    tabBtns.forEach(btn => {
-      btn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-xs', 'font-bold');
-      btn.classList.add('text-on-surface-variant');
-    });
-
-    const activePanel = document.getElementById(`panel-${levelId}`);
-    if (activePanel) {
-      activePanel.classList.remove('hidden');
-      activePanel.classList.add('flex');
-    }
-
-    const activeTab = document.getElementById(`tab-${levelId}`);
-    if (activeTab) {
-      activeTab.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-xs', 'font-bold');
-      activeTab.classList.remove('text-on-surface-variant');
-    }
-
-// 1. 덱 및 단원 데이터 배열 정의 (필요에 따라 80개 단원 데이터를 배열로 관리)
+// 1. 덱 및 단원 데이터 배열 정의
 const levelData = [
   {
     id: "lvl-1",
@@ -1807,7 +1780,31 @@ const levelData = [
   }
 ];
 
-// 2. 카드 렌더링 함수
+// 2. 레벨 탭 전환 (초급 1 ~ 중급 2)
+function switchLevel(levelId) {
+  // 데이터 상의 active 상태 업데이트
+  levelData.forEach(lvl => {
+    lvl.isCurrent = (lvl.id === levelId);
+  });
+
+  // 탭 화면 다시 렌더링 (스타일 및 Active 상태 반영)
+  renderLevelTabs();
+
+  // 레벨 패널(아코디언/단원 목록) 전환 처리
+  const panels = document.querySelectorAll('.level-panel');
+  panels.forEach(panel => {
+    panel.classList.add('hidden');
+    panel.classList.remove('flex');
+  });
+
+  const activePanel = document.getElementById(`panel-${levelId}`);
+  if (activePanel) {
+    activePanel.classList.remove('hidden');
+    activePanel.classList.add('flex');
+  }
+} // <--- [수정] 누락되었던 switchLevel 함수의 닫는 중괄호 추가!
+
+// 3. 카드 렌더링 함수
 function renderLevelTabs() {
   const container = document.getElementById("level-tabs");
   if (!container) return;
@@ -1870,40 +1867,40 @@ function renderLevelTabs() {
   }).join('');
 }
 
-// 초기화 실행
-document.addEventListener("DOMContentLoaded", renderLevelTabs);
+// 4. 복습 화면 내 학습 액션 처리
+function handleActionClick(button) {
+  const status = button.getAttribute('data-status');
+  const type = button.getAttribute('data-type');
+  const lessonId = button.getAttribute('data-lesson-id');
 
-  // 3. 복습 화면 내 학습 액션 처리
-  function handleActionClick(button) {
-    const status = button.getAttribute('data-status');
-    const type = button.getAttribute('data-type');
-    const lessonId = button.getAttribute('data-lesson-id');
+  if (status === 'empty') {
+    alert('학습 데이터가 아직 준비되지 않았습니다.');
+    return;
+  }
 
-    if (status === 'empty') {
-      alert('학습 데이터가 아직 준비되지 않았습니다.');
-      return;
-    }
-
-    if (lessonId) {
-      currentLessonId = Number(lessonId);
-      const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
-      const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
-      
-      if (currItem) {
-        currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과 (${currItem.title})`;
-      } else {
-        currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과`;
-      }
-    }
-
-    if (type === 'reading') {
-      startReadingPractice(currentLessonId);
-    } else if (type === 'quiz') {
-      startQuizForLesson(currentLessonId);
-    } else if (type === 'vocab') {
-      alert(`제 ${lessonId || currentLessonId}과 단어 공부 모드로 이동합니다.`);
+  if (lessonId) {
+    currentLessonId = Number(lessonId);
+    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
+    const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
+    
+    if (currItem) {
+      currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과 (${currItem.title})`;
+    } else {
+      currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과`;
     }
   }
+
+  if (type === 'reading') {
+    startReadingPractice(currentLessonId);
+  } else if (type === 'quiz') {
+    startQuizForLesson(currentLessonId);
+  } else if (type === 'vocab') {
+    alert(`제 ${lessonId || currentLessonId}과 단어 공부 모드로 이동합니다.`);
+  }
+}
+
+// 초기화 실행
+document.addEventListener("DOMContentLoaded", renderLevelTabs);
 </script>
 
 </body>
