@@ -1316,18 +1316,62 @@
   let currentQuizIndex = 0;
   let isCardFlipped = false;
 
-  function generateQuizProblem(targetItem, allLessons) {
-    const maskedSentence = targetItem.sentence_kr.replace(
-      targetItem.word_kr,
-      `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`
-    );
+function generateQuizProblem(targetItem, allLessons) {
+    const targetWord = (targetItem.word_kr || '').trim();
+    let sentenceKr = targetItem.sentence_kr || '';
 
-    const targetLen = targetItem.word_kr.length;
+    // 빈칸 HTML 스타일
+    const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
+
+    let maskedSentence = sentenceKr;
+
+    if (targetWord && sentenceKr) {
+      // 1. 단순 치환 시도 (명사 등 완전 일치하는 경우)
+      if (sentenceKr.includes(targetWord)) {
+        maskedSentence = sentenceKr.replace(targetWord, maskHtml);
+      } else {
+        // 2. 동사/형용사 활용형 처리 ('다' 제거 후 어간 추출)
+        let stem = targetWord;
+        if (targetWord.endsWith('다')) {
+          stem = targetWord.slice(0, -1); // "반갑다" -> "반갑"
+        }
+
+        // ㄷ/ㅂ/ㅎ 불규칙 변형 고려용 핵심 앞글자 (예: "반갑" -> "반")
+        const corePrefix = stem.length > 1 ? stem.substring(0, stem.length - 1) : stem;
+
+        // 문장을 띄어쓰기 단위 어절로 분리하여 검사
+        const words = sentenceKr.split(' ');
+        let matchedIndex = -1;
+
+        for (let i = 0; i < words.length; i++) {
+          const cleanWord = words[i].replace(/[.,?!]/g, ''); // 문장부호 제거
+          
+          // 어간으로 시작하거나("반갑"습니다) 어근 앞글자로 시작하는("반가"워요) 어절 탐색
+          if (cleanWord.startsWith(stem) || (corePrefix && cleanWord.startsWith(corePrefix))) {
+            matchedIndex = i;
+            break;
+          }
+        }
+
+        if (matchedIndex !== -1) {
+          // 해당 어절을 빈칸으로 대체 (마침표 등 문장부호는 뒤에 유지)
+          const targetToken = words[matchedIndex];
+          const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
+          words[matchedIndex] = maskHtml + punctuation;
+          maskedSentence = words.join(' ');
+        } else {
+          console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetWord}") / Sentence("${sentenceKr}")`);
+        }
+      }
+    }
+
+    // 보기(Choices) 생성
+    const targetLen = targetWord.length;
     const otherWords = Array.from(
       new Set(
         allLessons
-          .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr !== targetItem.word_kr)
-          .map(l => l.word_kr)
+          .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== targetWord)
+          .map(l => l.word_kr.trim())
       )
     );
 
@@ -1338,11 +1382,11 @@
     }
 
     const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [targetItem.word_kr, ...shuffledWrong].sort(() => 0.5 - Math.random());
+    const choices = [targetWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
 
     return {
       maskedSentence,
-      correctAnswer: targetItem.word_kr,
+      correctAnswer: targetWord,
       choices,
       hintJp: targetItem.word_jp,
       sentenceJp: targetItem.sentence_jp
