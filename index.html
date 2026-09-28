@@ -327,10 +327,7 @@
           <span class="material-symbols-outlined text-[24px] mb-0.5" style="font-variation-settings: 'FILL' 1;">school</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">今日の学習</span>
         </a>
-        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
-           id="btn-open-review-mode"
-           href="javascript:void(0);"
-           onclick="document.getElementById('view-dashboard').classList.add('hidden-view'); document.getElementById('view-review-mode').classList.remove('hidden-view');">
+        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group" href="#" onclick="alert('복습 모드 준비 중입니다.')">
           <span class="material-symbols-outlined text-[24px] mb-0.5">replay</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
         </a>
@@ -850,36 +847,10 @@
 </p>
 </div>
 </div>
+
+
 </main>
 
-<!-- ==================== VIEW 6: 전체 과정 화면 ==================== -->
-<div id="view-review-mode" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
-  
-  <!-- Header (VIEW 3, VIEW 4, VIEW 5와 동일한 구조) -->
-  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
-    <div class="h-16 px-gutter flex items-center justify-between">
-      <div class="flex items-center gap-space-sm">
-        <button id="back-from-stats" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
-          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
-        </button>
-        <div class="flex flex-col">
-          <div class="flex items-center gap-1">
-            <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
-          </div>
-          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Review Mode</span>
-        </div>
-      </div>
-      <div class="flex items-center gap-space-sm">
-        <img class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
-      </div>
-    </div>
-  </header>
-    <!-- Scroll Deck (데이터가 들어갈 컨테이너) -->
-    <div class="flex gap-2 overflow-x-auto pb-1.5 -mx-gutter px-gutter scrollbar-none items-stretch" id="level-tabs">
-      <!-- JavaScript에서 20개의 단원/레벨 카드가 이곳에 자동으로 생성됩니다 -->
-    </div>
-</div>
-  
 </body>
 </html>
 
@@ -914,7 +885,6 @@
   const viewDashboard = document.getElementById('view-dashboard');
   const viewPractice = document.getElementById('view-practice');
   const viewStats = document.getElementById('view-weekly-stats');
-  const viewReviewMode = document.getElementById('view-review-mode'); // VIEW 6 전체 복습 화면
 
   const loginForm = document.getElementById('login-form');
   const userIdInput = document.getElementById('user-id');
@@ -927,7 +897,6 @@
   const welcomeTitle = document.getElementById('welcome-title');
   const logoutBtn = document.getElementById('logout-btn');
   const goPracticeBtn = document.getElementById('go-practice-btn');
-  const btnOpenReviewMode = document.getElementById('btn-open-review-mode'); // 복습 모드 진입 버튼
   const userProfileImgs = document.querySelectorAll('.user-profile-img-all');
   const cardLessonTag = document.getElementById('card-lesson-tag');
   const targetSentenceElem = document.getElementById('target-sentence');
@@ -1061,9 +1030,8 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
-  // 통합 단일 페이지(SPA) 뷰 전환 함수
   function showView(targetViewId) {
-    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats', 'view-review-mode'];
+    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats'];
     views.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden-view');
@@ -1089,16 +1057,6 @@
     
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
       stopQuizAndReturn(false); // 미완료로 복귀
-    });
-
-    // VIEW 6: 전체 복습 화면 진입 및 뒤로가기
-    btnOpenReviewMode?.addEventListener('click', (e) => {
-      e.preventDefault();
-      showView('view-review-mode');
-    });
-
-    document.getElementById('back-from-review')?.addEventListener('click', () => {
-      showView('view-dashboard');
     });
   });
 
@@ -1239,9 +1197,8 @@
   });
 
   // ==================== 1. 읽기 학습 모드 ====================
-  // 공통 읽기 학습 진입 함수
-  function startReadingPractice(lessonId) {
-    const targetId = Number(lessonId);
+  goPracticeBtn?.addEventListener('click', () => {
+    const targetId = Number(currentLessonId);
 
     lessonSentencesList = lessonsData
       .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
@@ -1269,10 +1226,6 @@
 
     loadPracticeSentenceAtIndex(currentSentenceIndex);
     showView('view-practice');
-  }
-
-  goPracticeBtn?.addEventListener('click', () => {
-    startReadingPractice(currentLessonId);
   });
 
   function loadPracticeSentenceAtIndex(index) {
@@ -1360,102 +1313,108 @@
 
   closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-  // ==================== 2. 데일리 및 복습 퀴즈 로직 ====================
+  // ==================== 2. 데일리 퀴즈 로직 ====================
   let currentQuizList = [];
   let currentQuizIndex = 0;
   let isCardFlipped = false;
 
-  function generateQuizProblem(targetItem, allLessons) {
-    let rawWord = (targetItem.word_kr || '').trim();
-    let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
-    let sentenceKr = targetItem.sentence_kr || '';
+function generateQuizProblem(targetItem, allLessons) {
+  let rawWord = (targetItem.word_kr || '').trim();
+  let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
+  let sentenceKr = targetItem.sentence_kr || '';
 
-    const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
+  const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
 
-    let maskedSentence = sentenceKr;
+  let maskedSentence = sentenceKr;
 
-    // 한글 첫 글자의 초성을 추출하는 헬퍼 함수
-    const getInitialConsonant = (char) => {
-      if (!char) return '';
-      const code = char.charCodeAt(0) - 44032;
-      if (code < 0 || code > 11172) return char;
-      const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-      return initialList[Math.floor(code / 588)];
-    };
+  // 한글 첫 글자의 초성을 추출하는 헬퍼 함수 (예: '가' -> 'ㄱ', '갑' -> 'ㄱ')
+  const getInitialConsonant = (char) => {
+    if (!char) return '';
+    const code = char.charCodeAt(0) - 44032;
+    if (code < 0 || code > 11172) return char; // 한글이 아닌 경우 그대로 반환
+    const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    return initialList[Math.floor(code / 588)];
+  };
 
-    if (targetWord && sentenceKr) {
-      if (sentenceKr.includes(targetWord)) {
-        maskedSentence = sentenceKr.replace(targetWord, maskHtml);
-      } 
-      else if (sentenceKr.includes(rawWord)) {
-        maskedSentence = sentenceKr.replace(rawWord, maskHtml);
-      } 
-      else {
-        let stem = targetWord;
-        if (targetWord.endsWith('다')) {
-          stem = targetWord.slice(0, -1);
-        }
+  if (targetWord && sentenceKr) {
+    // 1. 단어가 문장에 그대로 포함된 경우 (명사, 조사 등)
+    if (sentenceKr.includes(targetWord)) {
+      maskedSentence = sentenceKr.replace(targetWord, maskHtml);
+    } 
+    else if (sentenceKr.includes(rawWord)) {
+      maskedSentence = sentenceKr.replace(rawWord, maskHtml);
+    } 
+    else {
+      // 2. 활용형(동사/형용사) 어간 추출 및 어절 매칭
+      let stem = targetWord;
+      if (targetWord.endsWith('다')) {
+        stem = targetWord.slice(0, -1); // "하다" -> "하", "가다" -> "가", "크다" -> "크"
+      }
 
-        const stemFirstChar = stem.charAt(0);
-        const stemInitial = getInitialConsonant(stemFirstChar);
+      const stemFirstChar = stem.charAt(0);
+      const stemInitial = getInitialConsonant(stemFirstChar); // 어간의 첫 초성 (예: 'ㄱ', 'ㅎ')
 
-        const words = sentenceKr.split(' ');
-        let matchedIndex = -1;
+      const words = sentenceKr.split(' ');
+      let matchedIndex = -1;
 
-        for (let i = 0; i < words.length; i++) {
-          const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
-          if (!cleanWord) continue;
+      for (let i = 0; i < words.length; i++) {
+        const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
+        if (!cleanWord) continue;
 
-          const wordFirstChar = cleanWord.charAt(0);
-          const wordInitial = getInitialConsonant(wordFirstChar);
+        const wordFirstChar = cleanWord.charAt(0);
+        const wordInitial = getInitialConsonant(wordFirstChar);
 
-          if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
-            matchedIndex = i;
-            break;
-          }
-        }
-
-        if (matchedIndex !== -1) {
-          const targetToken = words[matchedIndex];
-          const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
-          words[matchedIndex] = maskHtml + punctuation;
-          maskedSentence = words.join(' ');
-        } else {
-          console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
+        // 조건 A: 어간으로 직접 시작함 (예: "만나"서)
+        // 조건 B: 첫 글자의 초성이 같고 음절 유효 범위 내에 있음 (예: "가"다 -> "갑"니다, "하"다 -> "합"니다)
+        if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
+          matchedIndex = i;
+          break;
         }
       }
+
+      if (matchedIndex !== -1) {
+        const targetToken = words[matchedIndex];
+        const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
+        words[matchedIndex] = maskHtml + punctuation;
+        maskedSentence = words.join(' ');
+      } else {
+        console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
+      }
     }
-
-    const targetLen = rawWord.length;
-    const otherWords = Array.from(
-      new Set(
-        allLessons
-          .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
-          .map(l => l.word_kr.trim())
-      )
-    );
-
-    let candidates = otherWords.filter(w => w.length === targetLen);
-    if (candidates.length < 3) {
-      const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
-      candidates = [...candidates, ...backup];
-    }
-
-    const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
-
-    return {
-      maskedSentence,
-      correctAnswer: rawWord,
-      choices,
-      hintJp: targetItem.word_jp,
-      sentenceJp: targetItem.sentence_jp
-    };
   }
+
+  // 보기(Choices) 생성
+  const targetLen = rawWord.length;
+  const otherWords = Array.from(
+    new Set(
+      allLessons
+        .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
+        .map(l => l.word_kr.trim())
+    )
+  );
+
+  let candidates = otherWords.filter(w => w.length === targetLen);
+  if (candidates.length < 3) {
+    const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
+    candidates = [...candidates, ...backup];
+  }
+
+  const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
+  const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
+
+  return {
+    maskedSentence,
+    correctAnswer: rawWord,
+    choices,
+    hintJp: targetItem.word_jp,
+    sentenceJp: targetItem.sentence_jp
+  };
+}
 
   function renderQuizIndex(index) {
     const total = currentQuizList.length;
 
+    // 모든 퀴즈를 다 완료했을 때만 성적 반영
     if (total > 0 && index >= total) {
       alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
       
@@ -1465,7 +1424,7 @@
         elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       }
       saveTodayLearningData('quiz', elapsedMinutes);
-      clearLearningProgress('quiz', currentLessonId);
+      clearLearningProgress('quiz', currentLessonId); // 진행 데이터 제거
 
       quizStartTime = null;
       showView('view-dashboard');
@@ -1509,6 +1468,7 @@
       if (hintBox) hintBox.classList.add('hidden');
     }
 
+    // 현재 퀴즈 문제 진행 인덱스 저장
     saveLearningProgress('quiz', currentLessonId, index);
 
     const choicesContainer = document.getElementById('quiz-choices-container');
@@ -1539,6 +1499,7 @@
 
   function stopQuizAndReturn(isCompleted = false) {
     if (!isCompleted) {
+      // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
       quizStartTime = null;
     }
     showView('view-dashboard');
@@ -1568,10 +1529,10 @@
     renderQuizIndex(currentQuizIndex);
   });
 
-  // 공통 퀴즈 실행 함수
-  function startQuizForLesson(lessonId) {
+  // 퀴즈 시작 버튼 클릭 로직 보완
+  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
     try {
-      const selectedLessonId = Number(lessonId || 1);
+      const selectedLessonId = Number(currentLessonId || 1);
 
       const lessonItems = (lessonsData || []).filter(
         l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
@@ -1586,6 +1547,7 @@
       
       quizStartTime = Date.now();
 
+      // 저장된 진행 기록 확인
       const savedProgress = getLearningProgress('quiz', selectedLessonId);
       if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
         currentQuizIndex = savedProgress.currentIndex;
@@ -1602,16 +1564,15 @@
     } catch (err) {
       console.error("퀴즈 진입 도중 오류 발생:", err);
     }
-  }
-
-  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-    startQuizForLesson(currentLessonId);
   });
 
   // ==========================================
   // VIEW 5: 주간 성과 데이터 동적 연동 로직
   // ==========================================
-  function renderWeeklyStatsView() {
+function renderWeeklyStatsView() {
+    // ----------------------------------------------------
+    // [추가] 현재 학생 코스(레벨) 태그 동적 연동
+    // ----------------------------------------------------
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
       const userCourse = currentUser?.course || "1a";
@@ -1737,171 +1698,222 @@
 
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
+    const timeFormatted = hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`;
+    const totalTimeElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-slate-800');
+    if (totalTimeElement) totalTimeElement.innerText = timeFormatted;
+
+    const streakElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-amber-600');
+    if (streakElement) streakElement.innerText = `${streakCount}일 달성`;
   }
 
-// ==========================================
-// VIEW 6: 전체 복습 화면 탭/아코디언/학습 제어
-// ==========================================
-
-// 1. 덱 및 단원 데이터 배열 정의
-const levelData = [
-  {
-    id: "lvl-1",
-    title: "초급 1 🌱",
-    subTitle: "初級1 (基礎マスター)",
-    status: "completed", // completed | in_progress | locked
-    progressPercent: 100,
-    progressText: "100% 達成",
-    isCurrent: false
-  },
-  {
-    id: "lvl-2",
-    title: "초급 2 🌿",
-    subTitle: "初級2 (日常会話)",
-    status: "in_progress",
-    progressPercent: 65,
-    progressText: "13/20",
-    isCurrent: true
-  },
-  {
-    id: "lvl-3",
-    title: "중급 1 🌸",
-    subTitle: "中級1 (文法深掘り)",
-    status: "locked",
-    progressText: "20과 준비중",
-    isCurrent: false
-  },
-  {
-    id: "lvl-4",
-    title: "중급 2 🌟",
-    subTitle: "中級2 (実践会話)",
-    status: "locked",
-    progressText: "20과 준비중",
-    isCurrent: false
-  }
-];
-
-// 2. 레벨 탭 전환 (초급 1 ~ 중급 2)
-function switchLevel(levelId) {
-  // 데이터 상의 active 상태 업데이트
-  levelData.forEach(lvl => {
-    lvl.isCurrent = (lvl.id === levelId);
+  document.getElementById('nav-weekly-stats')?.addEventListener('click', () => {
+    renderWeeklyStatsView();
+    showView('view-weekly-stats');
   });
 
-  // 탭 화면 다시 렌더링 (스타일 및 Active 상태 반영)
-  renderLevelTabs();
-
-  // 레벨 패널(아코디언/단원 목록) 전환 처리
-  const panels = document.querySelectorAll('.level-panel');
-  panels.forEach(panel => {
-    panel.classList.add('hidden');
-    panel.classList.remove('flex');
+  document.addEventListener('DOMContentLoaded', () => {
+    renderWeeklyStatsView();
   });
 
-  const activePanel = document.getElementById(`panel-${levelId}`);
-  if (activePanel) {
-    activePanel.classList.remove('hidden');
-    activePanel.classList.add('flex');
-  }
-} // <--- [수정] 누락되었던 switchLevel 함수의 닫는 중괄호 추가!
+  // 스크린샷 생성 및 레포트 제출
+  async function handleReportSubmit() {
+    if (typeof html2canvas === 'undefined') {
+      alert("화면 캡처 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.");
+      return;
+    }
 
-// 3. 카드 렌더링 함수
-function renderLevelTabs() {
-  const container = document.getElementById("level-tabs");
-  if (!container) return;
-
-  container.innerHTML = levelData.map(lvl => {
-    // 활성화(Active) 상태에 따른 스타일 구분
-    const activeClass = lvl.isCurrent 
-      ? "bg-primary text-on-primary w-40 shadow-[0_4px_0_0_#002882]" 
-      : "bg-surface-container text-on-surface w-36 shadow-[0_2px_0_0_#dae2fd]";
+    const btn = document.getElementById('submit-report-btn');
+    const btnLabel = document.getElementById('btn-label');
+    const flash = document.getElementById('camera-flash');
+    const toast = document.getElementById('submission-toast');
+    const targetArea = document.getElementById('view-weekly-stats');
     
-    const subTextColor = lvl.isCurrent ? "text-on-primary-container" : "text-on-surface-variant";
-
-    // 상단 아이콘/뱃지 영역 HTML
-    let statusBadge = "";
-    if (lvl.status === "completed") {
-      statusBadge = `<span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>`;
-    } else if (lvl.status === "in_progress") {
-      statusBadge = `<span class="px-1.5 py-0.2 rounded-full bg-secondary text-on-secondary font-label-caps text-[10px] leading-tight font-extrabold">進行中</span>`;
-    } else {
-      statusBadge = `<span class="material-symbols-outlined text-outline text-[18px]">lock</span>`;
+    if (!targetArea) {
+      alert("캡처할 화면 영역을 찾을 수 없습니다.");
+      return;
     }
 
-    // 하단 진행률 영역 HTML
-    let progressContent = "";
-    if (lvl.status === "in_progress") {
-      progressContent = `
-        <div class="mt-2 w-full flex flex-col gap-1">
-          <div class="flex justify-between items-center text-on-primary-container text-[11px] font-label-caps">
-            <span>進行率 ${lvl.progressPercent}%</span>
-            <span>${lvl.progressText}</span>
-          </div>
-          <div class="w-full h-1.5 bg-on-primary-container/30 rounded-full overflow-hidden">
-            <div class="h-full bg-secondary-container rounded-full" style="width: ${lvl.progressPercent}%;"></div>
-          </div>
-        </div>`;
-    } else if (lvl.status === "completed") {
-      progressContent = `
-        <div class="mt-2 flex items-center justify-between text-secondary">
-          <span class="font-label-caps text-label-caps">${lvl.progressText}</span>
-          <span class="material-symbols-outlined text-[16px]">done_all</span>
-        </div>`;
-    } else {
-      progressContent = `
-        <div class="mt-2 text-[10px] text-on-surface-variant font-kana-subtext truncate flex items-center gap-0.5">
-          <span class="material-symbols-outlined text-[13px] text-tertiary">lock_clock</span>
-          ${lvl.progressText}
-        </div>`;
-    }
-
-    return `
-      <button class="level-tab-btn group flex-shrink-0 flex flex-col justify-between p-3 rounded-xl transition-all active:scale-95 text-left ${activeClass}" id="tab-${lvl.id}" onclick="switchLevel('${lvl.id}')" type="button">
-        <div class="flex items-center justify-between w-full mb-1">
-          <span class="font-label-bold text-label-bold flex items-center gap-1">${lvl.title}</span>
-          ${statusBadge}
-        </div>
-        <span class="font-kana-subtext text-label-caps ${subTextColor} truncate">${lvl.subTitle}</span>
-        ${progressContent}
-      </button>
-    `;
-  }).join('');
-}
-
-// 4. 복습 화면 내 학습 액션 처리
-function handleActionClick(button) {
-  const status = button.getAttribute('data-status');
-  const type = button.getAttribute('data-type');
-  const lessonId = button.getAttribute('data-lesson-id');
-
-  if (status === 'empty') {
-    alert('학습 데이터가 아직 준비되지 않았습니다.');
-    return;
-  }
-
-  if (lessonId) {
-    currentLessonId = Number(lessonId);
-    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
-    const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
+    if (btn && btn.dataset.submitting === 'true') return;
+    if (btn) btn.dataset.submitting = 'true';
     
-    if (currItem) {
-      currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과 (${currItem.title})`;
-    } else {
-      currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과`;
+    if (btnLabel) btnLabel.innerText = '화면 캡처 중... (撮影中)';
+    if (btn) {
+      btn.classList.add('bg-slate-700');
+      btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+    }
+    
+    if (flash) {
+      flash.classList.remove('opacity-0');
+      flash.classList.add('opacity-90');
+      setTimeout(() => {
+        flash.classList.remove('opacity-90');
+        flash.classList.add('opacity-0');
+      }, 120);
+    }
+
+    try {
+      window.scrollTo(0, 0);
+
+      const canvas = await html2canvas(targetArea, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        windowWidth: targetArea.scrollWidth,
+        windowHeight: targetArea.scrollHeight,
+        ignoreElements: (element) => {
+          return element.id === 'submit-report-btn' || 
+                 element.id === 'submission-toast' || 
+                 element.id === 'camera-flash' ||
+                 element.tagName === 'FOOTER';
+        }
+      });
+
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const today = new Date().toISOString().slice(0, 10);
+      
+      link.href = image;
+      link.download = `세종학당_주간학습레포트_${today}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      if (btnLabel) btnLabel.innerText = '캡처 완료! (撮影完了)';
+      if (btn) {
+        btn.classList.remove('bg-slate-700');
+        btn.classList.add('bg-emerald-700');
+      }
+      
+      if (toast) {
+        toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      }
+      
+      setTimeout(() => {
+        if (toast) {
+          toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+          toast.classList.remove('translate-y-0', 'opacity-100');
+        }
+        if (btnLabel) btnLabel.innerText = '레포트 다시 제출 (再提出)';
+        if (btn) {
+          btn.classList.remove('bg-emerald-700');
+          btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+          btn.dataset.submitting = 'false';
+        }
+      }, 3200);
+
+    } catch (error) {
+      console.error("스크린샷 생성 실패:", error);
+      alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
+      if (btnLabel) btnLabel.innerText = '레포트 제출 (レポート提出)';
+      if (btn) {
+        btn.classList.remove('bg-slate-700');
+        btn.classList.add('bg-emerald-600');
+        btn.dataset.submitting = 'false';
+      }
     }
   }
 
-  if (type === 'reading') {
-    startReadingPractice(currentLessonId);
-  } else if (type === 'quiz') {
-    startQuizForLesson(currentLessonId);
-  } else if (type === 'vocab') {
-    alert(`제 ${lessonId || currentLessonId}과 단어 공부 모드로 이동합니다.`);
+  // ==================== TTS 및 음성 인식(STT) ====================
+  function playTTS(text, rate = 0.8) {
+    if ('speechSynthesis' in window && text) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      utterance.rate = rate;
+      window.speechSynthesis.speak(utterance);
+    }
   }
-}
 
-// 초기화 실행
-document.addEventListener("DOMContentLoaded", renderLevelTabs);
+  topTtsBtn?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
+  btnAudioNormal?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+
+    recognition.onresult = async (event) => {
+      const spokenText = event.results[0][0].transcript;
+      if (practiceRecognizedText) practiceRecognizedText.innerText = `인식된 음성: "${spokenText}"`;
+      
+      const targetText = practiceSentence?.innerText || "";
+      
+      // 로딩 상태 표시
+      if (practiceMatchBadge) practiceMatchBadge.innerText = "⏳ AI 발음 분석 중...";
+      if (practiceEvalText) practiceEvalText.innerText = "Gemini AI가 연음 법칙 및 발음을 분석하고 있습니다.";
+
+      try {
+        // Vercel Serverless API 호출
+        const response = await fetch('https://sejong-bongsense.vercel.app/api/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            target: targetText,
+            spoken: spokenText
+          })
+        });
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          const errorText = await response.text();
+          console.error("서버 응답 오류 (HTML 반환):", errorText);
+          throw new Error("Vercel 서버에서 JSON이 아닌 응답을 반환했습니다.");
+        }
+        
+        const result = await response.json();
+
+        if (response.ok && result) {
+          // AI 평가 결과 반영
+          if (practiceMatchBadge) {
+            practiceMatchBadge.innerText = `🎯 일치율 ${result.accuracy_score}%`;
+          }
+          if (practiceEvalText) {
+            // AI 일본어 피드백 + 발음 가이드 표시
+            const guideText = result.pronunciation_guide ? `\n발음 가이드: ${result.pronunciation_guide}` : '';
+            practiceEvalText.innerText = `${result.feedback_ja}${guideText}`;
+          }
+        } else {
+          throw new Error(result.error || '평가 실패');
+        }
+      } catch (err) {
+        console.error("발음 평가 API 호출 에러:", err);
+        
+        // API 에러 시 기존 레벤슈타인 거리 유사도 로직으로 Fallback
+        const score = calculateSimilarity(targetText, spokenText);
+        if (practiceMatchBadge) practiceMatchBadge.innerText = `🎯 일치율 ${score}%`;
+        if (practiceEvalText) practiceEvalText.innerText = "AI 연동 오류로 기본 발음 분석 결과가 표시됩니다.";
+      }
+    };
+
+    recognition.onerror = () => {
+      if (practiceRecognizedText) practiceRecognizedText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
+    };
+
+    recognition.onend = () => {
+      isRecording = false;
+      micPulseRing?.classList.add('hidden');
+      if (recordCaption) recordCaption.innerText = "마이크를 누르고 말하기";
+    };
+  }
+
+  micRecordBtn?.addEventListener('click', () => {
+    if (!recognition) {
+      alert("이 브라우저는 음성 인식을 지원하지 않습니다. (Chrome/Safari 권장)");
+      return;
+    }
+
+    if (!isRecording) {
+      isRecording = true;
+      recognition.start();
+      micPulseRing?.classList.remove('hidden');
+      if (recordCaption) recordCaption.innerText = "듣고 있습니다...";
+    } else {
+      stopPracticeRecordingUI();
+    }
+  });
 </script>
 
 </body>
