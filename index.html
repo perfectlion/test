@@ -1881,22 +1881,21 @@ const reviewLevels = [
 
 let currentSelectedLevel = 'lvl-1';
 
+// VIEW 5가 열리는 방식과 동일하게 맞춘 함수 예시
 function openReviewMode() {
-  // 1. 모든 view 숨기기
+  // 1. 모든 view- 화면 숨기기
   document.querySelectorAll('[id^="view-"]').forEach(v => {
-    v.style.display = 'none';
+    v.classList.add('hidden-view');
   });
 
-  // 2. 복습 화면 보이기
+  // 2. view-review 화면 보이기
   const reviewEl = document.getElementById('view-review');
-  if (!reviewEl) {
-    alert("HTML에서 id='view-review'를 찾을 수 없습니다.");
-    return;
+  if (reviewEl) {
+    reviewEl.classList.remove('hidden-view');
   }
-  reviewEl.style.display = 'block';
 
-  // 3. 렌더링 직접 호출
-  renderReviewScreen();
+  // 3. 렌더링 함수 실행
+  renderReviewScreen(); // 또는 renderLevelTabs();
 }
 
 function renderReviewScreen() {
