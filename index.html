@@ -850,15 +850,15 @@
   </div>
 
 
-<!-- VIEW 6: 전체 복습 화면 -->
-<div id="view-review" class="hidden relative z-10 flex flex-col min-h-screen w-full bg-surface">
+<!-- ==================== VIEW 6: 전체 복습 화면 ==================== -->
+<div id="view-review" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
-  <!-- 1. 상단 헤더 (sticky 적용으로 레이아웃 겹침 방지) -->
-  <header class="sticky top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
+  <!-- Header (VIEW 5와 동일한 fixed 구조) -->
+  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
     <div class="h-16 px-gutter flex items-center justify-between">
       <div class="flex items-center gap-space-sm">
-        <!-- 뒤로가기 버튼 (onclick 연결) -->
-        <button id="back-from-stats" onclick="goBackToDashboard()" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
+        <!-- ID를 back-from-review 로 변경 및 onclick 연결 -->
+        <button id="back-from-review" onclick="goBackToDashboard()" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
           <span class="material-symbols-outlined text-[24px]">arrow_back</span>
         </button>
         <div class="flex flex-col">
@@ -874,15 +874,15 @@
     </div>
   </header>
 
-  <!-- 2. 메인 컨텐츠 영역 (pb-12로 하단 여백 추가) -->
-  <main class="flex-1 px-4 pt-4 pb-12 flex flex-col gap-4 max-w-md mx-auto w-full">
+  <!-- Main Content (fixed 헤더 아래에서 시작하도록 pt-20, pb-28 설정) -->
+  <main class="flex flex-col relative w-full pt-20 pb-28 px-4 max-w-md mx-auto flex-grow gap-4">
     
-    <!-- 레벨 선택 가로 스크롤 덱 -->
+    <!-- 1. 상단 레벨 선택 가로 스크롤 덱 -->
     <div id="review-level-tabs" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
       <!-- JavaScript가 4개 레벨 버튼을 동적으로 생성합니다 -->
     </div>
 
-    <!-- 1과~20과 단원 리스트 -->
+    <!-- 2. 선택된 레벨의 1과~20과 단원 리스트 -->
     <div id="review-lesson-list" class="flex flex-col gap-3">
       <!-- JavaScript가 20개 단원 카드를 동적으로 생성합니다 -->
     </div>
