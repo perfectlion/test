@@ -851,7 +851,7 @@
 
 
 <!-- VIEW 6: 전체 복습 화면 (초기 상태: hidden) -->
-<div id="view-review-mode" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
+<div id="view-review" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
   <!-- 1. 상단 헤더 (대시보드 돌아가기 + 타이틀) -->
   <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
@@ -927,7 +927,7 @@
   const viewDashboard = document.getElementById('view-dashboard');
   const viewPractice = document.getElementById('view-practice');
   const viewStats = document.getElementById('view-weekly-stats');
-  const viewReviewMode = document.getElementById('view-review-mode'); // [추가] 복습 모드 화면
+  const viewReviewMode = document.getElementById('view-review'); // [추가] 복습 모드 화면
   const viewQuiz = document.getElementById('view-quiz');             // [추가] 퀴즈 화면
 
   // 2. 로그인 관련
@@ -1889,7 +1889,7 @@ function openReviewMode() {
     showView('review-mode');
   } else {
     document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.add('hidden'));
-    document.getElementById('view-review-mode').classList.remove('hidden');
+    document.getElementById('view-review').classList.remove('hidden');
   }
   
   // 탭 및 초기 레벨(초급 1)의 단원 리스트 렌더링
