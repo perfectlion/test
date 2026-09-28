@@ -881,15 +881,15 @@
       <!-- JavaScript가 4개 레벨 버튼을 동적으로 생성합니다 -->
     </div>
 
-    <!-- 3. 선택된 레벨의 1과~20과 단원 리스트 -->
-    <div id="review-lesson-list" class="flex flex-col gap-3">
-      <!-- JavaScript가 20개 단원 카드를 동적으로 생성합니다 -->
-    </div>
+      <!-- 3. 선택된 레벨의 1과~20과 단원 리스트 -->
+      <div id="review-lesson-list" class="flex flex-col gap-3">
+        <!-- JavaScript가 20개 단원 카드를 동적으로 생성합니다 -->
+      </div>
 
   </main>
-</div>
+  </div>
 
-</main>
+  </main>
   
 </body>
 </html>
@@ -1869,10 +1869,9 @@ function renderWeeklyStatsView() {
   }
 
 // ==========================================
-// 전체 복습 모드 데이터 & 로직
+// 전체 복습 모드 코드
 // ==========================================
 
-// 1. 레벨 기본 데이터
 const reviewLevels = [
   { id: 'lvl-1', title: '초급 1 🌱', subTitle: '初級1' },
   { id: 'lvl-2', title: '초급 2 🌿', subTitle: '初級2' },
@@ -1880,91 +1879,72 @@ const reviewLevels = [
   { id: 'lvl-4', title: '중급 2 🌟', subTitle: '中級2' }
 ];
 
-let currentSelectedLevel = 'lvl-1'; // 기본 선택된 레벨
+let currentSelectedLevel = 'lvl-1';
 
-// 2. 전체 복습 화면 진입 함수 (대시보드 버튼 클릭 시 호출)
 function openReviewMode() {
-  // 1. 모든 view 화면 숨기기 (hidden 추가 & flex 제거)
+  // 1. 모든 view 숨기기
   document.querySelectorAll('[id^="view-"]').forEach(v => {
-    v.classList.add('hidden');
-    v.classList.remove('flex');
+    v.style.display = 'none';
   });
 
-  // 2. view-review 화면 강제 표시 (hidden 제거 & flex/block 추가)
+  // 2. 복습 화면 보이기
   const reviewEl = document.getElementById('view-review');
-  if (reviewEl) {
-    reviewEl.classList.remove('hidden');
-    reviewEl.classList.add('flex'); // 화면 레이아웃에 맞춰 flex 또는 block
-  } else {
-    console.error("id가 'view-review'인 요소를 찾을 수 없습니다.");
+  if (!reviewEl) {
+    alert("HTML에서 id='view-review'를 찾을 수 없습니다.");
+    return;
+  }
+  reviewEl.style.display = 'block';
+
+  // 3. 렌더링 직접 호출
+  renderReviewScreen();
+}
+
+function renderReviewScreen() {
+  const tabsContainer = document.getElementById('review-level-tabs');
+  const listContainer = document.getElementById('review-lesson-list');
+
+  // 디버깅용 체크
+  if (!tabsContainer || !listContainer) {
+    console.error("탭 컨테이너(review-level-tabs) 또는 리스트 컨테이너(review-lesson-list)를 찾을 수 없습니다.");
     return;
   }
 
-  // 3. 탭 및 단원 목록 동적 렌더링
-  renderLevelTabs();
-  selectLevel(currentSelectedLevel);
-}
-
-// 3. 상단 레벨 스크롤 탭 렌더링
-function renderLevelTabs() {
-  const container = document.getElementById('review-level-tabs');
-  if (!container) return;
-
-  container.innerHTML = reviewLevels.map(lvl => {
+  // A. 상단 탭 그려주기
+  tabsContainer.innerHTML = reviewLevels.map(lvl => {
     const isActive = lvl.id === currentSelectedLevel;
-    const btnStyle = isActive
-      ? 'bg-primary text-on-primary shadow-md font-bold scale-105'
+    const btnClass = isActive 
+      ? 'bg-primary text-on-primary font-bold shadow-md scale-105' 
       : 'bg-surface-container text-on-surface hover:bg-surface-container-high';
 
     return `
       <button type="button" 
-              onclick="selectLevel('${lvl.id}')"
-              class="flex-shrink-0 flex flex-col items-center justify-center py-2.5 px-4 rounded-xl transition-all ${btnStyle}">
+              onclick="changeReviewLevel('${lvl.id}')"
+              class="flex-shrink-0 flex flex-col items-center justify-center py-2.5 px-4 rounded-xl transition-all ${btnClass}">
         <span class="text-label-lg whitespace-nowrap">${lvl.title}</span>
         <span class="text-[11px] opacity-80 whitespace-nowrap">${lvl.subTitle}</span>
       </button>
     `;
   }).join('');
-}
 
-// 4. 레벨 선택 시 단원(1과~20과) 렌더링
-function selectLevel(levelId) {
-  currentSelectedLevel = levelId;
-  renderLevelTabs(); // 탭 선택 상태(색상) 업데이트
-
-  const container = document.getElementById('review-lesson-list');
-  if (!container) return;
-
-  let html = '';
-  
-  // 1과부터 20과까지 반복 생성
+  // B. 1과~20과 리스트 그려주기
+  let listHtml = '';
   for (let i = 1; i <= 20; i++) {
-    html += `
+    listHtml += `
       <div class="flex flex-col p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/20 shadow-xs gap-2.5">
         <div class="flex items-center gap-2">
           <span class="w-6 h-6 rounded-md bg-primary/10 text-primary font-bold text-[12px] flex items-center justify-center">${i}</span>
           <span class="font-bold text-on-surface text-body-md">제 ${i}과 학습</span>
         </div>
-        
-        <!-- 버튼 3개 영역 -->
         <div class="grid grid-cols-3 gap-2 pt-1">
-          <button type="button" 
-                  onclick="startReadingPractice(${i})"
-                  class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-highest text-primary font-bold text-[12px] active:scale-95 transition-all">
+          <button type="button" onclick="startReadingPractice(${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-highest text-primary font-bold text-[12px]">
             <span class="material-symbols-outlined text-[16px]">menu_book</span>
             <span>읽기연습</span>
           </button>
-          
-          <button type="button" 
-                  onclick="startQuizForLesson(${i})"
-                  class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-high text-tertiary font-bold text-[12px] active:scale-95 transition-all">
+          <button type="button" onclick="startQuizForLesson(${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-high text-tertiary font-bold text-[12px]">
             <span class="material-symbols-outlined text-[16px]">quiz</span>
             <span>단어퀴즈</span>
           </button>
-          
-          <button type="button" 
-                  onclick="alert('단어연습 기능은 현재 준비 중입니다.')"
-                  class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-outline-variant/20 text-on-surface-variant/60 font-bold text-[12px] active:scale-95 transition-all">
+          <button type="button" onclick="alert('준비 중입니다.')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-outline-variant/20 text-on-surface-variant/60 font-bold text-[12px]">
             <span class="material-symbols-outlined text-[16px]">campaign</span>
             <span>단어연습</span>
           </button>
@@ -1972,8 +1952,13 @@ function selectLevel(levelId) {
       </div>
     `;
   }
+  listContainer.innerHTML = listHtml;
+}
 
-  container.innerHTML = html;
+// 탭 클릭 시 레벨 변경
+function changeReviewLevel(levelId) {
+  currentSelectedLevel = levelId;
+  renderReviewScreen();
 }
 
   
