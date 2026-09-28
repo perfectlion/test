@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script id="tailwind-config">
@@ -1874,9 +1875,8 @@ function renderWeeklyStatsView() {
   }
 
 // ==========================================
-// 전체 복습 모드 코드
+// 레벨 데이터 및 상태 변수 선언 (필수!)
 // ==========================================
-
 const reviewLevels = [
   { id: 'lvl-1', title: '초급 1 🌱', subTitle: '初級1' },
   { id: 'lvl-2', title: '초급 2 🌿', subTitle: '初級2' },
@@ -1886,7 +1886,9 @@ const reviewLevels = [
 
 let currentSelectedLevel = 'lvl-1';
 
-// VIEW 5가 열리는 방식과 동일하게 맞춘 함수 예시
+// ==========================================
+// 복습 모드 열기
+// ==========================================
 function openReviewMode() {
   // 1. 모든 view- 화면 숨기기
   document.querySelectorAll('[id^="view-"]').forEach(v => {
@@ -1897,19 +1899,25 @@ function openReviewMode() {
   const reviewEl = document.getElementById('view-review');
   if (reviewEl) {
     reviewEl.classList.remove('hidden-view');
+  } else {
+    console.error("❌ id='view-review' 요소를 찾을 수 없습니다.");
+    return;
   }
 
   // 3. 렌더링 함수 실행
-  renderReviewScreen(); // 또는 renderLevelTabs();
+  renderReviewScreen();
 }
 
+// ==========================================
+// 복습 화면 렌더링
+// ==========================================
 function renderReviewScreen() {
   const tabsContainer = document.getElementById('review-level-tabs');
   const listContainer = document.getElementById('review-lesson-list');
 
-  // 디버깅용 체크
+  // 컨테이너 체크
   if (!tabsContainer || !listContainer) {
-    console.error("탭 컨테이너(review-level-tabs) 또는 리스트 컨테이너(review-lesson-list)를 찾을 수 없습니다.");
+    console.error("❌ 탭 컨테이너(review-level-tabs) 또는 리스트 컨테이너(review-lesson-list)를 찾을 수 없습니다.");
     return;
   }
 
@@ -1940,11 +1948,11 @@ function renderReviewScreen() {
           <span class="font-bold text-on-surface text-body-md">제 ${i}과 학습</span>
         </div>
         <div class="grid grid-cols-3 gap-2 pt-1">
-          <button type="button" onclick="startReadingPractice(${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-highest text-primary font-bold text-[12px]">
+          <button type="button" onclick="startReadingPractice('${currentSelectedLevel}', ${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-highest text-primary font-bold text-[12px]">
             <span class="material-symbols-outlined text-[16px]">menu_book</span>
             <span>읽기연습</span>
           </button>
-          <button type="button" onclick="startQuizForLesson(${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-high text-tertiary font-bold text-[12px]">
+          <button type="button" onclick="startQuizForLesson('${currentSelectedLevel}', ${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-high text-tertiary font-bold text-[12px]">
             <span class="material-symbols-outlined text-[16px]">quiz</span>
             <span>단어퀴즈</span>
           </button>
