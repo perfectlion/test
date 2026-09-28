@@ -1319,45 +1319,54 @@
   let isCardFlipped = false;
 
 function generateQuizProblem(targetItem, allLessons) {
-  // 1. 단어 정제: 괄호 표기(예: 을(를) -> 을) 및 공백 제거
   let rawWord = (targetItem.word_kr || '').trim();
-  let targetWord = rawWord.replace(/\(.*\)/g, '').trim(); // 괄호 안 내용 제외한 대표 단어
+  let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
   let sentenceKr = targetItem.sentence_kr || '';
 
-  // 빈칸 HTML 스타일
   const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
 
   let maskedSentence = sentenceKr;
 
+  // 한글 첫 글자의 초성을 추출하는 헬퍼 함수 (예: '가' -> 'ㄱ', '갑' -> 'ㄱ')
+  const getInitialConsonant = (char) => {
+    if (!char) return '';
+    const code = char.charCodeAt(0) - 44032;
+    if (code < 0 || code > 11172) return char; // 한글이 아닌 경우 그대로 반환
+    const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    return initialList[Math.floor(code / 588)];
+  };
+
   if (targetWord && sentenceKr) {
-    // 2. 문장에 단어가 완전 일치하는 경우 (명사, 조사 등)
+    // 1. 단어가 문장에 그대로 포함된 경우 (명사, 조사 등)
     if (sentenceKr.includes(targetWord)) {
       maskedSentence = sentenceKr.replace(targetWord, maskHtml);
     } 
-    // rawWord 전체로 일치 시도 (혹시 괄호 포함 매칭용)
     else if (sentenceKr.includes(rawWord)) {
       maskedSentence = sentenceKr.replace(rawWord, maskHtml);
     } 
     else {
-      // 3. 동사/형용사 활용형 처리 ('다'로 끝나는 기본형 -> 활용형 매칭)
-      // 예: "하다" -> "하", "가다" -> "가", "크다" -> "크", "반갑다" -> "반갑"
+      // 2. 활용형(동사/형용사) 어간 추출 및 어절 매칭
       let stem = targetWord;
       if (targetWord.endsWith('다')) {
-        stem = targetWord.slice(0, -1);
+        stem = targetWord.slice(0, -1); // "하다" -> "하", "가다" -> "가", "크다" -> "크"
       }
 
-      // 첫 글자 추출 (격식체 ㅂ/습니다, 불규칙 활용 대응용)
-      // 예: "하" -> "합니다", "가" -> "갑니다", "크" -> "큽니다", "반갑" -> "반가워요"
-      const firstChar = stem.charAt(0);
+      const stemFirstChar = stem.charAt(0);
+      const stemInitial = getInitialConsonant(stemFirstChar); // 어간의 첫 초성 (예: 'ㄱ', 'ㅎ')
 
       const words = sentenceKr.split(' ');
       let matchedIndex = -1;
 
       for (let i = 0; i < words.length; i++) {
-        const cleanWord = words[i].replace(/[.,?!]/g, ''); // 문장부호 제거
-        
-        // 어간 전체로 시작하거나, 어근 첫 글자로 시작하는 어절 탐색
-        if (cleanWord.startsWith(stem) || cleanWord.startsWith(firstChar)) {
+        const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
+        if (!cleanWord) continue;
+
+        const wordFirstChar = cleanWord.charAt(0);
+        const wordInitial = getInitialConsonant(wordFirstChar);
+
+        // 조건 A: 어간으로 직접 시작함 (예: "만나"서)
+        // 조건 B: 첫 글자의 초성이 같고 음절 유효 범위 내에 있음 (예: "가"다 -> "갑"니다, "하"다 -> "합"니다)
+        if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
           matchedIndex = i;
           break;
         }
@@ -1374,7 +1383,7 @@ function generateQuizProblem(targetItem, allLessons) {
     }
   }
 
-  // 4. 보기(Choices) 생성
+  // 보기(Choices) 생성
   const targetLen = rawWord.length;
   const otherWords = Array.from(
     new Set(
