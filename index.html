@@ -327,7 +327,10 @@
           <span class="material-symbols-outlined text-[24px] mb-0.5" style="font-variation-settings: 'FILL' 1;">school</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">今日の学習</span>
         </a>
-        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group" href="#" onclick="alert('복습 모드 준비 중입니다.')">
+        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
+           id="btn-open-review-mode"
+           href="javascript:void(0);"
+           onclick="document.getElementById('view-dashboard').classList.add('hidden-view'); document.getElementById('view-review-mode').classList.remove('hidden-view');">
           <span class="material-symbols-outlined text-[24px] mb-0.5">replay</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
         </a>
@@ -847,10 +850,697 @@
 </p>
 </div>
 </div>
-
-
 </main>
 
+<!-- ==================== VIEW 6: 전체 과정 화면 ==================== -->
+<div id="view-weekly-stats" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
+  
+  <!-- Header (VIEW 3, VIEW 4, VIEW 5와 동일한 구조) -->
+  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
+    <div class="h-16 px-gutter flex items-center justify-between">
+      <div class="flex items-center gap-space-sm">
+        <button id="back-from-stats" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+        </button>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1">
+            <span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span>
+          </div>
+          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Review Mode</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-sm">
+        <img class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
+      </div>
+    </div>
+  </header>
+
+<!-- Main Content (고정 헤더 아래에서 시작하도록 pt-20 설정) -->
+<main class="flex flex-col relative w-full pt-20 pb-28 px-gutter bg-surface flex-grow">
+<!-- Content Area -->
+<div class="px-gutter flex flex-col gap-space-lg pb-10 pt-space-md">
+<!-- Level Selector Horizontal Scrollable Pills -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between px-0.5">
+<span class="font-label-bold text-label-bold text-on-surface">学習レベルを選択</span>
+<span class="font-kana-subtext text-label-caps text-on-surface-variant">全4段階</span>
+</div>
+<!-- Scroll Deck -->
+<div class="flex gap-2 overflow-x-auto pb-1.5 -mx-gutter px-gutter scrollbar-none items-stretch" id="level-tabs">
+<!-- Chip 1: Beginner 1 -->
+<button class="level-tab-btn group flex-shrink-0 flex flex-col justify-between p-3 rounded-xl bg-surface-container text-left transition-all active:scale-95 w-36 shadow-[0_2px_0_0_#dae2fd]" id="tab-lvl-1" onclick="switchLevel('lvl-1')" type="button">
+<div class="flex items-center justify-between w-full mb-1">
+<span class="font-label-bold text-label-bold text-on-surface flex items-center gap-1">
+              초급 1 🌱
+            </span>
+<span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="font-kana-subtext text-label-caps text-on-surface-variant truncate">初級1 (基礎マスター)</span>
+<div class="mt-2 flex items-center justify-between text-secondary">
+<span class="font-label-caps text-label-caps">100% 達成</span>
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+</div>
+</button>
+<!-- Chip 2: Beginner 2 (Active by default) -->
+<button class="level-tab-btn group flex-shrink-0 flex flex-col justify-between p-3 rounded-xl bg-primary text-on-primary text-left transition-all active:scale-95 w-40 shadow-[0_4px_0_0_#002882]" id="tab-lvl-2" onclick="switchLevel('lvl-2')" type="button">
+<div class="flex items-center justify-between w-full mb-1">
+<span class="font-label-bold text-label-bold text-on-primary flex items-center gap-1">
+              초급 2 🌿
+            </span>
+<span class="px-1.5 py-0.2 rounded-full bg-secondary text-on-secondary font-label-caps text-[10px] leading-tight font-extrabold">進行中</span>
+</div>
+<span class="font-kana-subtext text-label-caps text-on-primary-container truncate">初級2 (日常会話)</span>
+<div class="mt-2 w-full flex flex-col gap-1">
+<div class="flex justify-between items-center text-on-primary-container text-[11px] font-label-caps">
+<span>進行率 65%</span>
+<span>13/20</span>
+</div>
+<div class="w-full h-1.5 bg-on-primary-container/30 rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 65%;"></div>
+</div>
+</div>
+</button>
+<!-- Chip 3: Intermediate 1 -->
+<button class="level-tab-btn group flex-shrink-0 flex flex-col justify-between p-3 rounded-xl bg-surface-container text-left transition-all active:scale-95 w-36 shadow-[0_2px_0_0_#dae2fd]" id="tab-lvl-3" onclick="switchLevel('lvl-3')" type="button">
+<div class="flex items-center justify-between w-full mb-1">
+<span class="font-label-bold text-label-bold text-on-surface flex items-center gap-1">
+              중급 1 🌸
+            </span>
+<span class="material-symbols-outlined text-outline text-[18px]">lock</span>
+</div>
+<span class="font-kana-subtext text-label-caps text-on-surface-variant truncate">中級1 (文法深掘り)</span>
+<div class="mt-2 text-[10px] text-on-surface-variant font-kana-subtext truncate flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px] text-tertiary">lock_clock</span>
+            20과 준비중
+          </div>
+</button>
+<!-- Chip 4: Intermediate 2 -->
+<button class="level-tab-btn group flex-shrink-0 flex flex-col justify-between p-3 rounded-xl bg-surface-container text-left transition-all active:scale-95 w-36 shadow-[0_2px_0_0_#dae2fd]" id="tab-lvl-4" onclick="switchLevel('lvl-4')" type="button">
+<div class="flex items-center justify-between w-full mb-1">
+<span class="font-label-bold text-label-bold text-on-surface flex items-center gap-1">
+              중급 2 🌟
+            </span>
+<span class="material-symbols-outlined text-outline text-[18px]">lock</span>
+</div>
+<span class="font-kana-subtext text-label-caps text-on-surface-variant truncate">中級2 (実践会話)</span>
+<div class="mt-2 text-[10px] text-outline font-kana-subtext">
+            20과 준비중
+          </div>
+</button>
+</div>
+</div>
+<!-- Visual Divider & Overview Banner -->
+<div class="rounded-xl bg-surface-container-low p-space-sm flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[24px]" id="level-banner-icon">view_timeline</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-bold text-label-bold text-on-surface" id="level-banner-title">초급 2 (第1課〜第20課)</span>
+<span class="font-kana-subtext text-label-caps text-on-surface-variant truncate" id="level-banner-subtitle">5課ごとにまとめて効率よく総復習しましょう</span>
+</div>
+</div>
+<!-- ================= LEVEL PANELS ================= -->
+<!-- LEVEL 1 CONTAINER -->
+<div class="level-panel hidden flex-col gap-space-md" id="panel-lvl-1">
+<!-- Group 1 (1-5) -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l1-g1">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-low active:bg-surface-container transition-colors" onclick="toggleGroup('l1-g1')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-bold text-label-caps flex-shrink-0 shadow-sm">1-5</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 1과 ~ 제 5과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第1課〜第5課 (ハングル基礎)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-[24px] transition-transform duration-300 transform rotate-180" id="l1-g1-icon">expand_more</span>
+</button>
+<div class="flex-col divide-y-0 p-space-sm gap-2.5 flex" id="l1-g1-content">
+<!-- 01 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">01</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">한글 자음과 모음 ①</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">ハングル母音と子音の基本</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 02 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">02</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">받침과 발음 규칙</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">パッチムと発音ルール</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 03-05 summary card -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">03-05</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">기초 회화 및 자기소개</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">基礎会話・自己紹介・数字</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Group 2 (6-10) -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l1-g2">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l1-g2')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-highest text-primary font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">6-10</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 6과 ~ 제 10과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第6課〜第10課 (日常語彙)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l1-g2-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l1-g2-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- Group 3 (11-15) -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l1-g3">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l1-g3')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">11-15</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 11과 ~ 제 15과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第11課〜第15課 (基本文型)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l1-g3-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l1-g3-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- Group 4 (16-20) -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l1-g4">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l1-g4')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">16-20</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 16과 ~ 제 20과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第16課〜第20課 (初級1 総仕上げ)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l1-g4-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l1-g4-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+</div>
+<!-- LEVEL 2 CONTAINER (Active) -->
+<div class="level-panel flex flex-col gap-space-md" id="panel-lvl-2">
+<!-- ================= GROUP 1: EXPANDED ================= -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="group-1">
+<!-- Accordion Header (Trigger) -->
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-low active:bg-surface-container transition-colors" onclick="toggleGroup('group-1')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-bold text-label-caps flex-shrink-0 shadow-sm">1-5</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">
+                제 1과 ~ 제 5과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">
+                第1課〜第5課</span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<span class="material-symbols-outlined text-primary text-[24px] transition-transform duration-300 transform rotate-180" id="group-1-icon">expand_more</span>
+</div>
+</button>
+<!-- Accordion Body: Lessons 1-5 Items -->
+<div class="flex-col divide-y-0 p-space-sm gap-2.5 flex" id="group-1-content">
+<!-- Lesson 1 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">01</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">안녕하세요! 기본 인사</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">こんにちは！基本挨拶</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 1과 읽기연습" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 1과 단어퀴즈" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 1과 단어공부" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- Lesson 2 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">02</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">이것은 무엇입니까? 지시대명사</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">これは何ですか？（指示代名詞）</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 2과 읽기연습" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 2과 단어퀴즈" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 2과 단어공부" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- Lesson 3 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">03</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">저는 회사원입니다</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">私は会社員です</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 3과 읽기연습" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 3과 단어퀴즈" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-lesson="제 3과 단어공부" data-status="ready" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- Lesson 4 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">04</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">어디에 가요? 장소와 이동</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">どこへ行きますか？</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- Lesson 5 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">05</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">지금 몇 시예요? 시간과 숫자</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">今何時ですか？（固有数詞）</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= GROUP 2 ================= -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="group-2">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('group-2')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-highest text-primary font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">6-10</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">
+                제 6과 ~ 제 10과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">
+                第6課〜第10課</span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300 rotate-180" id="group-2-icon">expand_more</span>
+</div>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 flex" id="group-2-content">
+<!-- 06 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">06</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">얼마예요? (いくらですか？)</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">値段と数字の表現</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 07 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">07</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">사과 세 개 주세요 (りんごを3つ)</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">個数と注文の表現</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 08 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">08</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">내일 만나요 (明日会いましょう)</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">約束と予定の表現</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 09 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">09</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">어제 무엇을 했어요?</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">過去形の表現と出来事</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 10 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">10</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">날씨가 어때요? (天気)</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">天気と季節の描写</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= GROUP 3 ================= -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="group-3">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('group-3')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">11-15</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">
+                제 11과 ~ 제 15과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">
+                第11課〜第15課</span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="group-3-icon">chevron_right</span>
+</div>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="group-3-content">
+<!-- 11 -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">11</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">전화번호가 몇 번이에요?</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">電話番号と連絡先</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+<!-- 12-15 notice -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">12-15</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">길 찾기・취미・교통・주말 활동</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">道案内・趣味・交通・週末の活動</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= GROUP 4 ================= -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="group-4">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('group-4')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">16-20</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">
+                제 16과 ~ 제 20과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">
+                第16課〜第20課</span>
+</div>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="group-4-icon">chevron_right</span>
+</div>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="group-4-content">
+<!-- 16-20 item -->
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">16-20</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">병원・여행 계획・초급 총괄 복습</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">病院・旅行計画・初級2 総括復習</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- LEVEL 3 CONTAINER (Intermediate 1) -->
+<div class="level-panel hidden flex-col gap-space-md" id="panel-lvl-3">
+<!-- 1-5 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l3-g1">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-low active:bg-surface-container transition-colors" onclick="toggleGroup('l3-g1')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-bold text-label-caps flex-shrink-0 shadow-sm">1-5</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 1과 ~ 제 5과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第1課〜第5課 (中級文法導入)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l3-g1-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l3-g1-content">
+<div class="flex flex-col p-3 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors gap-2.5">
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-2.5 min-w-0">
+<span class="w-6 h-6 rounded-md bg-surface-container-highest text-primary font-label-bold text-[12px] flex items-center justify-center flex-shrink-0 mt-0.5">01</span>
+<div class="flex flex-col min-w-0">
+<span class="font-hangul-interactive text-body-md font-semibold text-on-surface tracking-tight">간접화법과 인용 표현</span>
+<span class="font-kana-subtext text-body-sm text-on-surface-variant">間接話法と伝聞表現</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-1.5 w-full pt-1">
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-highest text-primary font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">menu_book</span><span>읽기연습</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-surface-container-high text-tertiary-container font-label-bold text-[12px] shadow-[0_2px_0_0_#dae2fd] active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">quiz</span><span>단어퀴즈</span></button>
+<button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-secondary text-on-secondary font-label-bold text-[12px] shadow-sm active:translate-y-0.5 active:shadow-none transition-all" data-status="empty" onclick="handleActionClick(this)" type="button"><span class="material-symbols-outlined text-[15px]">campaign</span><span>단어공부</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- 6-10 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l3-g2">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l3-g2')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-highest text-primary font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">6-10</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 6과 ~ 제 10과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第6課〜第10課 (社会・文化会話)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l3-g2-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l3-g2-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- 11-15 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l3-g3">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l3-g3')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">11-15</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 11과 ~ 제 15과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第11課〜第15課</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l3-g3-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l3-g3-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- 16-20 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l3-g4">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l3-g4')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">16-20</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 16과 ~ 제 20과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第16課〜第20課</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l3-g4-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l3-g4-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+</div>
+<!-- LEVEL 4 CONTAINER (Intermediate 2) -->
+<div class="level-panel hidden flex-col gap-space-md" id="panel-lvl-4">
+<!-- 1-5 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l4-g1">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-low active:bg-surface-container transition-colors" onclick="toggleGroup('l4-g1')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-bold text-label-caps flex-shrink-0 shadow-sm">1-5</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 1과 ~ 제 5과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第1課〜第5課 (高級直前表現)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l4-g1-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l4-g1-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- 6-10 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l4-g2">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l4-g2')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-highest text-primary font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">6-10</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 6과 ~ 제 10과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第6課〜第10課</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l4-g2-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l4-g2-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- 11-15 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l4-g3">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l4-g3')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">11-15</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 11과 ~ 제 15과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第11課〜第15課</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l4-g3-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l4-g3-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+<!-- 16-20 -->
+<div class="group-card rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all duration-200" id="l4-g4">
+<button class="w-full flex items-center justify-between p-space-md text-left bg-surface-container-lowest active:bg-surface-container-low transition-colors" onclick="toggleGroup('l4-g4')" type="button">
+<div class="flex items-center gap-2.5 min-w-0 pr-2">
+<span class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant font-label-bold text-label-caps flex items-center justify-center flex-shrink-0">16-20</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-bold text-label-bold text-on-surface truncate">제 16과 ~ 제 20과</span>
+<span class="font-kana-subtext text-kana-subtext text-on-surface-variant text-[12px] truncate">第16課〜第20課</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[24px] transition-transform duration-300" id="l4-g4-icon">chevron_right</span>
+</button>
+<div class="flex-col p-space-sm gap-2.5 bg-surface-container-low/50 hidden" id="l4-g4-content">
+<p class="text-center font-kana-subtext text-body-sm text-on-surface-variant py-2">학습 데이터가 준비중입니다.</p>
+</div>
+</div>
+</div>
+<!-- Floating Action Card Anchor Space -->
+<div class="h-16"></div>
+</div>
+</div>
+<!-- FLOATING TOAST NOTIFICATION COMPONENT -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 transform translate-y-8 opacity-0 scale-95 flex items-center gap-2.5 bg-inverse-surface/95 text-inverse-on-surface px-4 py-2.5 rounded-full shadow-lg backdrop-blur-md max-w-[90vw]" id="toast">
+<span class="material-symbols-outlined text-tertiary-fixed text-[20px]" id="toast-icon">info</span>
+<span class="font-kana-subtext text-[13px] font-medium whitespace-nowrap" id="toast-message">준비 중입니다. (準備中です)</span>
+</div>
+</main>
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-bold"><div class="h-16 px-gutter flex justify-around items-center"><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group" data-path="todays-lesson" href="#"><span class="material-symbols-outlined text-[24px] mb-0.5">school</span><span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">今日の学習</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 transition-colors group text-primary font-bold" data-path="review-mode" href="#"><span class="material-symbols-outlined text-[24px] mb-0.5">replay</span><span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group" data-path="my-progress" href="#"><span class="material-symbols-outlined text-[24px] mb-0.5">monitoring</span><span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">学習記録</span></a></div></nav>
+  
 </body>
 </html>
 
@@ -885,6 +1575,7 @@
   const viewDashboard = document.getElementById('view-dashboard');
   const viewPractice = document.getElementById('view-practice');
   const viewStats = document.getElementById('view-weekly-stats');
+  const viewReviewMode = document.getElementById('view-review-mode'); // VIEW 6 전체 복습 화면
 
   const loginForm = document.getElementById('login-form');
   const userIdInput = document.getElementById('user-id');
@@ -897,6 +1588,7 @@
   const welcomeTitle = document.getElementById('welcome-title');
   const logoutBtn = document.getElementById('logout-btn');
   const goPracticeBtn = document.getElementById('go-practice-btn');
+  const btnOpenReviewMode = document.getElementById('btn-open-review-mode'); // 복습 모드 진입 버튼
   const userProfileImgs = document.querySelectorAll('.user-profile-img-all');
   const cardLessonTag = document.getElementById('card-lesson-tag');
   const targetSentenceElem = document.getElementById('target-sentence');
@@ -1030,8 +1722,9 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
+  // 통합 단일 페이지(SPA) 뷰 전환 함수
   function showView(targetViewId) {
-    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats'];
+    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats', 'view-review-mode'];
     views.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden-view');
@@ -1057,6 +1750,16 @@
     
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
       stopQuizAndReturn(false); // 미완료로 복귀
+    });
+
+    // VIEW 6: 전체 복습 화면 진입 및 뒤로가기
+    btnOpenReviewMode?.addEventListener('click', (e) => {
+      e.preventDefault();
+      showView('view-review-mode');
+    });
+
+    document.getElementById('back-from-review')?.addEventListener('click', () => {
+      showView('view-dashboard');
     });
   });
 
@@ -1197,8 +1900,9 @@
   });
 
   // ==================== 1. 읽기 학습 모드 ====================
-  goPracticeBtn?.addEventListener('click', () => {
-    const targetId = Number(currentLessonId);
+  // 공통 읽기 학습 진입 함수
+  function startReadingPractice(lessonId) {
+    const targetId = Number(lessonId);
 
     lessonSentencesList = lessonsData
       .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
@@ -1226,6 +1930,10 @@
 
     loadPracticeSentenceAtIndex(currentSentenceIndex);
     showView('view-practice');
+  }
+
+  goPracticeBtn?.addEventListener('click', () => {
+    startReadingPractice(currentLessonId);
   });
 
   function loadPracticeSentenceAtIndex(index) {
@@ -1313,108 +2021,102 @@
 
   closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-  // ==================== 2. 데일리 퀴즈 로직 ====================
+  // ==================== 2. 데일리 및 복습 퀴즈 로직 ====================
   let currentQuizList = [];
   let currentQuizIndex = 0;
   let isCardFlipped = false;
 
-function generateQuizProblem(targetItem, allLessons) {
-  let rawWord = (targetItem.word_kr || '').trim();
-  let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
-  let sentenceKr = targetItem.sentence_kr || '';
+  function generateQuizProblem(targetItem, allLessons) {
+    let rawWord = (targetItem.word_kr || '').trim();
+    let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
+    let sentenceKr = targetItem.sentence_kr || '';
 
-  const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
+    const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
 
-  let maskedSentence = sentenceKr;
+    let maskedSentence = sentenceKr;
 
-  // 한글 첫 글자의 초성을 추출하는 헬퍼 함수 (예: '가' -> 'ㄱ', '갑' -> 'ㄱ')
-  const getInitialConsonant = (char) => {
-    if (!char) return '';
-    const code = char.charCodeAt(0) - 44032;
-    if (code < 0 || code > 11172) return char; // 한글이 아닌 경우 그대로 반환
-    const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-    return initialList[Math.floor(code / 588)];
-  };
+    // 한글 첫 글자의 초성을 추출하는 헬퍼 함수
+    const getInitialConsonant = (char) => {
+      if (!char) return '';
+      const code = char.charCodeAt(0) - 44032;
+      if (code < 0 || code > 11172) return char;
+      const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+      return initialList[Math.floor(code / 588)];
+    };
 
-  if (targetWord && sentenceKr) {
-    // 1. 단어가 문장에 그대로 포함된 경우 (명사, 조사 등)
-    if (sentenceKr.includes(targetWord)) {
-      maskedSentence = sentenceKr.replace(targetWord, maskHtml);
-    } 
-    else if (sentenceKr.includes(rawWord)) {
-      maskedSentence = sentenceKr.replace(rawWord, maskHtml);
-    } 
-    else {
-      // 2. 활용형(동사/형용사) 어간 추출 및 어절 매칭
-      let stem = targetWord;
-      if (targetWord.endsWith('다')) {
-        stem = targetWord.slice(0, -1); // "하다" -> "하", "가다" -> "가", "크다" -> "크"
-      }
+    if (targetWord && sentenceKr) {
+      if (sentenceKr.includes(targetWord)) {
+        maskedSentence = sentenceKr.replace(targetWord, maskHtml);
+      } 
+      else if (sentenceKr.includes(rawWord)) {
+        maskedSentence = sentenceKr.replace(rawWord, maskHtml);
+      } 
+      else {
+        let stem = targetWord;
+        if (targetWord.endsWith('다')) {
+          stem = targetWord.slice(0, -1);
+        }
 
-      const stemFirstChar = stem.charAt(0);
-      const stemInitial = getInitialConsonant(stemFirstChar); // 어간의 첫 초성 (예: 'ㄱ', 'ㅎ')
+        const stemFirstChar = stem.charAt(0);
+        const stemInitial = getInitialConsonant(stemFirstChar);
 
-      const words = sentenceKr.split(' ');
-      let matchedIndex = -1;
+        const words = sentenceKr.split(' ');
+        let matchedIndex = -1;
 
-      for (let i = 0; i < words.length; i++) {
-        const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
-        if (!cleanWord) continue;
+        for (let i = 0; i < words.length; i++) {
+          const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
+          if (!cleanWord) continue;
 
-        const wordFirstChar = cleanWord.charAt(0);
-        const wordInitial = getInitialConsonant(wordFirstChar);
+          const wordFirstChar = cleanWord.charAt(0);
+          const wordInitial = getInitialConsonant(wordFirstChar);
 
-        // 조건 A: 어간으로 직접 시작함 (예: "만나"서)
-        // 조건 B: 첫 글자의 초성이 같고 음절 유효 범위 내에 있음 (예: "가"다 -> "갑"니다, "하"다 -> "합"니다)
-        if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
-          matchedIndex = i;
-          break;
+          if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
+            matchedIndex = i;
+            break;
+          }
+        }
+
+        if (matchedIndex !== -1) {
+          const targetToken = words[matchedIndex];
+          const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
+          words[matchedIndex] = maskHtml + punctuation;
+          maskedSentence = words.join(' ');
+        } else {
+          console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
         }
       }
-
-      if (matchedIndex !== -1) {
-        const targetToken = words[matchedIndex];
-        const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
-        words[matchedIndex] = maskHtml + punctuation;
-        maskedSentence = words.join(' ');
-      } else {
-        console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
-      }
     }
+
+    const targetLen = rawWord.length;
+    const otherWords = Array.from(
+      new Set(
+        allLessons
+          .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
+          .map(l => l.word_kr.trim())
+      )
+    );
+
+    let candidates = otherWords.filter(w => w.length === targetLen);
+    if (candidates.length < 3) {
+      const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
+      candidates = [...candidates, ...backup];
+    }
+
+    const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
+    const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
+
+    return {
+      maskedSentence,
+      correctAnswer: rawWord,
+      choices,
+      hintJp: targetItem.word_jp,
+      sentenceJp: targetItem.sentence_jp
+    };
   }
-
-  // 보기(Choices) 생성
-  const targetLen = rawWord.length;
-  const otherWords = Array.from(
-    new Set(
-      allLessons
-        .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
-        .map(l => l.word_kr.trim())
-    )
-  );
-
-  let candidates = otherWords.filter(w => w.length === targetLen);
-  if (candidates.length < 3) {
-    const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
-    candidates = [...candidates, ...backup];
-  }
-
-  const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
-  const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
-
-  return {
-    maskedSentence,
-    correctAnswer: rawWord,
-    choices,
-    hintJp: targetItem.word_jp,
-    sentenceJp: targetItem.sentence_jp
-  };
-}
 
   function renderQuizIndex(index) {
     const total = currentQuizList.length;
 
-    // 모든 퀴즈를 다 완료했을 때만 성적 반영
     if (total > 0 && index >= total) {
       alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
       
@@ -1424,7 +2126,7 @@ function generateQuizProblem(targetItem, allLessons) {
         elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       }
       saveTodayLearningData('quiz', elapsedMinutes);
-      clearLearningProgress('quiz', currentLessonId); // 진행 데이터 제거
+      clearLearningProgress('quiz', currentLessonId);
 
       quizStartTime = null;
       showView('view-dashboard');
@@ -1468,7 +2170,6 @@ function generateQuizProblem(targetItem, allLessons) {
       if (hintBox) hintBox.classList.add('hidden');
     }
 
-    // 현재 퀴즈 문제 진행 인덱스 저장
     saveLearningProgress('quiz', currentLessonId, index);
 
     const choicesContainer = document.getElementById('quiz-choices-container');
@@ -1499,7 +2200,6 @@ function generateQuizProblem(targetItem, allLessons) {
 
   function stopQuizAndReturn(isCompleted = false) {
     if (!isCompleted) {
-      // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
       quizStartTime = null;
     }
     showView('view-dashboard');
@@ -1529,10 +2229,10 @@ function generateQuizProblem(targetItem, allLessons) {
     renderQuizIndex(currentQuizIndex);
   });
 
-  // 퀴즈 시작 버튼 클릭 로직 보완
-  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
+  // 공통 퀴즈 실행 함수
+  function startQuizForLesson(lessonId) {
     try {
-      const selectedLessonId = Number(currentLessonId || 1);
+      const selectedLessonId = Number(lessonId || 1);
 
       const lessonItems = (lessonsData || []).filter(
         l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
@@ -1547,7 +2247,6 @@ function generateQuizProblem(targetItem, allLessons) {
       
       quizStartTime = Date.now();
 
-      // 저장된 진행 기록 확인
       const savedProgress = getLearningProgress('quiz', selectedLessonId);
       if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
         currentQuizIndex = savedProgress.currentIndex;
@@ -1564,15 +2263,16 @@ function generateQuizProblem(targetItem, allLessons) {
     } catch (err) {
       console.error("퀴즈 진입 도중 오류 발생:", err);
     }
+  }
+
+  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
+    startQuizForLesson(currentLessonId);
   });
 
   // ==========================================
   // VIEW 5: 주간 성과 데이터 동적 연동 로직
   // ==========================================
-function renderWeeklyStatsView() {
-    // ----------------------------------------------------
-    // [추가] 현재 학생 코스(레벨) 태그 동적 연동
-    // ----------------------------------------------------
+  function renderWeeklyStatsView() {
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
       const userCourse = currentUser?.course || "1a";
@@ -1698,215 +2398,104 @@ function renderWeeklyStatsView() {
 
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
-    const timeFormatted = hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`;
-    const totalTimeElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-slate-800');
-    if (totalTimeElement) totalTimeElement.innerText = timeFormatted;
-
-    const streakElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-amber-600');
-    if (streakElement) streakElement.innerText = `${streakCount}일 달성`;
   }
 
-  document.getElementById('nav-weekly-stats')?.addEventListener('click', () => {
-    renderWeeklyStatsView();
-    showView('view-weekly-stats');
-  });
+  // ==========================================
+  // VIEW 6: 전체 복습 화면 탭/아코디언/학습 제어
+  // ==========================================
+  
+  // 1. 레벨 탭 전환 (초급 1 ~ 중급 2)
+  function switchLevel(levelId) {
+    const panels = document.querySelectorAll('.level-panel');
+    const tabBtns = document.querySelectorAll('.level-tab-btn');
 
-  document.addEventListener('DOMContentLoaded', () => {
-    renderWeeklyStatsView();
-  });
+    panels.forEach(panel => {
+      panel.classList.add('hidden');
+      panel.classList.remove('flex');
+    });
 
-  // 스크린샷 생성 및 레포트 제출
-  async function handleReportSubmit() {
-    if (typeof html2canvas === 'undefined') {
-      alert("화면 캡처 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.");
+    tabBtns.forEach(btn => {
+      btn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-xs', 'font-bold');
+      btn.classList.add('text-on-surface-variant');
+    });
+
+    const activePanel = document.getElementById(`panel-${levelId}`);
+    if (activePanel) {
+      activePanel.classList.remove('hidden');
+      activePanel.classList.add('flex');
+    }
+
+    const activeTab = document.getElementById(`tab-${levelId}`);
+    if (activeTab) {
+      activeTab.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-xs', 'font-bold');
+      activeTab.classList.remove('text-on-surface-variant');
+    }
+
+    // 상단 배너 텍스트 업데이트
+    const bannerTitle = document.getElementById('level-banner-title');
+    const levelNames = {
+      'lvl-1': '초급 1 (第1課〜第20課)',
+      'lvl-2': '초급 2 (第1課〜第20課)',
+      'lvl-3': '중급 1 (第1課〜第20課)',
+      'lvl-4': '중급 2 (第1課〜第20課)'
+    };
+
+    if (bannerTitle && levelNames[levelId]) {
+      bannerTitle.textContent = levelNames[levelId];
+    }
+  }
+
+  // 2. 아코디언 그룹 토글 (1-5과, 6-10과 등)
+  function toggleGroup(groupId) {
+    const content = document.getElementById(`${groupId}-content`);
+    const icon = document.getElementById(`${groupId}-icon`);
+
+    if (content) {
+      const isHidden = content.classList.contains('hidden');
+      
+      if (isHidden) {
+        content.classList.remove('hidden');
+        content.classList.add('flex');
+        if (icon) icon.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        content.classList.remove('flex');
+        if (icon) icon.classList.remove('rotate-180');
+      }
+    }
+  }
+
+  // 3. 복습 화면 내 학습 액션 처리
+  function handleActionClick(button) {
+    const status = button.getAttribute('data-status');
+    const type = button.getAttribute('data-type');
+    const lessonId = button.getAttribute('data-lesson-id');
+
+    if (status === 'empty') {
+      alert('학습 데이터가 아직 준비되지 않았습니다.');
       return;
     }
 
-    const btn = document.getElementById('submit-report-btn');
-    const btnLabel = document.getElementById('btn-label');
-    const flash = document.getElementById('camera-flash');
-    const toast = document.getElementById('submission-toast');
-    const targetArea = document.getElementById('view-weekly-stats');
-    
-    if (!targetArea) {
-      alert("캡처할 화면 영역을 찾을 수 없습니다.");
-      return;
+    if (lessonId) {
+      currentLessonId = Number(lessonId);
+      const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
+      const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
+      
+      if (currItem) {
+        currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과 (${currItem.title})`;
+      } else {
+        currentLessonDisplayTitle = `${titleObj.bookName} · 제 ${titleObj.lessonNum}과`;
+      }
     }
 
-    if (btn && btn.dataset.submitting === 'true') return;
-    if (btn) btn.dataset.submitting = 'true';
-    
-    if (btnLabel) btnLabel.innerText = '화면 캡처 중... (撮影中)';
-    if (btn) {
-      btn.classList.add('bg-slate-700');
-      btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-    }
-    
-    if (flash) {
-      flash.classList.remove('opacity-0');
-      flash.classList.add('opacity-90');
-      setTimeout(() => {
-        flash.classList.remove('opacity-90');
-        flash.classList.add('opacity-0');
-      }, 120);
-    }
-
-    try {
-      window.scrollTo(0, 0);
-
-      const canvas = await html2canvas(targetArea, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        windowWidth: targetArea.scrollWidth,
-        windowHeight: targetArea.scrollHeight,
-        ignoreElements: (element) => {
-          return element.id === 'submit-report-btn' || 
-                 element.id === 'submission-toast' || 
-                 element.id === 'camera-flash' ||
-                 element.tagName === 'FOOTER';
-        }
-      });
-
-      const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      const today = new Date().toISOString().slice(0, 10);
-      
-      link.href = image;
-      link.download = `세종학당_주간학습레포트_${today}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      if (btnLabel) btnLabel.innerText = '캡처 완료! (撮影完了)';
-      if (btn) {
-        btn.classList.remove('bg-slate-700');
-        btn.classList.add('bg-emerald-700');
-      }
-      
-      if (toast) {
-        toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
-        toast.classList.add('translate-y-0', 'opacity-100');
-      }
-      
-      setTimeout(() => {
-        if (toast) {
-          toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
-          toast.classList.remove('translate-y-0', 'opacity-100');
-        }
-        if (btnLabel) btnLabel.innerText = '레포트 다시 제출 (再提出)';
-        if (btn) {
-          btn.classList.remove('bg-emerald-700');
-          btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-          btn.dataset.submitting = 'false';
-        }
-      }, 3200);
-
-    } catch (error) {
-      console.error("스크린샷 생성 실패:", error);
-      alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
-      if (btnLabel) btnLabel.innerText = '레포트 제출 (レポート提出)';
-      if (btn) {
-        btn.classList.remove('bg-slate-700');
-        btn.classList.add('bg-emerald-600');
-        btn.dataset.submitting = 'false';
-      }
+    if (type === 'reading') {
+      startReadingPractice(currentLessonId);
+    } else if (type === 'quiz') {
+      startQuizForLesson(currentLessonId);
+    } else if (type === 'vocab') {
+      alert(`제 ${lessonId || currentLessonId}과 단어 공부 모드로 이동합니다.`);
     }
   }
-
-  // ==================== TTS 및 음성 인식(STT) ====================
-  function playTTS(text, rate = 0.8) {
-    if ('speechSynthesis' in window && text) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
-      utterance.rate = rate;
-      window.speechSynthesis.speak(utterance);
-    }
-  }
-
-  topTtsBtn?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
-  btnAudioNormal?.addEventListener('click', () => playTTS(practiceSentence?.innerText || ''));
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'ko-KR';
-
-    recognition.onresult = async (event) => {
-      const spokenText = event.results[0][0].transcript;
-      if (practiceRecognizedText) practiceRecognizedText.innerText = `인식된 음성: "${spokenText}"`;
-      
-      const targetText = practiceSentence?.innerText || "";
-      
-      // 로딩 상태 표시
-      if (practiceMatchBadge) practiceMatchBadge.innerText = "⏳ AI 발음 분석 중...";
-      if (practiceEvalText) practiceEvalText.innerText = "Gemini AI가 연음 법칙 및 발음을 분석하고 있습니다.";
-
-      try {
-        // Vercel Serverless API 호출
-        const response = await fetch('/api/evaluate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            target: targetText,
-            spoken: spokenText
-          })
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result) {
-          // AI 평가 결과 반영
-          if (practiceMatchBadge) {
-            practiceMatchBadge.innerText = `🎯 일치율 ${result.accuracy_score}%`;
-          }
-          if (practiceEvalText) {
-            // AI 일본어 피드백 + 발음 가이드 표시
-            const guideText = result.pronunciation_guide ? `\n발음 가이드: ${result.pronunciation_guide}` : '';
-            practiceEvalText.innerText = `${result.feedback_ja}${guideText}`;
-          }
-        } else {
-          throw new Error(result.error || '평가 실패');
-        }
-      } catch (err) {
-        console.error("발음 평가 API 호출 에러:", err);
-        
-        // API 에러 시 기존 레벤슈타인 거리 유사도 로직으로 Fallback
-        const score = calculateSimilarity(targetText, spokenText);
-        if (practiceMatchBadge) practiceMatchBadge.innerText = `🎯 일치율 ${score}%`;
-        if (practiceEvalText) practiceEvalText.innerText = "AI 연동 오류로 기본 발음 분석 결과가 표시됩니다.";
-      }
-    };
-
-    recognition.onerror = () => {
-      if (practiceRecognizedText) practiceRecognizedText.innerText = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
-    };
-
-    recognition.onend = () => {
-      isRecording = false;
-      micPulseRing?.classList.add('hidden');
-      if (recordCaption) recordCaption.innerText = "마이크를 누르고 말하기";
-    };
-  }
-
-  micRecordBtn?.addEventListener('click', () => {
-    if (!recognition) {
-      alert("이 브라우저는 음성 인식을 지원하지 않습니다. (Chrome/Safari 권장)");
-      return;
-    }
-
-    if (!isRecording) {
-      isRecording = true;
-      recognition.start();
-      micPulseRing?.classList.remove('hidden');
-      if (recordCaption) recordCaption.innerText = "듣고 있습니다...";
-    } else {
-      stopPracticeRecordingUI();
-    }
-  });
 </script>
 
 </body>
