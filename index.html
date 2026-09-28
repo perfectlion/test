@@ -852,7 +852,6 @@
 </body>
 </html>
 
-  <!-- ==================== 데이터 연동 및 로직 스크립트 ==================== -->
 <script>
   // ==================== 데이터 및 상태 관리 ====================
   let usersData = [];
@@ -867,25 +866,24 @@
   let lessonSentencesList = [];
   let currentSentenceIndex = 0;
 
-  // 녹음 관련 전역 변수 
+  // 녹음 관련 전역 변수
   let isRecording = false; 
   let mediaRecorder = null;
   let recognition = null;
 
-  let practiceStartTime = null; // 읽기 학습 시작 시각
-  let quizStartTime = null;     // 퀴즈 학습 시작 시각
+  // 학습 시작 시각 측정
+  let practiceStartTime = null;
+  let quizStartTime = null;
 
   // Gemini API 설정
   const GEMINI_MODEL = "gemini-1.5-flash";
 
   // ==================== DOM 요소 참조 ====================
-  // 뷰 화면
   const viewLogin = document.getElementById('view-login');
   const viewDashboard = document.getElementById('view-dashboard');
   const viewPractice = document.getElementById('view-practice');
   const viewStats = document.getElementById('view-weekly-stats');
 
-  // 로그인 관련
   const loginForm = document.getElementById('login-form');
   const userIdInput = document.getElementById('user-id');
   const userPwInput = document.getElementById('user-pw');
@@ -894,7 +892,6 @@
   const loginSpinner = document.getElementById('login-spinner');
   const loginErrorMsg = document.getElementById('login-error-msg');
 
-  // 대시보드 관련
   const welcomeTitle = document.getElementById('welcome-title');
   const logoutBtn = document.getElementById('logout-btn');
   const goPracticeBtn = document.getElementById('go-practice-btn');
@@ -902,7 +899,6 @@
   const cardLessonTag = document.getElementById('card-lesson-tag');
   const targetSentenceElem = document.getElementById('target-sentence');
 
-  // 연습 모드 관련
   const backToDashboard = document.getElementById('back-to-dashboard');
   const closePracticeBtn = document.getElementById('close-practice-btn');
   const practiceStageTitle = document.getElementById('practice-stage-title');
@@ -926,12 +922,9 @@
   const practiceMatchBadge = document.getElementById('practice-match-badge');
   const practiceEvalText = document.getElementById('practice-eval-text');
 
-  // ==================== 주간 데이터 저장 헬퍼 함수 ====================
-  /**
-   * 학습 완료시 오늘 날짜의 주간 성취 데이터를 저장합니다.
-   * @param {'reading' | 'quiz'} type - 학습 유형
-   * @param {number} timeSpentMinutes - 소요 시간 (기본값 10분)
-   */
+  // ==================== 주간 데이터 및 학습 진행상태 저장 헬퍼 함수 ====================
+  
+  // 1. 학습 완료 시 주간 통계 기록
   function saveTodayLearningData(type, timeSpentMinutes = 10) {
     const today = new Date();
     const year = today.getFullYear();
@@ -960,13 +953,37 @@
 
     localStorage.setItem('weeklyLearningData', JSON.stringify(storedData));
     
-    // UI 업데이트 함수가 있으면 즉시 반영
     if (typeof renderWeeklyStatsView === 'function') {
       renderWeeklyStatsView();
     }
   }
 
-  // ==================== 유틸리티: 레벤슈타인 거리 및 유사도 계산 ====================
+  // 2. 학습 진행 상태 (이어풀기 정보) 저장
+  function saveLearningProgress(type, lessonId, currentIndex) {
+    const userId = currentUser?.ID || 'default';
+    const progressKey = `progress_${type}_${userId}_${lessonId}`;
+    localStorage.setItem(progressKey, JSON.stringify({
+      currentIndex: currentIndex,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  // 3. 저장된 진행 상태 불러오기
+  function getLearningProgress(type, lessonId) {
+    const userId = currentUser?.ID || 'default';
+    const progressKey = `progress_${type}_${userId}_${lessonId}`;
+    const data = localStorage.getItem(progressKey);
+    return data ? JSON.parse(data) : null;
+  }
+
+  // 4. 완료 시 진행 상태 삭제
+  function clearLearningProgress(type, lessonId) {
+    const userId = currentUser?.ID || 'default';
+    const progressKey = `progress_${type}_${userId}_${lessonId}`;
+    localStorage.removeItem(progressKey);
+  }
+
+  // ==================== 유틸리티: 레벤슈타인 거리 및 유사도 ====================
   function getLevenshteinDistance(str1, str2) {
     const len1 = str1.length;
     const len2 = str2.length;
@@ -1028,16 +1045,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('go-practice-btn')?.addEventListener('click', () => {
-      showView('view-practice');
-    });
-
     document.getElementById('back-to-dashboard')?.addEventListener('click', () => {
-      showView('view-dashboard');
-    });
-
-    document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-      showView('view-quiz');
+      returnToDashboard(false); // 미완료로 복귀
     });
 
     document.getElementById('back-from-stats')?.addEventListener('click', () => {
@@ -1045,7 +1054,7 @@
     });
     
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
-      showView('view-dashboard');
+      stopQuizAndReturn(false); // 미완료로 복귀
     });
   });
 
@@ -1185,15 +1194,10 @@
     showView('view-login');
   });
 
-  // 연습하기
+  // ==================== 1. 읽기 학습 모드 ====================
   goPracticeBtn?.addEventListener('click', () => {
     const targetId = Number(currentLessonId);
 
-    practiceStartTime = Date.now(); // ⏱️ 읽기 시작 시각 기록
-    currentSentenceIndex = 0;
-    loadPracticeSentenceAtIndex(currentSentenceIndex);
-    showView('view-practice');
-    
     lessonSentencesList = lessonsData
       .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
       .map(l => ({
@@ -1208,7 +1212,16 @@
       }];
     }
 
-    currentSentenceIndex = 0;
+    practiceStartTime = Date.now();
+
+    // 이전에 풀다 만 진행 상태 확인
+    const savedProgress = getLearningProgress('reading', targetId);
+    if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
+      currentSentenceIndex = savedProgress.currentIndex;
+    } else {
+      currentSentenceIndex = 0;
+    }
+
     loadPracticeSentenceAtIndex(currentSentenceIndex);
     showView('view-practice');
   });
@@ -1231,6 +1244,9 @@
       if (practiceMatchBadge) practiceMatchBadge.innerText = "🎯 발음 대기 중";
       if (practiceEvalText) practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 발음을 분석해 줍니다.";
 
+      // 현재 진행 위치 저장
+      saveLearningProgress('reading', currentLessonId, index);
+
       if (index < totalSentences - 1) {
         if (nextBtnText) nextBtnText.innerText = "다음 문장 (次の文)";
         if (nextBtnIcon) nextBtnIcon.style.display = "inline-block";
@@ -1249,7 +1265,6 @@
     }
   }
 
-  // 안전한 녹음 종료 함수
   function stopPracticeRecordingUI() {
     if (typeof isRecording !== 'undefined' && isRecording) {
       isRecording = false;
@@ -1262,39 +1277,41 @@
     }
   }
 
-  // 대시보드로 돌아갈 때 (읽기 완료 처리 반영)
-function returnToDashboard() {
-  stopPracticeRecordingUI();
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-  }
+  // 대시보드로 복귀 (isCompleted가 true일 경우만 성적 반영)
+  function returnToDashboard(isCompleted = false) {
+    stopPracticeRecordingUI();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
 
-  // ⏱️ 실제 소요 시간 계산 (초 단위 -> 분 단위 올림/반올림)
-  if (practiceStartTime) {
-    const elapsedMs = Date.now() - practiceStartTime;
-    // 최소 1분 단위로 계산 (초 단위 측정 후 분으로 환산, 예: 30초 이상 학습 시 1분)
-    const elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
-    
-    saveTodayLearningData('reading', elapsedMinutes);
-    practiceStartTime = null; // 초기화
-  }
+    if (isCompleted) {
+      // 100% 다 풀었을 경우 소요시간 계산 및 완료 저장
+      let elapsedMinutes = 5;
+      if (practiceStartTime) {
+        const elapsedMs = Date.now() - practiceStartTime;
+        elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
+      }
+      saveTodayLearningData('reading', elapsedMinutes);
+      clearLearningProgress('reading', currentLessonId); // 진행 데이터 제거
+    }
 
-  showView('view-dashboard');
-}
+    practiceStartTime = null;
+    showView('view-dashboard');
+  }
 
   btnNextSentence?.addEventListener('click', () => {
     if (currentSentenceIndex < lessonSentencesList.length - 1) {
       currentSentenceIndex++;
       loadPracticeSentenceAtIndex(currentSentenceIndex);
     } else {
-      returnToDashboard();
+      // 마지막 문장에서 버튼을 클릭해 완료한 경우
+      returnToDashboard(true);
     }
   });
 
-  backToDashboard?.addEventListener('click', returnToDashboard);
-  closePracticeBtn?.addEventListener('click', returnToDashboard);
+  closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-  // ==================== 데일리 퀴즈 로직 ====================
+  // ==================== 2. 데일리 퀴즈 로직 ====================
   let currentQuizList = [];
   let currentQuizIndex = 0;
   let isCardFlipped = false;
@@ -1332,27 +1349,27 @@ function returnToDashboard() {
     };
   }
 
-function renderQuizIndex(index) {
-  const total = currentQuizList.length;
+  function renderQuizIndex(index) {
+    const total = currentQuizList.length;
 
-  if (total === 0 || index >= total) {
-    alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
-    
-    // ⏱️ 실제 퀴즈 소요 시간 계산
-    if (quizStartTime) {
-      const elapsedMs = Date.now() - quizStartTime;
-      const elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
+    // 모든 퀴즈를 다 완료했을 때만 성적 반영
+    if (total > 0 && index >= total) {
+      alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
       
+      let elapsedMinutes = 5;
+      if (quizStartTime) {
+        const elapsedMs = Date.now() - quizStartTime;
+        elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
+      }
       saveTodayLearningData('quiz', elapsedMinutes);
-      quizStartTime = null; // 초기화
+      clearLearningProgress('quiz', currentLessonId); // 진행 데이터 제거
+
+      quizStartTime = null;
+      showView('view-dashboard');
+      return;
     }
 
-    showView('view-dashboard');
-    return;
-  }
-
     const problem = currentQuizList[index];
-
     const currentStep = index + 1;
     const percent = Math.round((currentStep / total) * 100);
 
@@ -1389,6 +1406,9 @@ function renderQuizIndex(index) {
       if (hintBox) hintBox.classList.add('hidden');
     }
 
+    // 현재 퀴즈 문제 진행 인덱스 저장
+    saveLearningProgress('quiz', currentLessonId, index);
+
     const choicesContainer = document.getElementById('quiz-choices-container');
     if (choicesContainer) {
       choicesContainer.innerHTML = '';
@@ -1415,6 +1435,14 @@ function renderQuizIndex(index) {
     document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
   }
 
+  function stopQuizAndReturn(isCompleted = false) {
+    if (!isCompleted) {
+      // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
+      quizStartTime = null;
+    }
+    showView('view-dashboard');
+  }
+
   document.getElementById('quiz-card-container')?.addEventListener('click', () => {
     const cardInner = document.getElementById('quiz-card-inner');
     isCardFlipped = !isCardFlipped;
@@ -1439,42 +1467,10 @@ function renderQuizIndex(index) {
     renderQuizIndex(currentQuizIndex);
   });
 
+  // 퀴즈 시작 버튼 클릭 로직 보완
   document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
     try {
-      const currentLessonIdNum = Number(currentLessonId || 1);
-
-      quizStartTime = Date.now(); // ⏱️ 퀴즈 시작 시각 기록
-          
-      renderQuizIndex(currentQuizIndex);
-      showView('view-quiz');
-      
-      let availableLessons = [];
-      if (currentLessonIdNum <= 1) {
-        availableLessons = [1];
-      } else {
-        for (let i = 1; i < currentLessonIdNum; i++) {
-          availableLessons.push(i);
-        }
-      }
-
-      let historyKey = `quizHistory_${currentUser?.ID || 'default'}`;
-      let quizLogs = [];
-      try {
-        quizLogs = JSON.parse(localStorage.getItem(historyKey)) || [];
-      } catch (e) {
-        quizLogs = [];
-      }
-
-      const completedLessonIds = quizLogs.map(log => log.lessonId);
-      let uncompletedLessons = availableLessons.filter(id => !completedLessonIds.includes(id));
-
-      if (uncompletedLessons.length === 0) {
-        quizLogs = [];
-        localStorage.removeItem(historyKey);
-        uncompletedLessons = [...availableLessons];
-      }
-
-      const selectedLessonId = uncompletedLessons[Math.floor(Math.random() * uncompletedLessons.length)];
+      const selectedLessonId = Number(currentLessonId || 1);
 
       const lessonItems = (lessonsData || []).filter(
         l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
@@ -1485,14 +1481,17 @@ function renderQuizIndex(index) {
         return;
       }
 
-      quizLogs.push({
-        timestamp: new Date().toISOString(),
-        lessonId: selectedLessonId
-      });
-      localStorage.setItem(historyKey, JSON.stringify(quizLogs));
-
       currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
-      currentQuizIndex = 0;
+      
+      quizStartTime = Date.now();
+
+      // 저장된 진행 기록 확인
+      const savedProgress = getLearningProgress('quiz', selectedLessonId);
+      if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
+        currentQuizIndex = savedProgress.currentIndex;
+      } else {
+        currentQuizIndex = 0;
+      }
 
       const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
       currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
@@ -1644,112 +1643,106 @@ function renderQuizIndex(index) {
     renderWeeklyStatsView();
   });
 
-// 스크린샷 생성 및 레포트 제출
-async function handleReportSubmit() {
-  // 1. html2canvas 라이브러리 로드 여부 검증
-  if (typeof html2canvas === 'undefined') {
-    alert("화면 캡처 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.");
-    return;
-  }
+  // 스크린샷 생성 및 레포트 제출
+  async function handleReportSubmit() {
+    if (typeof html2canvas === 'undefined') {
+      alert("화면 캡처 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.");
+      return;
+    }
 
-  const btn = document.getElementById('submit-report-btn');
-  const btnLabel = document.getElementById('btn-label');
-  const flash = document.getElementById('camera-flash');
-  const toast = document.getElementById('submission-toast');
-  const targetArea = document.getElementById('view-weekly-stats');
+    const btn = document.getElementById('submit-report-btn');
+    const btnLabel = document.getElementById('btn-label');
+    const flash = document.getElementById('camera-flash');
+    const toast = document.getElementById('submission-toast');
+    const targetArea = document.getElementById('view-weekly-stats');
+    
+    if (!targetArea) {
+      alert("캡처할 화면 영역을 찾을 수 없습니다.");
+      return;
+    }
 
-  if (!targetArea) {
-    alert("캡처할 화면 영역을 찾을 수 없습니다.");
-    return;
-  }
-
-  if (btn && btn.dataset.submitting === 'true') return;
-  if (btn) btn.dataset.submitting = 'true';
-
-  if (btnLabel) btnLabel.innerText = '화면 캡처 중... (撮影中)';
-  if (btn) {
-    btn.classList.add('bg-slate-700');
-    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-  }
-
-  // 셔터 애니메이션 효과 (Null Safety)
-  if (flash) {
-    flash.classList.remove('opacity-0');
-    flash.classList.add('opacity-90');
-    setTimeout(() => {
-      flash.classList.remove('opacity-90');
-      flash.classList.add('opacity-0');
-    }, 120);
-  }
-
-  try {
-    // 캡처 전 스크롤 위치 최상단 보정 (스크롤 위치에 따른 캡처 깨짐 방지)
-    window.scrollTo(0, 0);
-
-    // html2canvas 옵션 강화
-    const canvas = await html2canvas(targetArea, {
-      scale: 2, // 고해상도 Render
-      useCORS: true, // 외부 이미지 CORS 허용
-      allowTaint: true,
-      backgroundColor: '#ffffff', // 배경색 흰색 지정
-      windowWidth: targetArea.scrollWidth,
-      windowHeight: targetArea.scrollHeight,
-      ignoreElements: (element) => {
-        return (
-          element.id === 'submit-report-btn' ||
-          element.id === 'submission-toast' ||
-          element.id === 'camera-flash' ||
-          element.tagName === 'FOOTER'
-        );
-      }
-    });
-
-    // 이미지 다운로드
-    const image = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    const today = new Date().toISOString().slice(0, 10);
-
-    link.href = image;
-    link.download = `세종학당_주간학습레포트_${today}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    if (btnLabel) btnLabel.innerText = '캡처 완료! (撮影完了)';
+    if (btn && btn.dataset.submitting === 'true') return;
+    if (btn) btn.dataset.submitting = 'true';
+    
+    if (btnLabel) btnLabel.innerText = '화면 캡처 중... (撮影中)';
     if (btn) {
-      btn.classList.remove('bg-slate-700');
-      btn.classList.add('bg-emerald-700');
+      btn.classList.add('bg-slate-700');
+      btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+    }
+    
+    if (flash) {
+      flash.classList.remove('opacity-0');
+      flash.classList.add('opacity-90');
+      setTimeout(() => {
+        flash.classList.remove('opacity-90');
+        flash.classList.add('opacity-0');
+      }, 120);
     }
 
-    if (toast) {
-      toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
-      toast.classList.add('translate-y-0', 'opacity-100');
-    }
+    try {
+      window.scrollTo(0, 0);
 
-    setTimeout(() => {
-      if (toast) {
-        toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-      }
-      if (btnLabel) btnLabel.innerText = '레포트 다시 제출 (再提出)';
+      const canvas = await html2canvas(targetArea, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        windowWidth: targetArea.scrollWidth,
+        windowHeight: targetArea.scrollHeight,
+        ignoreElements: (element) => {
+          return element.id === 'submit-report-btn' || 
+                 element.id === 'submission-toast' || 
+                 element.id === 'camera-flash' ||
+                 element.tagName === 'FOOTER';
+        }
+      });
+
+      const image = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const today = new Date().toISOString().slice(0, 10);
+      
+      link.href = image;
+      link.download = `세종학당_주간학습레포트_${today}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      if (btnLabel) btnLabel.innerText = '캡처 완료! (撮影完了)';
       if (btn) {
-        btn.classList.remove('bg-emerald-700');
-        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+        btn.classList.remove('bg-slate-700');
+        btn.classList.add('bg-emerald-700');
+      }
+      
+      if (toast) {
+        toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      }
+      
+      setTimeout(() => {
+        if (toast) {
+          toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
+          toast.classList.remove('translate-y-0', 'opacity-100');
+        }
+        if (btnLabel) btnLabel.innerText = '레포트 다시 제출 (再提出)';
+        if (btn) {
+          btn.classList.remove('bg-emerald-700');
+          btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+          btn.dataset.submitting = 'false';
+        }
+      }, 3200);
+
+    } catch (error) {
+      console.error("스크린샷 생성 실패:", error);
+      alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
+      if (btnLabel) btnLabel.innerText = '레포트 제출 (レポート提出)';
+      if (btn) {
+        btn.classList.remove('bg-slate-700');
+        btn.classList.add('bg-emerald-600');
         btn.dataset.submitting = 'false';
       }
-    }, 3200);
-
-  } catch (error) {
-    console.error("스크린샷 생성 실패 상세 정보:", error);
-    alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
-    if (btnLabel) btnLabel.innerText = '레포트 제출 (レポート提出)';
-    if (btn) {
-      btn.classList.remove('bg-slate-700');
-      btn.classList.add('bg-emerald-600');
-      btn.dataset.submitting = 'false';
     }
   }
-}
+
   // ==================== TTS 및 음성 인식(STT) ====================
   function playTTS(text, rate = 0.8) {
     if ('speechSynthesis' in window && text) {
