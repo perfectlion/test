@@ -1831,22 +1831,53 @@ function renderWeeklyStatsView() {
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  if (SpeechRecognition) {
+if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = 'ko-KR';
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       const spokenText = event.results[0][0].transcript;
-      if (practiceRecognizedText) practiceRecognizedText.innerText = spokenText;
+      if (practiceRecognizedText) practiceRecognizedText.innerText = `인식된 음성: "${spokenText}"`;
       
       const targetText = practiceSentence?.innerText || "";
-      const score = calculateSimilarity(targetText, spokenText);
       
-      if (practiceMatchBadge) practiceMatchBadge.innerText = `🎯 일치율 ${score}%`;
-      if (practiceEvalText) {
-        if (score >= 80) practiceEvalText.innerText = "🎉 훌륭합니다! 정확한 발음입니다.";
-        else if (score >= 50) practiceEvalText.innerText = "👍 아주 좋아요! 조금만 더 명확하게 발음해보세요.";
-        else practiceEvalText.innerText = "💪 다시 한번 천천히 발음해볼까요?";
+      // 로딩 상태 표시
+      if (practiceMatchBadge) practiceMatchBadge.innerText = "⏳ AI 발음 분석 중...";
+      if (practiceEvalText) practiceEvalText.innerText = "Gemini AI가 연음 법칙 및 발음을 분석하고 있습니다.";
+
+      try {
+        // Vercel Serverless API 호출
+        const response = await fetch('/api/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            target: targetText,
+            spoken: spokenText
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result) {
+          // AI 평가 결과 반영
+          if (practiceMatchBadge) {
+            practiceMatchBadge.innerText = `🎯 일치율 ${result.accuracy_score}%`;
+          }
+          if (practiceEvalText) {
+            // AI 일본어 피드백 + 발음 가이드 표시
+            const guideText = result.pronunciation_guide ? `\n발음 가이드: ${result.pronunciation_guide}` : '';
+            practiceEvalText.innerText = `${result.feedback_ja}${guideText}`;
+          }
+        } else {
+          throw new Error(result.error || '평가 실패');
+        }
+      } catch (err) {
+        console.error("발음 평가 API 호출 에러:", err);
+        
+        // API 에러 시 기존 레벤슈타인 거리 유사도 로직으로 Fallback
+        const score = calculateSimilarity(targetText, spokenText);
+        if (practiceMatchBadge) practiceMatchBadge.innerText = `🎯 일치율 ${score}%`;
+        if (practiceEvalText) practiceEvalText.innerText = "AI 연동 오류로 기본 발음 분석 결과가 표시됩니다.";
       }
     };
 
