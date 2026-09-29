@@ -1886,7 +1886,14 @@ const reviewLevels = [
 ];
 
 /**
- * 1. 복습 화면 열기
+ * 0. 복습 모드 열기 함수 (누락되었던 부분 추가!)
+ */
+function openReviewMode() {
+  showView('view-review');
+}
+
+/**
+ * 1. 화면 전환 공통 함수
  */
 function showView(viewId) {
   // 1. 모든 view- 화면 숨기기
@@ -1900,7 +1907,7 @@ function showView(viewId) {
     target.classList.remove('hidden-view');
   }
 
-  // 3. 복습 화면 진입 시 UI 즉시 그려주기 (★ 핵심!)
+  // 3. 복습 화면 진입 시 UI 즉시 그려주기
   if (viewId === 'view-review') {
     renderReviewModeUI();
   }
@@ -2064,21 +2071,17 @@ function startQuizForLesson(targetLessonId) {
  * 7. 대시보드로 돌아가기
  */
 function goBackToDashboard() {
-  if (typeof showView === 'function') {
-    showView('view-dashboard');
-  } else {
-    document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.add('hidden-view'));
-    const targetDashboard = document.getElementById('view-dashboard');
-    if (targetDashboard) targetDashboard.classList.remove('hidden-view');
-  }
+  showView('view-dashboard');
 }
 
 // 구 버전 호환용 alias
 const startReadingPractice = startReadingPracticeForLesson;
 
-// 복습 모드 진입 버튼 이벤트 연결
-document.getElementById('go-review-btn')?.addEventListener('click', () => {
-  openReviewMode();
+// 복습 모드 진입 버튼 이벤트 안전하게 연결
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('go-review-btn')?.addEventListener('click', () => {
+    openReviewMode();
+  });
 });
   
   // ==================== TTS 및 음성 인식(STT) ====================
