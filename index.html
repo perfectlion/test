@@ -1793,6 +1793,11 @@
     return lvl.minId + (Number(lessonNum) - 1);
   }
 
+  // 대시보드(메인 화면)로 돌아가는 함수
+  function goBackToDashboard() {
+    showView('view-dashboard');
+  }
+  
   function openReviewMode() {
     showView('view-review');
     renderReviewScreen();
