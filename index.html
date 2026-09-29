@@ -1872,212 +1872,153 @@ function renderWeeklyStatsView() {
   }
 
 // ==========================================
-// 복습 모드(Review Mode) 전용 로직 및 렌더링
+// 복습 모드(Review Mode) 전용 데이터 및 로직
 // ==========================================
 
-// 현재 복습 화면에서 선택된 레벨 (기본값: 1a)
-let selectedReviewLevel = '1a'; 
+// 현재 선택된 복습 레벨 (기본값: '1a')
+let currentSelectedLevel = '1a';
 
+// 복습 모드 레벨 데이터 (subTitle 포함)
 const reviewLevels = [
-  { course: '1a', title: '초급 1 🌱', minId: 1, maxId: 20 },
-  { course: '2a', title: '초급 2 🌿', minId: 21, maxId: 40 },
-  { course: '3a', title: '중급 1 🌸', minId: 41, maxId: 60 },
-  { course: '4a', title: '중급 2 🌟', minId: 61, maxId: 80 }
+  { id: '1a', title: '초급 1 🌱', subTitle: '1과 ~ 20과' },
+  { id: '2a', title: '초급 2 🌿', subTitle: '21과 ~ 40과' },
+  { id: '3a', title: '중급 1 🌸', subTitle: '41과 ~ 60과' },
+  { id: '4a', title: '중급 2 🌟', subTitle: '61과 ~ 80과' }
 ];
 
 /**
- * 0. 복습 모드 열기 함수 (누락되었던 부분 추가!)
+ * 1. 복습 모드 열기
  */
 function openReviewMode() {
-  showView('view-review');
-}
-
-/**
- * 1. 화면 전환 공통 함수
- */
-function showView(viewId) {
   // 1. 모든 view- 화면 숨기기
   document.querySelectorAll('[id^="view-"]').forEach(v => {
     v.classList.add('hidden-view');
   });
 
-  // 2. 대상 화면 표시
+  // 2. view-review 화면 보이기
+  const reviewEl = document.getElementById('view-review');
+  if (reviewEl) {
+    reviewEl.classList.remove('hidden-view');
+  } else {
+    console.error("❌ id='view-review' 요소를 찾을 수 없습니다.");
+    return;
+  }
+
+  // 3. 렌더링 함수 실행
+  renderReviewScreen();
+}
+
+/**
+ * 2. 공통 화면 전환 함수 (showView 대응)
+ */
+function showView(viewId) {
+  document.querySelectorAll('[id^="view-"]').forEach(v => {
+    v.classList.add('hidden-view');
+  });
+
   const target = document.getElementById(viewId);
   if (target) {
     target.classList.remove('hidden-view');
   }
 
-  // 3. 복습 화면 진입 시 UI 즉시 그려주기
   if (viewId === 'view-review') {
-    renderReviewModeUI();
+    renderReviewScreen();
   }
 }
 
 /**
- * 2. 복습 화면 전체 렌더링
- */
-function renderReviewModeUI() {
-  renderReviewLevelTabs();
-  renderReviewLessonList(selectedReviewLevel);
-}
-
-/**
- * 3. 상단 레벨 선택 탭 동적 생성
- */
-function renderReviewLevelTabs() {
-  const tabsContainer = document.getElementById('review-level-tabs');
-  if (!tabsContainer) return;
-
-  tabsContainer.innerHTML = '';
-
-  reviewLevels.forEach(level => {
-    const isSelected = level.course === selectedReviewLevel;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `px-4 py-2 rounded-full font-label-lg text-label-lg shrink-0 transition-all cursor-pointer ${
-      isSelected 
-        ? 'bg-primary text-on-primary shadow-sm' 
-        : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
-    }`;
-    btn.innerText = level.title;
-    btn.addEventListener('click', () => {
-      selectedReviewLevel = level.course;
-      renderReviewModeUI();
-    });
-    tabsContainer.appendChild(btn);
-  });
-}
-
-/**
- * 4. 선택된 레벨의 단원 카드 리스트 동적 생성
- */
-function renderReviewLessonList(course) {
-  const listContainer = document.getElementById('review-lesson-list');
-  if (!listContainer) return;
-
-  listContainer.innerHTML = '';
-
-  const levelInfo = reviewLevels.find(l => l.course === course) || reviewLevels[0];
-
-  for (let lessonId = levelInfo.minId; lessonId <= levelInfo.maxId; lessonId++) {
-    const currItem = (curriculumData || []).find(c => Number(c.lesson_id) === lessonId);
-    const displayLessonNum = lessonId - levelInfo.minId + 1;
-    const lessonTitle = currItem ? currItem.title : `제 ${displayLessonNum}과`;
-
-    const card = document.createElement('div');
-    card.className = 'flex flex-col gap-3 p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/50 shadow-sm';
-    
-    card.innerHTML = `
-      <div class="flex items-center justify-between">
-        <span class="font-label-sm text-label-sm text-primary font-bold">제 ${displayLessonNum}과</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">${lessonTitle}</span>
-      </div>
-      <div class="flex items-center gap-2 pt-1">
-        <button type="button" 
-          onclick="startReadingPracticeForLesson(${lessonId})"
-          class="flex-1 py-2 px-3 bg-primary-container/60 hover:bg-primary-container text-on-primary-container font-label-md text-label-md rounded-xl transition-all cursor-pointer text-center">
-          📖 읽기 연습
-        </button>
-        <button type="button" 
-          onclick="startQuizForLesson(${lessonId})"
-          class="flex-1 py-2 px-3 bg-secondary-container/60 hover:bg-secondary-container text-on-secondary-container font-label-md text-label-md rounded-xl transition-all cursor-pointer text-center">
-          🧩 단어 퀴즈
-        </button>
-      </div>
-    `;
-
-    listContainer.appendChild(card);
-  }
-}
-
-/**
- * 5. 복습 모드 -> 특정 단원 읽기 학습 시작
- */
-function startReadingPracticeForLesson(targetLessonId) {
-  let lessonIdNum = Number(targetLessonId);
-  if (isNaN(lessonIdNum) || !lessonIdNum) {
-    lessonIdNum = Number(currentLessonId || 1);
-  }
-
-  lessonSentencesList = (lessonsData || [])
-    .filter(l => Number(l.lesson_id) === lessonIdNum && l.sentence_kr && l.sentence_kr.trim() !== "")
-    .map(l => ({
-      sentence: l.sentence_kr,
-      translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
-    }));
-
-  if (lessonSentencesList.length === 0) {
-    alert(`제 ${lessonIdNum}과에 해당하는 읽기 데이터가 없습니다.`);
-    return;
-  }
-
-  currentLessonId = lessonIdNum;
-  const userCourse = currentUser?.course || "1a";
-  const { bookName, lessonNum } = getBookAndLessonTitle(userCourse, lessonIdNum);
-  const currItem = (curriculumData || []).find(c => Number(c.lesson_id) === lessonIdNum);
-  const lessonTitle = currItem ? currItem.title : "";
-  currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (${lessonTitle})`;
-
-  practiceStartTime = Date.now();
-  const savedProgress = getLearningProgress('reading', lessonIdNum);
-  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
-    currentSentenceIndex = savedProgress.currentIndex;
-  } else {
-    currentSentenceIndex = 0;
-  }
-
-  loadPracticeSentenceAtIndex(currentSentenceIndex);
-  showView('view-practice');
-}
-
-/**
- * 6. 복습 모드 -> 특정 단원 단어 퀴즈 시작
- */
-function startQuizForLesson(targetLessonId) {
-  let lessonIdNum = Number(targetLessonId);
-  if (isNaN(lessonIdNum) || !lessonIdNum) {
-    lessonIdNum = Number(currentLessonId || 1);
-  }
-
-  const lessonItems = (lessonsData || []).filter(
-    l => Number(l.lesson_id) === lessonIdNum && l.word_kr && l.word_kr.trim() !== ""
-  );
-
-  if (lessonItems.length === 0) {
-    alert(`제 ${lessonIdNum}과에 해당하는 퀴즈 데이터가 없습니다.`);
-    return;
-  }
-
-  currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
-
-  currentLessonId = lessonIdNum;
-  const userCourse = currentUser?.course || "1a";
-  const { bookName, lessonNum } = getBookAndLessonTitle(userCourse, lessonIdNum);
-  currentLessonDisplayTitle = `${bookName} • 제 ${lessonNum}과 (복습 퀴즈)`;
-
-  quizStartTime = Date.now();
-  const savedProgress = getLearningProgress('quiz', lessonIdNum);
-  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
-    currentQuizIndex = savedProgress.currentIndex;
-  } else {
-    currentQuizIndex = 0;
-  }
-
-  renderQuizIndex(currentQuizIndex);
-  showView('view-quiz');
-}
-
-/**
- * 7. 대시보드로 돌아가기
+ * 3. 대시보드로 돌아가기
  */
 function goBackToDashboard() {
-  showView('view-dashboard');
+  // 1. 모든 view- 화면 숨기기
+  document.querySelectorAll('[id^="view-"]').forEach(v => {
+    v.classList.add('hidden-view');
+  });
+
+  // 2. 대시보드 화면 보이기
+  const targetDashboard = typeof viewDashboard !== 'undefined' && viewDashboard 
+    ? viewDashboard 
+    : document.getElementById('view-dashboard');
+
+  if (targetDashboard) {
+    targetDashboard.classList.remove('hidden-view');
+    targetDashboard.classList.remove('hidden');
+  } else {
+    console.error("대시보드(view-dashboard) 요소를 찾을 수 없습니다.");
+  }
 }
 
-// 구 버전 호환용 alias
-const startReadingPractice = startReadingPracticeForLesson;
+/**
+ * 4. 레벨 변경 이벤트
+ */
+function changeReviewLevel(levelId) {
+  currentSelectedLevel = levelId;
+  renderReviewScreen();
+}
 
-// 복습 모드 진입 버튼 이벤트 안전하게 연결
+/**
+ * 5. 복습 화면 렌더링 (원래 디자인: 탭 + 3개 버튼 카드리스트)
+ */
+function renderReviewScreen() {
+  const tabsContainer = document.getElementById('review-level-tabs');
+  const listContainer = document.getElementById('review-lesson-list');
+
+  // 컨테이너 체크
+  if (!tabsContainer || !listContainer) {
+    console.error("❌ 탭 컨테이너(review-level-tabs) 또는 리스트 컨테이너(review-lesson-list)를 찾을 수 없습니다.");
+    return;
+  }
+
+  // A. 상단 탭 그려주기
+  tabsContainer.innerHTML = reviewLevels.map(lvl => {
+    const isActive = lvl.id === currentSelectedLevel;
+    const btnClass = isActive 
+      ? 'bg-primary text-on-primary font-bold shadow-md scale-105' 
+      : 'bg-surface-container text-on-surface hover:bg-surface-container-high';
+
+    return `
+      <button type="button" 
+              onclick="changeReviewLevel('${lvl.id}')"
+              class="flex-shrink-0 flex flex-col items-center justify-center py-2.5 px-4 rounded-xl transition-all ${btnClass}">
+        <span class="text-label-lg whitespace-nowrap">${lvl.title}</span>
+        <span class="text-[11px] opacity-80 whitespace-nowrap">${lvl.subTitle}</span>
+      </button>
+    `;
+  }).join('');
+
+  // B. 1과~20과 리스트 그려주기 (읽기연습, 단어퀴즈, 단어연습 3개 버튼)
+  let listHtml = '';
+  for (let i = 1; i <= 20; i++) {
+    listHtml += `
+      <div class="flex flex-col p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/20 shadow-xs gap-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-md bg-primary/10 text-primary font-bold text-[12px] flex items-center justify-center">${i}</span>
+          <span class="font-bold text-on-surface text-body-md">제 ${i}과 학습</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <button type="button" onclick="startReadingPractice('${currentSelectedLevel}', ${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-highest text-primary font-bold text-[12px] cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">menu_book</span>
+            <span>읽기연습</span>
+          </button>
+          <button type="button" onclick="startQuizForLesson('${currentSelectedLevel}', ${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container-high text-tertiary font-bold text-[12px] cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">quiz</span>
+            <span>단어퀴즈</span>
+          </button>
+          <button type="button" onclick="alert('준비 중입니다.')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-outline-variant/20 text-on-surface-variant/60 font-bold text-[12px] cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">campaign</span>
+            <span>단어연습</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  listContainer.innerHTML = listHtml;
+}
+
+// 구버전/신버전 함수명 호환용 연결
+const renderReviewModeUI = renderReviewScreen;
+
+// 대시보드 복습 진입 버튼 이벤트를 안전하게 바인딩
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('go-review-btn')?.addEventListener('click', () => {
     openReviewMode();
