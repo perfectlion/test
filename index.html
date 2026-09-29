@@ -2074,6 +2074,189 @@ function startQuizForLesson(targetLessonId) {
   renderQuizIndex(currentQuizIndex);
   showView('view-quiz');
 }
+
+// ==========================================
+// 복습 모드(Review Mode) 전용 로직 및 렌더링
+// ==========================================
+
+// 현재 복습 화면에서 선택된 레벨 (기본값: 초급 1)
+let selectedReviewLevel = '1a'; 
+
+const reviewLevels = [
+  { course: '1a', title: '초급 1', minId: 1, maxId: 20 },
+  { course: '2a', title: '초급 2', minId: 21, maxId: 40 },
+  { course: '3a', title: '중급 1', minId: 41, maxId: 60 },
+  { course: '4a', title: '중급 2', minId: 61, maxId: 80 }
+];
+
+/**
+ * 복습 화면 전체 렌더링 함수
+ */
+function renderReviewModeUI() {
+  renderReviewLevelTabs();
+  renderReviewLessonList(selectedReviewLevel);
+}
+
+/**
+ * 1. 상단 레벨 선택 탭 동적 생성
+ */
+function renderReviewLevelTabs() {
+  const tabsContainer = document.getElementById('review-level-tabs');
+  if (!tabsContainer) return;
+
+  tabsContainer.innerHTML = '';
+
+  reviewLevels.forEach(level => {
+    const isSelected = level.course === selectedReviewLevel;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `px-4 py-2 rounded-full font-label-lg text-label-lg shrink-0 transition-all cursor-pointer ${
+      isSelected 
+        ? 'bg-primary text-on-primary shadow-sm' 
+        : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
+    }`;
+    btn.innerText = level.title;
+    btn.addEventListener('click', () => {
+      selectedReviewLevel = level.course;
+      renderReviewModeUI();
+    });
+    tabsContainer.appendChild(btn);
+  });
+}
+
+/**
+ * 2. 선택된 레벨의 단원 카드 리스트 동적 생성
+ */
+function renderReviewLessonList(course) {
+  const listContainer = document.getElementById('review-lesson-list');
+  if (!listContainer) return;
+
+  listContainer.innerHTML = '';
+
+  const levelInfo = reviewLevels.find(l => l.course === course) || reviewLevels[0];
+
+  for (let lessonId = levelInfo.minId; lessonId <= levelInfo.maxId; lessonId++) {
+    const currItem = (curriculumData || []).find(c => Number(c.lesson_id) === lessonId);
+    const displayLessonNum = lessonId - levelInfo.minId + 1;
+    const lessonTitle = currItem ? currItem.title : `제 ${displayLessonNum}과`;
+
+    const card = document.createElement('div');
+    card.className = 'flex flex-col gap-3 p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/50 shadow-sm';
+    
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <span class="font-label-sm text-label-sm text-primary font-bold">제 ${displayLessonNum}과</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">${lessonTitle}</span>
+      </div>
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" 
+          onclick="startReadingPracticeForLesson(${lessonId})"
+          class="flex-1 py-2 px-3 bg-primary-container/60 hover:bg-primary-container text-on-primary-container font-label-md text-label-md rounded-xl transition-all cursor-pointer text-center">
+          📖 읽기 연습
+        </button>
+        <button type="button" 
+          onclick="startQuizForLesson(${lessonId})"
+          class="flex-1 py-2 px-3 bg-secondary-container/60 hover:bg-secondary-container text-on-secondary-container font-label-md text-label-md rounded-xl transition-all cursor-pointer text-center">
+          🧩 단어 퀴즈
+        </button>
+      </div>
+    `;
+
+    listContainer.appendChild(card);
+  }
+}
+
+/**
+ * 3. 복습 모드 -> 특정 단원 읽기 학습 시작
+ */
+function startReadingPracticeForLesson(targetLessonId) {
+  let lessonIdNum = Number(targetLessonId);
+  if (isNaN(lessonIdNum) || !lessonIdNum) {
+    lessonIdNum = Number(currentLessonId || 1);
+  }
+
+  lessonSentencesList = (lessonsData || [])
+    .filter(l => Number(l.lesson_id) === lessonIdNum && l.sentence_kr && l.sentence_kr.trim() !== "")
+    .map(l => ({
+      sentence: l.sentence_kr,
+      translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
+    }));
+
+  if (lessonSentencesList.length === 0) {
+    alert(`제 ${lessonIdNum}과에 해당하는 읽기 데이터가 없습니다.`);
+    return;
+  }
+
+  currentLessonId = lessonIdNum;
+  const userCourse = currentUser?.course || "1a";
+  const { bookName, lessonNum } = getBookAndLessonTitle(userCourse, lessonIdNum);
+  const currItem = (curriculumData || []).find(c => Number(c.lesson_id) === lessonIdNum);
+  const lessonTitle = currItem ? currItem.title : "";
+  currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (${lessonTitle})`;
+
+  practiceStartTime = Date.now();
+  const savedProgress = getLearningProgress('reading', lessonIdNum);
+  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
+    currentSentenceIndex = savedProgress.currentIndex;
+  } else {
+    currentSentenceIndex = 0;
+  }
+
+  loadPracticeSentenceAtIndex(currentSentenceIndex);
+  showView('view-practice');
+}
+
+/**
+ * 4. 복습 모드 -> 특정 단원 단어 퀴즈 시작
+ */
+function startQuizForLesson(targetLessonId) {
+  let lessonIdNum = Number(targetLessonId);
+  if (isNaN(lessonIdNum) || !lessonIdNum) {
+    lessonIdNum = Number(currentLessonId || 1);
+  }
+
+  const lessonItems = (lessonsData || []).filter(
+    l => Number(l.lesson_id) === lessonIdNum && l.word_kr && l.word_kr.trim() !== ""
+  );
+
+  if (lessonItems.length === 0) {
+    alert(`제 ${lessonIdNum}과에 해당하는 퀴즈 데이터가 없습니다.`);
+    return;
+  }
+
+  currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
+
+  currentLessonId = lessonIdNum;
+  const userCourse = currentUser?.course || "1a";
+  const { bookName, lessonNum } = getBookAndLessonTitle(userCourse, lessonIdNum);
+  currentLessonDisplayTitle = `${bookName} • 제 ${lessonNum}과 (복습 퀴즈)`;
+
+  quizStartTime = Date.now();
+  const savedProgress = getLearningProgress('quiz', lessonIdNum);
+  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
+    currentQuizIndex = savedProgress.currentIndex;
+  } else {
+    currentQuizIndex = 0;
+  }
+
+  renderQuizIndex(currentQuizIndex);
+  showView('view-quiz');
+}
+
+/**
+ * 5. 상단 뒤로가기 및 구 버전 호환 함수
+ */
+function goBackToDashboard() {
+  showView('view-dashboard');
+}
+
+const startReadingPractice = startReadingPracticeForLesson;
+
+// 복습 모드 진입 버튼 이벤트 예시
+document.getElementById('go-review-btn')?.addEventListener('click', () => {
+  renderReviewModeUI(); // 복습 UI 동적 생성
+  showView('view-review'); // 복습 뷰로 전환
+});
   
   // ==================== TTS 및 음성 인식(STT) ====================
   function playTTS(text, rate = 0.8) {
