@@ -924,7 +924,6 @@
   // Gemini API 설정
   const GEMINI_MODEL = "gemini-1.5-flash";
 
-  // ==================== DOM 요소 참조 ====================
 // ==================== DOM 요소 참조 ====================
   // 1. View (화면 전환)
   const viewLogin = document.getElementById('view-login');
@@ -1887,6 +1886,26 @@ let currentSelectedLevel = 'lvl-1';
 // ==========================================
 // 복습 모드 열기
 // ==========================================
+function goBackToDashboard() {
+  // 1. 모든 view- 화면 숨기기
+  document.querySelectorAll('[id^="view-"]').forEach(v => {
+    v.classList.add('hidden-view'); // Tailwind 기본 hidden 사용 시 hidden으로 변경
+  });
+
+  // 2. 대시보드 화면 보이기 (viewDashboard 상수가 있다면 활용, 없으면 getElementById)
+  const targetDashboard = typeof viewDashboard !== 'undefined' && viewDashboard 
+    ? viewDashboard 
+    : document.getElementById('view-dashboard');
+
+  if (targetDashboard) {
+    targetDashboard.classList.remove('hidden-view');
+    targetDashboard.classList.remove('hidden');
+  } else {
+    console.error("대시보드(view-dashboard) 요소를 찾을 수 없습니다.");
+  }
+}
+
+  
 function openReviewMode() {
   // 1. 모든 view- 화면 숨기기
   document.querySelectorAll('[id^="view-"]').forEach(v => {
