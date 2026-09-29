@@ -1989,7 +1989,91 @@ function changeReviewLevel(levelId) {
   currentSelectedLevel = levelId;
   renderReviewScreen();
 }
+// ==========================================
+// 복습 모드 전용 데이터 로드 및 화면 실행 함수
+// ==========================================
 
+/**
+ * 1. 복습 모드 -> 특정 단원 읽기 학습 시작
+ * @param {number|string} targetLessonId - 학습할 과의 absolute lesson_id (예: 1~80)
+ */
+function startReadingPracticeForLesson(targetLessonId) {
+  const lessonIdNum = Number(targetLessonId);
+
+  // 1-1. 해당 lesson_id의 문장 데이터 추출
+  lessonSentencesList = (lessonsData || [])
+    .filter(l => Number(l.lesson_id) === lessonIdNum && l.sentence_kr && l.sentence_kr.trim() !== "")
+    .map(l => ({
+      sentence: l.sentence_kr,
+      translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
+    }));
+
+  if (lessonSentencesList.length === 0) {
+    alert(`제 ${lessonIdNum}과에 해당하는 읽기 데이터가 없습니다.`);
+    return;
+  }
+
+  // 1-2. 단원 표시 타이틀 업데이트
+  currentLessonId = lessonIdNum;
+  const userCourse = currentUser?.course || "1a";
+  const { bookName, lessonNum } = getBookAndLessonTitle(userCourse, lessonIdNum);
+  const currItem = (curriculumData || []).find(c => Number(c.lesson_id) === lessonIdNum);
+  const lessonTitle = currItem ? currItem.title : "";
+  currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (${lessonTitle})`;
+
+  // 1-3. 상태 및 진행도 초기화
+  practiceStartTime = Date.now();
+  const savedProgress = getLearningProgress('reading', lessonIdNum);
+  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
+    currentSentenceIndex = savedProgress.currentIndex;
+  } else {
+    currentSentenceIndex = 0;
+  }
+
+  // 1-4. 화면 렌더링 및 뷰 전환
+  loadPracticeSentenceAtIndex(currentSentenceIndex);
+  showView('view-practice');
+}
+
+/**
+ * 2. 복습 모드 -> 특정 단원 단어 퀴즈 시작
+ * @param {number|string} targetLessonId - 퀴즈를 진행할 lesson_id (예: 1~80)
+ */
+function startQuizForLesson(targetLessonId) {
+  const lessonIdNum = Number(targetLessonId);
+
+  // 2-1. 해당 lesson_id의 단어 데이터 추출
+  const lessonItems = (lessonsData || []).filter(
+    l => Number(l.lesson_id) === lessonIdNum && l.word_kr && l.word_kr.trim() !== ""
+  );
+
+  if (lessonItems.length === 0) {
+    alert(`제 ${lessonIdNum}과에 해당하는 퀴즈 데이터가 없습니다.`);
+    return;
+  }
+
+  // 2-2. 퀴즈 문제 객체 리스트 생성
+  currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
+
+  // 2-3. 단원 표시 타이틀 업데이트
+  currentLessonId = lessonIdNum;
+  const userCourse = currentUser?.course || "1a";
+  const { bookName, lessonNum } = getBookAndLessonTitle(userCourse, lessonIdNum);
+  currentLessonDisplayTitle = `${bookName} • 제 ${lessonNum}과 (복습 퀴즈)`;
+
+  // 2-4. 상태 및 진행도 초기화
+  quizStartTime = Date.now();
+  const savedProgress = getLearningProgress('quiz', lessonIdNum);
+  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
+    currentQuizIndex = savedProgress.currentIndex;
+  } else {
+    currentQuizIndex = 0;
+  }
+
+  // 2-5. 화면 렌더링 및 뷰 전환
+  renderQuizIndex(currentQuizIndex);
+  showView('view-quiz');
+}
   
   // ==================== TTS 및 음성 인식(STT) ====================
   function playTTS(text, rate = 0.8) {
