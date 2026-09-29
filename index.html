@@ -1354,8 +1354,14 @@
     }
 
     practiceStartTime = null;
+
+    // ★ previousView 상태에 따라 복습 화면 또는 대시보드로 분기 이동
+  if (typeof previousView !== 'undefined' && previousView === 'view-review') {
+    openReviewMode();
+  } else {
     showView('view-dashboard');
   }
+}
 
   btnNextSentence?.addEventListener('click', () => {
     if (currentSentenceIndex < lessonSentencesList.length - 1) {
@@ -1558,8 +1564,14 @@ function generateQuizProblem(targetItem, allLessons) {
       // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
       quizStartTime = null;
     }
+
+    // ★ previousView 상태에 따라 복습 화면 또는 대시보드로 분기 이동
+  if (typeof previousView !== 'undefined' && previousView === 'view-review') {
+    openReviewMode();
+  } else {
     showView('view-dashboard');
   }
+}
 
   document.getElementById('quiz-card-container')?.addEventListener('click', () => {
     const cardInner = document.getElementById('quiz-card-inner');
@@ -1878,7 +1890,7 @@ function renderWeeklyStatsView() {
 // 현재 선택된 복습 레벨
 let currentSelectedLevel = '1a';
 
-// ★ 핵심: 이전 화면을 기억하는 변수 (기본값: 'view-dashboard')
+// 이전 화면을 기억하는 변수 (기본값: 'view-dashboard')
 let previousView = 'view-dashboard';
 
 // 복습 모드 레벨 데이터
@@ -1931,8 +1943,7 @@ function goBackToDashboard() {
 }
 
 /**
- * ★ 4. 학습/퀴즈 화면의 뒤로가기 버튼 전용 함수
- * (복습 모드에서 왔으면 복습 화면으로, 대시보드에서 왔으면 대시보드로)
+ * 4. 학습/퀴즈 화면의 뒤로가기 버튼 전용 함수
  */
 function goBackFromPracticeOrQuiz() {
   if (previousView === 'view-review') {
@@ -2006,26 +2017,30 @@ function renderReviewScreen() {
 }
 
 /**
- * 7. 읽기 연습 시작 (진입 전 현재 화면을 previousView에 기록)
+ * 7. 읽기 연습 시작
  */
 function startReadingPractice(levelOrLessonId, lessonNum) {
-  // 진입 직전 활성화되어 있던 화면을 기억
-  const reviewView = document.getElementById('view-review');
-  if (reviewView && !reviewView.classList.contains('hidden-view')) {
-    previousView = 'view-review';
-  } else {
-    previousView = 'view-dashboard';
-  }
-
   let targetLessonId;
-  if (typeof lessonNum !== 'undefined') {
-    targetLessonId = getActualLessonId(levelOrLessonId, lessonNum);
-  } else {
-    targetLessonId = Number(levelOrLessonId);
-  }
 
-  if (isNaN(targetLessonId) || !targetLessonId) {
-    targetLessonId = Number(typeof currentLessonId !== 'undefined' ? currentLessonId : 1);
+  // Case A: 복습 화면에서 클릭한 경우 (인자 2개 전달)
+  if (typeof lessonNum !== 'undefined') {
+    previousView = 'view-review';
+    targetLessonId = getActualLessonId(levelOrLessonId, lessonNum);
+  } 
+  // Case B: 특정 lesson_id 숫자가 직접 넘어온 경우
+  else if (typeof levelOrLessonId === 'number' || (typeof levelOrLessonId === 'string' && !isNaN(Number(levelOrLessonId)))) {
+    const reviewView = document.getElementById('view-review');
+    if (reviewView && !reviewView.classList.contains('hidden-view')) {
+      previousView = 'view-review';
+    } else {
+      previousView = 'view-dashboard';
+    }
+    targetLessonId = Number(levelOrLessonId);
+  } 
+  // Case C: 대시보드 메인 버튼에서 인자 없이 호출된 경우 -> 유저 진도(currentUser.lesson_id)로 설정
+  else {
+    previousView = 'view-dashboard';
+    targetLessonId = Number(typeof currentUser !== 'undefined' && currentUser?.lesson_id ? currentUser.lesson_id : (typeof userProgressLessonId !== 'undefined' ? userProgressLessonId : 1));
   }
 
   const allLessons = typeof lessonsData !== 'undefined' ? lessonsData : [];
@@ -2052,26 +2067,30 @@ function startReadingPractice(levelOrLessonId, lessonNum) {
 }
 
 /**
- * 8. 단어 퀴즈 시작 (진입 전 현재 화면을 previousView에 기록)
+ * 8. 단어 퀴즈 시작
  */
 function startQuizForLesson(levelOrLessonId, lessonNum) {
-  // 진입 직전 활성화되어 있던 화면을 기억
-  const reviewView = document.getElementById('view-review');
-  if (reviewView && !reviewView.classList.contains('hidden-view')) {
-    previousView = 'view-review';
-  } else {
-    previousView = 'view-dashboard';
-  }
-
   let targetLessonId;
-  if (typeof lessonNum !== 'undefined') {
-    targetLessonId = getActualLessonId(levelOrLessonId, lessonNum);
-  } else {
-    targetLessonId = Number(levelOrLessonId);
-  }
 
-  if (isNaN(targetLessonId) || !targetLessonId) {
-    targetLessonId = Number(typeof currentLessonId !== 'undefined' ? currentLessonId : 1);
+  // Case A: 복습 화면에서 클릭한 경우
+  if (typeof lessonNum !== 'undefined') {
+    previousView = 'view-review';
+    targetLessonId = getActualLessonId(levelOrLessonId, lessonNum);
+  } 
+  // Case B: 특정 lesson_id가 직접 넘어온 경우
+  else if (typeof levelOrLessonId === 'number' || (typeof levelOrLessonId === 'string' && !isNaN(Number(levelOrLessonId)))) {
+    const reviewView = document.getElementById('view-review');
+    if (reviewView && !reviewView.classList.contains('hidden-view')) {
+      previousView = 'view-review';
+    } else {
+      previousView = 'view-dashboard';
+    }
+    targetLessonId = Number(levelOrLessonId);
+  } 
+  // Case C: 대시보드 메인 버튼에서 인자 없이 호출된 경우 -> 유저 진도로 설정
+  else {
+    previousView = 'view-dashboard';
+    targetLessonId = Number(typeof currentUser !== 'undefined' && currentUser?.lesson_id ? currentUser.lesson_id : (typeof userProgressLessonId !== 'undefined' ? userProgressLessonId : 1));
   }
 
   const allLessons = typeof lessonsData !== 'undefined' ? lessonsData : [];
@@ -2103,7 +2122,7 @@ function startQuizForLesson(levelOrLessonId, lessonNum) {
 // 구버전/신버전 호환용
 const renderReviewModeUI = renderReviewScreen;
 
-// ★ 이벤트 리스너 연결
+// 이벤트 리스너 연결
 document.addEventListener('DOMContentLoaded', () => {
   // 복습 모드 진입 버튼
   document.getElementById('go-review-btn')?.addEventListener('click', () => {
