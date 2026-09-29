@@ -1888,23 +1888,22 @@ const reviewLevels = [
 /**
  * 1. 복습 화면 열기
  */
-function openReviewMode() {
-  // 모든 view- 화면 숨기기
+function showView(viewId) {
+  // 1. 모든 view- 화면 숨기기
   document.querySelectorAll('[id^="view-"]').forEach(v => {
     v.classList.add('hidden-view');
   });
 
-  // view-review 화면 보이기
-  const reviewEl = document.getElementById('view-review');
-  if (reviewEl) {
-    reviewEl.classList.remove('hidden-view');
-  } else {
-    console.error("❌ id='view-review' 요소를 찾을 수 없습니다.");
-    return;
+  // 2. 대상 화면 표시
+  const target = document.getElementById(viewId);
+  if (target) {
+    target.classList.remove('hidden-view');
   }
 
-  // 렌더링 실행
-  renderReviewModeUI();
+  // 3. 복습 화면 진입 시 UI 즉시 그려주기 (★ 핵심!)
+  if (viewId === 'view-review') {
+    renderReviewModeUI();
+  }
 }
 
 /**
