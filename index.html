@@ -1390,217 +1390,265 @@
 
   closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-  // ==================== 2. 데일리 퀴즈 로직 ====================
-  let currentQuizList = [];
-  let currentQuizIndex = 0;
-  let isCardFlipped = false;
+// ==================== 2. 데일리 퀴즈 로직 ====================
+let currentQuizList = [];
+let currentQuizIndex = 0;
+let isCardFlipped = false;
 
-  function generateQuizProblem(targetItem, allLessons) {
-    let rawWord = (targetItem.word_kr || '').trim();
-    let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
-    let sentenceKr = targetItem.sentence_kr || '';
+// 대시보드 전용: 무조건 내 진도로 퀴즈 시작
+function startDashboardQuiz() {
+  previousView = 'view-dashboard';
+  const myLessonId = Number(currentUser?.lesson_id || 1);
+  startQuizForLesson(myLessonId);
+}
 
-    const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
+// 퀴즈 시작 함수 (대시보드 & 복습모드 공통 사용)
+function startQuizForLesson(targetLessonId) {
+  const allLessons = lessonsData || [];
+  const targetId = Number(targetLessonId);
 
-    let maskedSentence = sentenceKr;
+  const lessonItems = allLessons.filter(
+    l => Number(l.lesson_id) === targetId && l.word_kr && l.word_kr.trim() !== ""
+  );
 
-    const getInitialConsonant = (char) => {
-      if (!char) return '';
-      const code = char.charCodeAt(0) - 44032;
-      if (code < 0 || code > 11172) return char;
-      const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-      return initialList[Math.floor(code / 588)];
-    };
+  if (lessonItems.length === 0) {
+    alert(`제 ${targetId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+    return;
+  }
 
-    if (targetWord && sentenceKr) {
-      if (sentenceKr.includes(targetWord)) {
-        maskedSentence = sentenceKr.replace(targetWord, maskHtml);
-      } else if (sentenceKr.includes(rawWord)) {
-        maskedSentence = sentenceKr.replace(rawWord, maskHtml);
+  currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
+  currentLessonId = targetId;
+  quizStartTime = Date.now();
+
+  const savedProgress = getLearningProgress('quiz', currentLessonId);
+  if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
+    currentQuizIndex = savedProgress.currentIndex;
+  } else {
+    currentQuizIndex = 0;
+  }
+
+  const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
+  if (previousView === 'view-review') {
+    currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
+  } else {
+    currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과`;
+  }
+
+  renderQuizIndex(currentQuizIndex);
+  showView('view-quiz');
+}
+
+function generateQuizProblem(targetItem, allLessons) {
+  let rawWord = (targetItem.word_kr || '').trim();
+  let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
+  let sentenceKr = targetItem.sentence_kr || '';
+
+  const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
+
+  let maskedSentence = sentenceKr;
+
+  const getInitialConsonant = (char) => {
+    if (!char) return '';
+    const code = char.charCodeAt(0) - 44032;
+    if (code < 0 || code > 11172) return char;
+    const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    return initialList[Math.floor(code / 588)];
+  };
+
+  if (targetWord && sentenceKr) {
+    if (sentenceKr.includes(targetWord)) {
+      maskedSentence = sentenceKr.replace(targetWord, maskHtml);
+    } else if (sentenceKr.includes(rawWord)) {
+      maskedSentence = sentenceKr.replace(rawWord, maskHtml);
+    } else {
+      let stem = targetWord;
+      if (targetWord.endsWith('다')) {
+        stem = targetWord.slice(0, -1);
+      }
+
+      const stemFirstChar = stem.charAt(0);
+      const stemInitial = getInitialConsonant(stemFirstChar);
+
+      const words = sentenceKr.split(' ');
+      let matchedIndex = -1;
+
+      for (let i = 0; i < words.length; i++) {
+        const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
+        if (!cleanWord) continue;
+
+        const wordFirstChar = cleanWord.charAt(0);
+        const wordInitial = getInitialConsonant(wordFirstChar);
+
+        if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
+          matchedIndex = i;
+          break;
+        }
+      }
+
+      if (matchedIndex !== -1) {
+        const targetToken = words[matchedIndex];
+        const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
+        words[matchedIndex] = maskHtml + punctuation;
+        maskedSentence = words.join(' ');
       } else {
-        let stem = targetWord;
-        if (targetWord.endsWith('다')) {
-          stem = targetWord.slice(0, -1);
-        }
-
-        const stemFirstChar = stem.charAt(0);
-        const stemInitial = getInitialConsonant(stemFirstChar);
-
-        const words = sentenceKr.split(' ');
-        let matchedIndex = -1;
-
-        for (let i = 0; i < words.length; i++) {
-          const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
-          if (!cleanWord) continue;
-
-          const wordFirstChar = cleanWord.charAt(0);
-          const wordInitial = getInitialConsonant(wordFirstChar);
-
-          if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
-            matchedIndex = i;
-            break;
-          }
-        }
-
-        if (matchedIndex !== -1) {
-          const targetToken = words[matchedIndex];
-          const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
-          words[matchedIndex] = maskHtml + punctuation;
-          maskedSentence = words.join(' ');
-        } else {
-          console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
-        }
+        console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
       }
     }
-
-    const targetLen = rawWord.length;
-    const otherWords = Array.from(
-      new Set(
-        allLessons
-          .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
-          .map(l => l.word_kr.trim())
-      )
-    );
-
-    let candidates = otherWords.filter(w => w.length === targetLen);
-    if (candidates.length < 3) {
-      const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
-      candidates = [...candidates, ...backup];
-    }
-
-    const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
-
-    return {
-      maskedSentence,
-      correctAnswer: rawWord,
-      choices,
-      hintJp: targetItem.word_jp,
-      sentenceJp: targetItem.sentence_jp
-    };
   }
 
-  function renderQuizIndex(index) {
-    const total = currentQuizList.length;
+  const targetLen = rawWord.length;
+  const otherWords = Array.from(
+    new Set(
+      allLessons
+        .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
+        .map(l => l.word_kr.trim())
+    )
+  );
 
-    if (total > 0 && index >= total) {
-      alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
-      
-      let elapsedMinutes = 5;
-      if (quizStartTime) {
-        const elapsedMs = Date.now() - quizStartTime;
-        elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
-      }
-      saveTodayLearningData('quiz', elapsedMinutes);
-      clearLearningProgress('quiz', currentLessonId);
+  let candidates = otherWords.filter(w => w.length === targetLen);
+  if (candidates.length < 3) {
+    const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
+    candidates = [...candidates, ...backup];
+  }
 
-      quizStartTime = null;
-      stopQuizAndReturn(true);
-      return;
-    }
+  const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
+  const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
 
-    const problem = currentQuizList[index];
-    const currentStep = index + 1;
-    const percent = Math.round((currentStep / total) * 100);
+  return {
+    maskedSentence,
+    correctAnswer: rawWord,
+    choices,
+    hintJp: targetItem.word_jp,
+    sentenceJp: targetItem.sentence_jp
+  };
+}
 
-    const textElem = document.getElementById('quiz-progress-text');
-    const percentElem = document.getElementById('quiz-progress-percent');
-    const barElem = document.getElementById('quiz-progress-bar');
+function renderQuizIndex(index) {
+  const total = currentQuizList.length;
 
-    if (textElem) textElem.innerText = `Q ${currentStep} / ${total}`;
-    if (percentElem) percentElem.innerText = `${percent}%`;
-    if (barElem) barElem.style.width = `${percent}%`;
-
-    const courseTag = document.getElementById('quiz-course-tag');
-    if (courseTag && currentLessonDisplayTitle) {
-      courseTag.innerText = currentLessonDisplayTitle;
-    }
+  if (total > 0 && index >= total) {
+    alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
     
-    const cardInner = document.getElementById('quiz-card-inner');
-    isCardFlipped = false;
-    cardInner?.classList.remove('rotate-y-180');
-
-    const sentenceKrElem = document.getElementById('quiz-sentence-kr');
-    const sentenceJpElem = document.getElementById('quiz-sentence-jp');
-    if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
-    if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
-
-    const userCourse = currentUser?.course || "1a";
-    const hintBox = document.getElementById('quiz-hint-box');
-    const hintTextElem = document.getElementById('quiz-hint-text');
-
-    if (userCourse === "1a" || userCourse === "2a") {
-      if (hintBox) hintBox.classList.remove('hidden');
-      if (hintTextElem) hintTextElem.innerText = `힌트 : ${problem.hintJp}`;
-    } else {
-      if (hintBox) hintBox.classList.add('hidden');
+    let elapsedMinutes = 5;
+    if (quizStartTime) {
+      const elapsedMs = Date.now() - quizStartTime;
+      elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
     }
+    saveTodayLearningData('quiz', elapsedMinutes);
+    clearLearningProgress('quiz', currentLessonId);
 
-    saveLearningProgress('quiz', currentLessonId, index);
-
-    const choicesContainer = document.getElementById('quiz-choices-container');
-    if (choicesContainer) {
-      choicesContainer.innerHTML = '';
-
-      problem.choices.forEach((choiceText, idx) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = "w-full flex items-center justify-between p-3.5 bg-surface-container-lowest rounded-xl shadow-sm hover:bg-surface-container-low active:scale-[0.99] transition-all text-left cursor-pointer";
-        btn.innerHTML = `
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm shadow-inner shrink-0">${idx + 1}</div>
-            <span class="font-hangul-tile text-hangul-tile text-on-surface">${choiceText}</span>
-          </div>
-          <div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-outline shrink-0">
-            <span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
-          </div>
-        `;
-
-        btn.addEventListener('click', () => handleChoiceSelect(choiceText, problem.correctAnswer, btn));
-        choicesContainer.appendChild(btn);
-      });
-    }
-
-    document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
+    quizStartTime = null;
+    stopQuizAndReturn(true);
+    return;
   }
 
-  function stopQuizAndReturn(isCompleted = false) {
-    if (!isCompleted) {
-      quizStartTime = null;
-    }
+  const problem = currentQuizList[index];
+  const currentStep = index + 1;
+  const percent = Math.round((currentStep / total) * 100);
 
-    if (previousView === 'view-review') {
-      openReviewMode();
-    } else {
-      showView('view-dashboard');
-    }
+  const textElem = document.getElementById('quiz-progress-text');
+  const percentElem = document.getElementById('quiz-progress-percent');
+  const barElem = document.getElementById('quiz-progress-bar');
+
+  if (textElem) textElem.innerText = `Q ${currentStep} / ${total}`;
+  if (percentElem) percentElem.innerText = `${percent}%`;
+  if (barElem) barElem.style.width = `${percent}%`;
+
+  const courseTag = document.getElementById('quiz-course-tag');
+  if (courseTag && currentLessonDisplayTitle) {
+    courseTag.innerText = currentLessonDisplayTitle;
+  }
+  
+  const cardInner = document.getElementById('quiz-card-inner');
+  isCardFlipped = false;
+  cardInner?.classList.remove('rotate-y-180');
+
+  const sentenceKrElem = document.getElementById('quiz-sentence-kr');
+  const sentenceJpElem = document.getElementById('quiz-sentence-jp');
+  if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
+  if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
+
+  const userCourse = currentUser?.course || "1a";
+  const hintBox = document.getElementById('quiz-hint-box');
+  const hintTextElem = document.getElementById('quiz-hint-text');
+
+  if (userCourse === "1a" || userCourse === "2a") {
+    if (hintBox) hintBox.classList.remove('hidden');
+    if (hintTextElem) hintTextElem.innerText = `힌트 : ${problem.hintJp}`;
+  } else {
+    if (hintBox) hintBox.classList.add('hidden');
   }
 
-// 대시보드 퀴즈 버튼 이벤트 핸들러
+  saveLearningProgress('quiz', currentLessonId, index);
+
+  const choicesContainer = document.getElementById('quiz-choices-container');
+  if (choicesContainer) {
+    choicesContainer.innerHTML = '';
+
+    problem.choices.forEach((choiceText, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = "w-full flex items-center justify-between p-3.5 bg-surface-container-lowest rounded-xl shadow-sm hover:bg-surface-container-low active:scale-[0.99] transition-all text-left cursor-pointer";
+      btn.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm shadow-inner shrink-0">${idx + 1}</div>
+          <span class="font-hangul-tile text-hangul-tile text-on-surface">${choiceText}</span>
+        </div>
+        <div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-outline shrink-0">
+          <span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
+        </div>
+      `;
+
+      btn.addEventListener('click', () => handleChoiceSelect(choiceText, problem.correctAnswer, btn));
+      choicesContainer.appendChild(btn);
+    });
+  }
+
+  document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
+}
+
+function stopQuizAndReturn(isCompleted = false) {
+  if (!isCompleted) {
+    quizStartTime = null;
+  }
+
+  if (previousView === 'view-review') {
+    openReviewMode();
+  } else {
+    showView('view-dashboard');
+  }
+}
+
+// 퀴즈 플래시카드 뒤집기 이벤트
 document.getElementById('quiz-card-container')?.addEventListener('click', () => {
-    const cardInner = document.getElementById('quiz-card-inner');
-    isCardFlipped = !isCardFlipped;
-    if (isCardFlipped) {
-      cardInner?.classList.add('rotate-y-180');
-    } else {
-      cardInner?.classList.remove('rotate-y-180');
-    }
-  });
+  const cardInner = document.getElementById('quiz-card-inner');
+  isCardFlipped = !isCardFlipped;
+  if (isCardFlipped) {
+    cardInner?.classList.add('rotate-y-180');
+  } else {
+    cardInner?.classList.remove('rotate-y-180');
+  }
+});
 
 function handleChoiceSelect(selectedChoice, correctAnswer, clickedBtn) {
-    const drawer = document.getElementById('quiz-bottom-drawer');
-    if (selectedChoice === correctAnswer) {
-      drawer?.classList.remove('hidden');
-    } else {
-      alert("아쉽네요! 다시 선택해보세요. (違います。もう一度選んでください)");
-    }
+  const drawer = document.getElementById('quiz-bottom-drawer');
+  if (selectedChoice === correctAnswer) {
+    drawer?.classList.remove('hidden');
+  } else {
+    alert("아쉽네요! 다시 선택해보세요. (違います。もう一度選んでください)");
   }
+}
 
-  document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
-    currentQuizIndex++;
-    renderQuizIndex(currentQuizIndex);
-  });
+// 다음 문제 버튼 이벤트
+document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
+  currentQuizIndex++;
+  renderQuizIndex(currentQuizIndex);
+});
 
+// 대시보드 퀴즈 버튼 이벤트 연결
+document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
+  startDashboardQuiz();
+});
   // ==========================================
   // VIEW 5: 주간 성과 데이터 동적 연동 로직
   // ==========================================
