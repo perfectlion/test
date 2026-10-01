@@ -680,48 +680,70 @@
 
 <script>
     /* ==========================================================================
-       1. DATABASE & STATE MANAGEMENT
+       1. STATE & GLOBAL VARIABLES
        ========================================================================== */
-    const DB = {
-      user: { id: "user01", name: "학생", profileImg: "./images/default-avatar.png" },
-      lessons: [
-        {
-          id: "L1",
-          level: "4A",
-          title: "Lesson 1 • 기초 회화",
-          targetSentence: "안녕하세요, 만나서 반가워요.",
-          targetTrans: " primary: こんにちは、お会いできて嬉しいです。",
-          sentences: [
-            { kr: "안녕하세요, 만나서 반가워요.", jp: "こんにちは、お会いできて嬉しいです。" },
-            { kr: "오늘 날씨가 정말 좋네요.", jp: " 日はお天気が本当にいいですね。" }
-          ],
-          quizzes: [
-            {
-              kr: "안녕하세요, 만나서 [빈칸].",
-              jp: "こんにちは、お会いできて嬉しいです。",
-              hint: "반갑다 (嬉しい・喜び)",
-              choices: ["반가워요", "슬퍼요", "고마워요", "미안해요"],
-              answer: 0
-            }
-          ]
-        }
-      ]
-    };
-
     const state = {
-      currentUser: null,
+      currentUser: { id: "user01", name: "학생", profileImg: "./images/default-avatar.png" },
       currentView: "view-login",
+      
+      // JSON 데이터 저장소
+      jsonData: null,
+      lessons: [],
+      
+      // 현재 선택된 위치 상태
       currentLessonIndex: 0,
       currentSentenceIndex: 0,
       currentQuizIndex: 0,
-      practiceStats: { correct: 0, total: 0 },
+      selectedLevel: "ALL",
+      
+      // 기능 제어 상태
       isRecording: false,
       recognition: null,
       synth: window.speechSynthesis || null
     };
 
     /* ==========================================================================
-       2. NAVIGATION & VIEW CONTROLLER
+       2. DATA FETCHING (data.json 연동)
+       ========================================================================== */
+    async function loadDataJson() {
+      try {
+        // data.json 파일을 호출합니다.
+        const response = await fetch('./data.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        state.jsonData = data;
+
+        // JSON 데이터 구조에 따른 lessons 배열 추출 (배열이거나 객체 내 lessons 키 대응)
+        if (Array.isArray(data)) {
+          state.lessons = data;
+        } else if (data.lessons && Array.isArray(data.lessons)) {
+          state.lessons = data.lessons;
+        } else {
+          console.warn("JSON 데이터 형식을 확인해주세요. 기본 구조로 할당합니다.", data);
+          state.lessons = [data];
+        }
+
+        console.log("data.json 성공적으로 로드됨:", state.lessons);
+        
+        // 데이터 로드 완료 후 현재 대시보드 화면 업데이트
+        if (state.currentView === "view-dashboard") {
+          initDashboard();
+        }
+      } catch (error) {
+        console.error("data.json 로드 실패:", error);
+        // 사용자에게 데이터 로드 실패 안내
+        const targetSentence = document.getElementById("target-sentence");
+        if (targetSentence) {
+          targetSentence.textContent = "데이터를 불러오지 못했습니다. (data.json 확인 필요)";
+        }
+      }
+    }
+
+    /* ==========================================================================
+       3. NAVIGATION & VIEW CONTROLLER
        ========================================================================== */
     function showView(viewId) {
       const views = ["view-login", "view-dashboard", "view-practice", "view-quiz", "view-weekly-stats", "view-review"];
@@ -738,7 +760,7 @@
       state.currentView = viewId;
       window.scrollTo(0, 0);
 
-      // View별 초기화 로직
+      // View별 초기화
       if (viewId === "view-dashboard") initDashboard();
       if (viewId === "view-practice") initPracticeView();
       if (viewId === "view-quiz") initQuizView();
@@ -746,9 +768,13 @@
     }
 
     /* ==========================================================================
-       3. LOGIN & AUTHENTICATION
+       4. INITIALIZATION & LOGIN
        ========================================================================== */
     document.addEventListener("DOMContentLoaded", () => {
+      // 1. JSON 데이터 로드 시작
+      loadDataJson();
+
+      // 2. 로그인 및 인터페이스 이벤트 리스너
       const loginForm = document.getElementById("login-form");
       const togglePwBtn = document.getElementById("toggle-pw-btn");
       const userPwInput = document.getElementById("user-pw");
@@ -765,71 +791,71 @@
       if (loginForm) {
         loginForm.addEventListener("submit", (e) => {
           e.preventDefault();
-          const userIdInput = document.getElementById("user-id").value.trim();
           const loginSpinner = document.getElementById("login-spinner");
-          const errorMsg = document.getElementById("login-error-msg");
-
           if (loginSpinner) loginSpinner.classList.remove("hidden");
-          if (errorMsg) errorMsg.classList.add("hidden");
 
           setTimeout(() => {
             if (loginSpinner) loginSpinner.classList.add("hidden");
-            state.currentUser = DB.user;
             
-            // 프로필 이미지 동기화
             document.querySelectorAll(".user-profile-img-all").forEach(img => {
               img.src = state.currentUser.profileImg;
             });
 
             showView("view-dashboard");
-          }, 600);
+          }, 400);
         });
       }
 
       const logoutBtn = document.getElementById("logout-btn");
       if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
-          state.currentUser = null;
           showView("view-login");
         });
       }
 
-      // Web Speech API STT 초기화
+      // 3. STT 음성 인식 초기화
       initSpeechRecognition();
     });
 
     /* ==========================================================================
-       4. DASHBOARD LOGIC
+       5. DASHBOARD DATA BINDING
        ========================================================================== */
     function initDashboard() {
       const welcomeTitle = document.getElementById("welcome-title");
       const cardLessonTag = document.getElementById("card-lesson-tag");
       const targetSentence = document.getElementById("target-sentence");
 
-      if (state.currentUser && welcomeTitle) {
+      if (welcomeTitle) {
         welcomeTitle.textContent = `${state.currentUser.name}님, 안녕하세요!`;
       }
 
-      const currentLesson = DB.lessons[state.currentLessonIndex] || DB.lessons[0];
-      if (currentLesson) {
-        if (cardLessonTag) cardLessonTag.textContent = currentLesson.title;
-        if (targetSentence) targetSentence.textContent = currentLesson.targetSentence;
+      // JSON 데이터가 로드되었는지 확인 후 출력
+      if (state.lessons && state.lessons.length > 0) {
+        const currentLesson = state.lessons[state.currentLessonIndex] || state.lessons[0];
+        
+        if (cardLessonTag) {
+          cardLessonTag.textContent = currentLesson.title || currentLesson.lessonTitle || `Lesson ${state.currentLessonIndex + 1}`;
+        }
+        
+        if (targetSentence) {
+          // JSON 구조에 맞추어 대표 문장 바인딩
+          const sentenceText = currentLesson.targetSentence || 
+                               (currentLesson.sentences && currentLesson.sentences[0]?.kr) || 
+                               "학습할 문장이 없습니다.";
+          targetSentence.textContent = sentenceText;
+        }
       }
 
-      // 대시보드 버튼 이벤트 리스너
+      // 버튼 이벤트 연동
       const goPracticeBtn = document.getElementById("go-practice-btn");
-      if (goPracticeBtn) {
-        goPracticeBtn.onclick = () => showView("view-practice");
-      }
+      if (goPracticeBtn) goPracticeBtn.onclick = () => showView("view-practice");
 
       const goQuizBtn = document.getElementById("go-quiz-btn");
-      if (goQuizBtn) {
-        goQuizBtn.onclick = () => showView("view-quiz");
-      }
+      if (goQuizBtn) goQuizBtn.onclick = () => showView("view-quiz");
     }
 
     /* ==========================================================================
-       5. PRACTICE VIEW (READING / STT & TTS)
+       6. PRACTICE VIEW (READING / STT & TTS)
        ========================================================================== */
     function initPracticeView() {
       state.currentSentenceIndex = 0;
@@ -839,7 +865,7 @@
       if (backBtn) backBtn.onclick = () => showView("view-dashboard");
 
       const btnAudio = document.getElementById("btn-audio-normal");
-      if (btnAudio) btnAudio.onclick = () => playTTS(getSentenceText());
+      if (btnAudio) btnAudio.onclick = () => playTTS(getCurrentSentenceText());
 
       const micBtn = document.getElementById("mic-record-btn");
       if (micBtn) micBtn.onclick = toggleSpeechRecognition;
@@ -847,45 +873,54 @@
       const nextBtn = document.getElementById("btn-next-sentence");
       if (nextBtn) {
         nextBtn.onclick = () => {
-          const lesson = DB.lessons[state.currentLessonIndex];
-          if (state.currentSentenceIndex < lesson.sentences.length - 1) {
+          const currentLesson = state.lessons[state.currentLessonIndex];
+          const sentences = currentLesson?.sentences || [];
+
+          if (state.currentSentenceIndex < sentences.length - 1) {
             state.currentSentenceIndex++;
             updatePracticeUI();
           } else {
-            alert("해당 레슨의 모든 문장 연습을 완료했습니다!");
+            alert("해당 레슨의 모든 읽기 연습을 완료했습니다!");
             showView("view-dashboard");
           }
         };
       }
     }
 
-    function getSentenceText() {
-      const lesson = DB.lessons[state.currentLessonIndex];
-      return lesson ? lesson.sentences[state.currentSentenceIndex].kr : "";
+    function getCurrentSentenceText() {
+      const lesson = state.lessons[state.currentLessonIndex];
+      if (!lesson || !lesson.sentences || !lesson.sentences[state.currentSentenceIndex]) return "";
+      const item = lesson.sentences[state.currentSentenceIndex];
+      return typeof item === "string" ? item : (item.kr || item.text || "");
     }
 
     function updatePracticeUI() {
-      const lesson = DB.lessons[state.currentLessonIndex];
-      if (!lesson) return;
+      if (!state.lessons || state.lessons.length === 0) return;
 
-      const current = lesson.sentences[state.currentSentenceIndex];
+      const lesson = state.lessons[state.currentLessonIndex];
+      const sentences = lesson?.sentences || [];
+      const current = sentences[state.currentSentenceIndex];
+
       const stageTitle = document.getElementById("practice-stage-title");
       const stepIndicator = document.getElementById("practice-step-indicator");
       const sentenceKr = document.getElementById("practice-sentence");
       const sentenceTrans = document.getElementById("practice-sentence-trans");
       const progressBar = document.getElementById("practice-progress-bar");
 
-      if (stageTitle) stageTitle.textContent = lesson.title;
-      if (stepIndicator) stepIndicator.textContent = `${state.currentSentenceIndex + 1} / ${lesson.sentences.length} 問`;
-      if (sentenceKr) sentenceKr.textContent = current.kr;
-      if (sentenceTrans) sentenceTrans.textContent = current.jp;
+      if (stageTitle) stageTitle.textContent = lesson.title || `Lesson ${state.currentLessonIndex + 1}`;
+      if (stepIndicator) stepIndicator.textContent = `${state.currentSentenceIndex + 1} / ${sentences.length || 1} 問`;
 
-      if (progressBar) {
-        const pct = ((state.currentSentenceIndex + 1) / lesson.sentences.length) * 100;
+      if (current) {
+        if (sentenceKr) sentenceKr.textContent = typeof current === "string" ? current : (current.kr || current.text || "");
+        if (sentenceTrans) sentenceTrans.textContent = typeof current === "string" ? "" : (current.jp || current.trans || "");
+      }
+
+      if (progressBar && sentences.length > 0) {
+        const pct = ((state.currentSentenceIndex + 1) / sentences.length) * 100;
         progressBar.style.width = `${pct}%`;
       }
 
-      // 인식 결과 초기화
+      // 초기화
       const recogText = document.getElementById("practice-recognized-text");
       const evalText = document.getElementById("practice-eval-text");
       const badge = document.getElementById("practice-match-badge");
@@ -898,8 +933,9 @@
       }
     }
 
-    /* TTS Audio */
+    /* TTS & STT */
     function playTTS(text) {
+      if (!text) return;
       if (!state.synth) {
         alert("이 브라우저는 음성 합성을 지원하지 않습니다.");
         return;
@@ -907,11 +943,10 @@
       state.synth.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "ko-KR";
-      utterance.rate = 0.9;
+      utterance.rate = 0.85;
       state.synth.speak(utterance);
     }
 
-    /* STT Speech Recognition */
     function initSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return;
@@ -936,12 +971,6 @@
         const transcript = event.results[0][0].transcript.trim();
         evaluateSpeech(transcript);
       };
-
-      state.recognition.onerror = () => {
-        state.isRecording = false;
-        const recogText = document.getElementById("practice-recognized-text");
-        if (recogText) recogText.textContent = "음성을 인식하지 못했습니다. 다시 시도해 주세요.";
-      };
     }
 
     function toggleSpeechRecognition() {
@@ -957,8 +986,8 @@
     }
 
     function evaluateSpeech(recognized) {
-      const target = getSentenceText().replace(/[.,~!?]/g, "").trim();
-      const cleanRecognized = recognized.replace(/[.,~!?]/g, "").trim();
+      const target = getCurrentSentenceText().replace(/[.,~!?]/g, "").replace(/\s+/g, "");
+      const cleanRecognized = recognized.replace(/[.,~!?]/g, "").replace(/\s+/g, "");
       
       const recogText = document.getElementById("practice-recognized-text");
       const evalText = document.getElementById("practice-eval-text");
@@ -966,10 +995,10 @@
 
       if (recogText) recogText.textContent = recognized;
 
-      if (target === cleanRecognized) {
-        if (evalText) evalText.textContent = "완벽한 발음입니다! 참 잘했어요. 👏";
+      if (target === cleanRecognized || target.includes(cleanRecognized) || cleanRecognized.includes(target)) {
+        if (evalText) evalText.textContent = "정확한 발음입니다! 참 잘했어요. 👏";
         if (badge) {
-          badge.textContent = "🎯 일치 (100%)";
+          badge.textContent = "🎯 일치";
           badge.className = "inline-flex items-center gap-1 bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-label-bold text-label-bold";
         }
       } else {
@@ -981,8 +1010,8 @@
       }
     }
 
-/* ==========================================================================
-       6. QUIZ VIEW LOGIC
+    /* ==========================================================================
+       7. QUIZ VIEW LOGIC
        ========================================================================== */
     function initQuizView() {
       state.currentQuizIndex = 0;
@@ -991,31 +1020,27 @@
       const backBtn = document.getElementById("back-from-quiz");
       if (backBtn) backBtn.onclick = () => showView("view-dashboard");
 
-      // 카드 플립 (클릭 시 힌트/번역 뒤집기)
       const quizCard = document.getElementById("quiz-card-container");
       const quizInner = document.getElementById("quiz-card-inner");
       if (quizCard && quizInner) {
-        quizCard.onclick = () => {
-          quizInner.classList.toggle("rotate-y-180");
-        };
+        quizCard.onclick = () => quizInner.classList.toggle("rotate-y-180");
       }
 
-      // 하단 드로어 다음 버튼
       const nextQuizBtn = document.getElementById("btn-next-quiz");
       if (nextQuizBtn) {
         nextQuizBtn.onclick = () => {
           const drawer = document.getElementById("quiz-bottom-drawer");
           if (drawer) drawer.classList.add("hidden");
-
-          // 카드 플립 상태 원복
           if (quizInner) quizInner.classList.remove("rotate-y-180");
 
-          const lesson = DB.lessons[state.currentLessonIndex];
-          if (state.currentQuizIndex < lesson.quizzes.length - 1) {
+          const lesson = state.lessons[state.currentLessonIndex];
+          const quizzes = lesson?.quizzes || [];
+
+          if (state.currentQuizIndex < quizzes.length - 1) {
             state.currentQuizIndex++;
             updateQuizUI();
           } else {
-            alert("오늘의 퀴즈를 모두 완료했습니다! 수고하셨습니다. 🎉");
+            alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
             showView("view-dashboard");
           }
         };
@@ -1023,10 +1048,17 @@
     }
 
     function updateQuizUI() {
-      const lesson = DB.lessons[state.currentLessonIndex];
-      if (!lesson || !lesson.quizzes || lesson.quizzes.length === 0) return;
+      if (!state.lessons || state.lessons.length === 0) return;
 
-      const quiz = lesson.quizzes[state.currentQuizIndex];
+      const lesson = state.lessons[state.currentLessonIndex];
+      const quizzes = lesson?.quizzes || [];
+
+      if (quizzes.length === 0) {
+        document.getElementById("quiz-sentence-kr").textContent = "등록된 퀴즈가 없습니다.";
+        return;
+      }
+
+      const quiz = quizzes[state.currentQuizIndex];
       const courseTag = document.getElementById("quiz-course-tag");
       const progressText = document.getElementById("quiz-progress-text");
       const progressBar = document.getElementById("quiz-progress-bar");
@@ -1037,20 +1069,22 @@
       const hintText = document.getElementById("quiz-hint-text");
       const choicesContainer = document.getElementById("quiz-choices-container");
 
-      if (courseTag) courseTag.textContent = lesson.title;
-      if (progressText) progressText.textContent = `Q ${state.currentQuizIndex + 1} / ${lesson.quizzes.length}`;
+      if (courseTag) courseTag.textContent = lesson.title || `Lesson ${state.currentLessonIndex + 1}`;
+      if (progressText) progressText.textContent = `Q ${state.currentQuizIndex + 1} / ${quizzes.length}`;
       
-      const pct = Math.round(((state.currentQuizIndex + 1) / lesson.quizzes.length) * 100);
+      const pct = Math.round(((state.currentQuizIndex + 1) / quizzes.length) * 100);
       if (progressBar) progressBar.style.width = `${pct}%`;
       if (progressPercent) progressPercent.textContent = `${pct}%`;
 
-      if (sentenceKr) sentenceKr.textContent = quiz.kr;
-      if (sentenceJp) sentenceJp.textContent = quiz.jp;
-      if (hintText) hintText.textContent = `힌트 : ${quiz.hint}`;
+      if (sentenceKr) sentenceKr.textContent = quiz.kr || quiz.question || "";
+      if (sentenceJp) sentenceJp.textContent = quiz.jp || quiz.translation || "-";
+      if (hintText) hintText.textContent = `힌트 : ${quiz.hint || "-"}`;
 
-      // 선택지 버튼 생성
-      if (choicesContainer) {
+      // 보기 생성
+      if (choicesContainer && quiz.choices) {
         choicesContainer.innerHTML = "";
+        const answerIdx = typeof quiz.answer === "number" ? quiz.answer : quiz.choices.indexOf(quiz.answer);
+
         quiz.choices.forEach((choice, index) => {
           const btn = document.createElement("button");
           btn.type = "button";
@@ -1062,7 +1096,7 @@
             <span class="material-symbols-outlined text-outline text-[20px]">radio_button_unchecked</span>
           `;
 
-          btn.onclick = () => handleChoiceSelect(index, quiz.answer, btn);
+          btn.onclick = () => handleChoiceSelect(index, answerIdx, btn);
           choicesContainer.appendChild(btn);
         });
       }
@@ -1088,74 +1122,42 @@
         if (drawer) drawer.classList.remove("hidden");
       } else {
         setTimeout(() => {
-          alert("아쉽네요! 다시 한 번 생각해보세요.");
+          alert("아쉽네요! 정답을 다시 확인해보세요.");
           updateQuizUI();
-        }, 1000);
+        }, 800);
       }
     }
 
     /* ==========================================================================
-       7. WEEKLY STATS (ACHIEVEMENT) & REPORT EXPORT
-       ========================================================================== */
-    document.addEventListener("DOMContentLoaded", () => {
-      const backFromStats = document.getElementById("back-from-stats");
-      if (backFromStats) {
-        backFromStats.onclick = () => showView("view-dashboard");
-      }
-
-      const submitReportBtn = document.getElementById("submit-report-btn");
-      if (submitReportBtn) {
-        submitReportBtn.onclick = () => {
-          if (typeof html2canvas === "undefined") {
-            alert("캡처 라이브러리가 로드되지 않았습니다.");
-            return;
-          }
-
-          const statsView = document.getElementById("view-weekly-stats");
-          submitReportBtn.style.display = "none"; // 버튼 숨기기
-
-          html2canvas(statsView).then(canvas => {
-            const link = document.createElement("a");
-            link.download = `Weekly_Report_${new Date().toISOString().slice(0,10)}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-
-            submitReportBtn.style.display = "flex"; // 버튼 원복
-            alert("주간 성과 레포트가 이미지로 저장되었습니다!");
-          }).catch(err => {
-            console.error(err);
-            submitReportBtn.style.display = "flex";
-            alert("캡처 중 오류가 발생했습니다.");
-          });
-        };
-      }
-    });
-
-    /* ==========================================================================
-       8. REVIEW MODE VIEW LOGIC
+       8. REVIEW MODE VIEW LOGIC (복습 목록 동적 생성)
        ========================================================================== */
     function initReviewView() {
       const backFromReview = document.getElementById("back-from-review");
-      if (backFromReview) {
-        backFromReview.onclick = () => showView("view-dashboard");
-      }
+      if (backFromReview) backFromReview.onclick = () => showView("view-dashboard");
 
       const lessonListContainer = document.getElementById("review-lesson-list");
       if (!lessonListContainer) return;
 
       lessonListContainer.innerHTML = "";
 
-      DB.lessons.forEach((lesson, index) => {
+      if (!state.lessons || state.lessons.length === 0) {
+        lessonListContainer.innerHTML = "<p class='text-center text-slate-500 py-8'>불러올 레슨 데이터가 없습니다.</p>";
+        return;
+      }
+
+      state.lessons.forEach((lesson, index) => {
         const card = document.createElement("div");
         card.className = "bg-surface-container-lowest p-4 rounded-xl shadow-xs border border-outline-variant/30 flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors";
         
+        const firstSentence = lesson.targetSentence || (lesson.sentences && lesson.sentences[0]?.kr) || "";
+
         card.innerHTML = `
           <div class="flex flex-col gap-1">
             <span class="px-2 py-0.5 rounded-md bg-primary-container text-on-primary-container font-label-caps text-label-caps w-max">
-              Level ${lesson.level}
+              Level ${lesson.level || "4A"}
             </span>
-            <h4 class="font-headline-sm text-headline-sm text-on-surface">${lesson.title}</h4>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">${lesson.targetSentence}</p>
+            <h4 class="font-headline-sm text-headline-sm text-on-surface">${lesson.title || `Lesson ${index + 1}`}</h4>
+            <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">${firstSentence}</p>
           </div>
           <span class="material-symbols-outlined text-primary text-[24px]">chevron_right</span>
         `;
