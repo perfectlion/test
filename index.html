@@ -1252,20 +1252,32 @@
 
 // ==================== 1. 읽기 학습 모드 ====================
 
-  // 현재 유저의 정확한 lesson_id를 가져오는 헬퍼 함수
+  // 현재 유저의 정확한 lesson_id를 가져오는 통합 헬퍼 함수
   function getValidUserLessonId() {
-    let id = currentUser?.lesson_id || currentUser?.current_lesson_id;
-    if (!id) {
-      // currentUser 객체에 없는 경우 localStorage 백업 확인
+    let rawId = null;
+
+    // 1. currentUser 객체 내 가능한 모든 필드명 탐색
+    if (currentUser) {
+      rawId = currentUser.lesson_id ?? currentUser.current_lesson_id ?? currentUser.lesson ?? currentUser.currentLesson;
+    }
+
+    // 2. 객체에 없을 경우 localStorage 백업 데이터 확인
+    if (!rawId) {
       const savedUser = localStorage.getItem('currentUser');
       if (savedUser) {
         try {
           const parsed = JSON.parse(savedUser);
-          id = parsed.lesson_id || parsed.current_lesson_id;
+          rawId = parsed.lesson_id ?? parsed.current_lesson_id ?? parsed.lesson ?? parsed.currentLesson;
         } catch(e) {}
       }
     }
-    return Number(id) || 1;
+
+    // 3. 숫자로 변환 (변환 불가 시 기본값 1)
+    const numericId = parseInt(rawId, 10);
+    const finalId = (isNaN(numericId) || numericId <= 0) ? 1 : numericId;
+    
+    console.log(`[진도 확인 디버그] 감지된 유저 레슨 ID: ${finalId} (원본값: ${rawId})`);
+    return finalId;
   }
 
   // 대시보드 전용: 무조건 유저의 최신 진도로 시작
@@ -1275,16 +1287,12 @@
     startReadingPractice(myLessonId);
   }
 
-  // 읽기 버튼 클릭 이벤트
-  goPracticeBtn?.addEventListener('click', () => {
-    startDashboardReadingPractice();
-  });
-
+  // 읽기 연습 시작 함수
   function startReadingPractice(targetLessonId) {
     const allLessons = lessonsData || [];
     const targetId = Number(targetLessonId);
 
-    // Number 변환 후 비교
+    // lessonsData의 lesson_id와 targetId를 모두 Number로 변환하여 비교
     lessonSentencesList = allLessons
       .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
       .map(l => ({
@@ -1429,7 +1437,7 @@
       currentQuizList = savedProgress.quizList;
       currentQuizIndex = savedProgress.currentIndex;
     } else {
-      // [새로운 퀴즈 생성] 풀던 게 없거나 완수한 경우 -> 새로 랜덤 추출
+      // [새로운 퀴즈 생성] 풀던 게 없거나 완수한 경우 -> 새로 랜덤 추출 (1과 ~ maxId 전체)
       const eligibleItems = allLessons.filter(
         l => Number(l.lesson_id) <= maxId && l.word_kr && l.word_kr.trim() !== ""
       );
@@ -1545,7 +1553,7 @@
   function renderQuizIndex(index) {
     const total = currentQuizList.length;
 
-    // [완료 조건] 퀴즈 문제를 전부 풀어 완수했을 때
+    // 퀴즈 문제 완수 시
     if (total > 0 && index >= total) {
       alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
       
@@ -1555,7 +1563,6 @@
         elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       }
 
-      // 오늘 학습 데이터 기록 및 진행상황 완벽 삭제 (다음 진입 시 새 랜덤 생성)
       saveTodayLearningData('quiz', elapsedMinutes);
       clearLearningProgress('quiz', currentLessonId);
 
@@ -1601,7 +1608,6 @@
       if (hintBox) hintBox.classList.add('hidden');
     }
 
-    // [핵심] 진행 위치 뿐만 아니라 '퀴즈 목록(quizList)' 전체를 local storage에 함께 저장
     saveLearningProgressWithList('quiz', currentLessonId, index, currentQuizList);
 
     const choicesContainer = document.getElementById('quiz-choices-container');
@@ -1630,7 +1636,6 @@
     document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
   }
 
-  // 퀴즈 문제 목록까지 저장해주는 헬퍼 함수
   function saveLearningProgressWithList(type, lessonId, currentIndex, quizList) {
     if (typeof saveLearningProgress === 'function') {
       try {
@@ -1659,7 +1664,7 @@
     }
   }
 
-  // 퀴즈 플래시카드 뒤집기
+  // 퀴즈 카드 뒤집기
   document.getElementById('quiz-card-container')?.addEventListener('click', () => {
     const cardInner = document.getElementById('quiz-card-inner');
     isCardFlipped = !isCardFlipped;
@@ -1685,7 +1690,7 @@
     renderQuizIndex(currentQuizIndex);
   });
 
-  // 대시보드 퀴즈 버튼
+  // 대시보드 버튼 이벤트 바인딩
   document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
     startDashboardQuiz();
   });
