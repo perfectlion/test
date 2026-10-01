@@ -1251,41 +1251,56 @@
   });
 
 // ==================== 1. 읽기 학습 모드 ====================
-  
-  // 대시보드 전용: 무조건 내 진도로 읽기 연습 시작
-  function startDashboardReadingPractice() {
-      previousView = 'view-dashboard';
-      // 유저 객체에서 현재 진도 레슨 ID 추출 (기본값 1)
-      const myLessonId = Number(currentUser?.lesson_id || currentUser?.current_lesson_id || 1);
-      startReadingPractice(myLessonId);
-    }
 
-  // 대시보드 읽기 버튼 이벤트 핸들러
+  // 현재 유저의 정확한 lesson_id를 가져오는 헬퍼 함수
+  function getValidUserLessonId() {
+    let id = currentUser?.lesson_id || currentUser?.current_lesson_id;
+    if (!id) {
+      // currentUser 객체에 없는 경우 localStorage 백업 확인
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          id = parsed.lesson_id || parsed.current_lesson_id;
+        } catch(e) {}
+      }
+    }
+    return Number(id) || 1;
+  }
+
+  // 대시보드 전용: 무조건 유저의 최신 진도로 시작
+  function startDashboardReadingPractice() {
+    previousView = 'view-dashboard';
+    const myLessonId = getValidUserLessonId();
+    startReadingPractice(myLessonId);
+  }
+
+  // 읽기 버튼 클릭 이벤트
   goPracticeBtn?.addEventListener('click', () => {
     startDashboardReadingPractice();
   });
 
-  // [핵심] 읽기 연습 실행 함수 (대시보드/복습모드 공통 사용)
   function startReadingPractice(targetLessonId) {
     const allLessons = lessonsData || [];
-    
-    // targetLessonId 번호에 맞는 문장 필터링
+    const targetId = Number(targetLessonId);
+
+    // Number 변환 후 비교
     lessonSentencesList = allLessons
-      .filter(l => Number(l.lesson_id) === Number(targetLessonId) && l.sentence_kr && l.sentence_kr.trim() !== "")
+      .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
       .map(l => ({
         sentence: l.sentence_kr,
         translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
       }));
 
     if (lessonSentencesList.length === 0) {
-      alert(`제 ${targetLessonId}과에 해당하는 읽기 데이터가 없습니다.`);
+      alert(`제 ${targetId}과에 해당하는 읽기 데이터가 없습니다.`);
       return;
     }
 
-    currentLessonId = Number(targetLessonId);
+    currentLessonId = targetId;
     practiceStartTime = Date.now();
 
-    // 학습 진행 상태 복원
+    // 저장된 읽기 진행도 복원
     const savedProgress = getLearningProgress('reading', currentLessonId);
     if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
       currentSentenceIndex = savedProgress.currentIndex;
@@ -1293,7 +1308,6 @@
       currentSentenceIndex = 0;
     }
 
-    // 타이틀 설정
     const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
     if (previousView === 'view-review') {
       currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습)`;
@@ -1396,38 +1410,43 @@
   let currentQuizIndex = 0;
   let isCardFlipped = false;
 
-  // [수정] 대시보드 전용: 현재 진도 이하의 전 과 범위에서 랜덤 퀴즈 생성
+  // 대시보드전용 퀴즈 시작
   function startDashboardQuiz() {
     previousView = 'view-dashboard';
-    const myLessonId = Number(currentUser?.lesson_id || currentUser?.current_lesson_id || 1);
+    const myLessonId = getValidUserLessonId();
     startQuizForLessonRange(myLessonId);
   }
 
-  // [신규/수정] 지정된 레슨 ID 이하의 모든 단어를 모아 랜덤으로 퀴즈 생성하는 함수
   function startQuizForLessonRange(maxLessonId) {
     const allLessons = lessonsData || [];
     const maxId = Number(maxLessonId);
 
-    // 1과부터 현재 진도(maxId)까지의 단어 중 한국어 단어가 있는 항목 필터링
-    const eligibleItems = allLessons.filter(
-      l => Number(l.lesson_id) <= maxId && l.word_kr && l.word_kr.trim() !== ""
-    );
+    // 1. 기존에 풀다 만 퀴즈 데이터가 있는지 확인
+    const savedProgress = getLearningProgress('quiz', maxId);
 
-    if (eligibleItems.length === 0) {
-      alert(`학습 데이터가 없습니다.`);
-      return;
+    if (savedProgress && Array.isArray(savedProgress.quizList) && savedProgress.quizList.length > 0 && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < savedProgress.quizList.length) {
+      // [풀던 퀴즈 이어풀기] 기존 문제 목록과 위치 그대로 복원
+      currentQuizList = savedProgress.quizList;
+      currentQuizIndex = savedProgress.currentIndex;
+    } else {
+      // [새로운 퀴즈 생성] 풀던 게 없거나 완수한 경우 -> 새로 랜덤 추출
+      const eligibleItems = allLessons.filter(
+        l => Number(l.lesson_id) <= maxId && l.word_kr && l.word_kr.trim() !== ""
+      );
+
+      if (eligibleItems.length === 0) {
+        alert(`퀴즈에 사용할 학습 데이터가 없습니다.`);
+        return;
+      }
+
+      const shuffledItems = [...eligibleItems].sort(() => 0.5 - Math.random());
+      const selectedItems = shuffledItems.slice(0, 10);
+      currentQuizList = selectedItems.map(item => generateQuizProblem(item, allLessons));
+      currentQuizIndex = 0;
     }
-
-    // 1. 단어 목록 무작위 셔플 (매번 접속 시마다 새로 렌덤 조합)
-    const shuffledItems = [...eligibleItems].sort(() => 0.5 - Math.random());
-    
-    // 2. 최대 10개(또는 원하는 문제 수) 추출하여 퀴즈 문제 배열 생성
-    const selectedItems = shuffledItems.slice(0, 10);
-    currentQuizList = selectedItems.map(item => generateQuizProblem(item, allLessons));
 
     currentLessonId = maxId;
     quizStartTime = Date.now();
-    currentQuizIndex = 0;
 
     const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
     if (previousView === 'view-review') {
@@ -1435,35 +1454,6 @@
     } else {
       currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (데일리 퀴즈)`;
     }
-
-    renderQuizIndex(currentQuizIndex);
-    showView('view-quiz');
-  }
-
-  // [단일 레슨 전용] 복습 모드 등 특정 과만 지정해서 퀴즈를 풀 때 사용
-  function startQuizForLesson(targetLessonId) {
-    const allLessons = lessonsData || [];
-    const targetId = Number(targetLessonId);
-
-    const lessonItems = allLessons.filter(
-      l => Number(l.lesson_id) === targetId && l.word_kr && l.word_kr.trim() !== ""
-    );
-
-    if (lessonItems.length === 0) {
-      alert(`제 ${targetId}과에 해당하는 퀴즈 데이터가 없습니다.`);
-      return;
-    }
-
-    // 셔플하여 문제 생성
-    const shuffledItems = [...lessonItems].sort(() => 0.5 - Math.random());
-    currentQuizList = shuffledItems.map(item => generateQuizProblem(item, allLessons));
-
-    currentLessonId = targetId;
-    quizStartTime = Date.now();
-    currentQuizIndex = 0;
-
-    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
-    currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
 
     renderQuizIndex(currentQuizIndex);
     showView('view-quiz');
@@ -1521,8 +1511,6 @@
           const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
           words[matchedIndex] = maskHtml + punctuation;
           maskedSentence = words.join(' ');
-        } else {
-          console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
         }
       }
     }
@@ -1557,6 +1545,7 @@
   function renderQuizIndex(index) {
     const total = currentQuizList.length;
 
+    // [완료 조건] 퀴즈 문제를 전부 풀어 완수했을 때
     if (total > 0 && index >= total) {
       alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
       
@@ -1565,6 +1554,8 @@
         const elapsedMs = Date.now() - quizStartTime;
         elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       }
+
+      // 오늘 학습 데이터 기록 및 진행상황 완벽 삭제 (다음 진입 시 새 랜덤 생성)
       saveTodayLearningData('quiz', elapsedMinutes);
       clearLearningProgress('quiz', currentLessonId);
 
@@ -1610,7 +1601,8 @@
       if (hintBox) hintBox.classList.add('hidden');
     }
 
-    saveLearningProgress('quiz', currentLessonId, index);
+    // [핵심] 진행 위치 뿐만 아니라 '퀴즈 목록(quizList)' 전체를 local storage에 함께 저장
+    saveLearningProgressWithList('quiz', currentLessonId, index, currentQuizList);
 
     const choicesContainer = document.getElementById('quiz-choices-container');
     if (choicesContainer) {
@@ -1638,6 +1630,23 @@
     document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
   }
 
+  // 퀴즈 문제 목록까지 저장해주는 헬퍼 함수
+  function saveLearningProgressWithList(type, lessonId, currentIndex, quizList) {
+    if (typeof saveLearningProgress === 'function') {
+      try {
+        const key = `learning_progress_${type}_${lessonId}`;
+        const data = {
+          currentIndex: currentIndex,
+          quizList: quizList,
+          updatedAt: Date.now()
+        };
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch(e) {
+        saveLearningProgress(type, lessonId, currentIndex);
+      }
+    }
+  }
+
   function stopQuizAndReturn(isCompleted = false) {
     if (!isCompleted) {
       quizStartTime = null;
@@ -1650,7 +1659,7 @@
     }
   }
 
-  // 퀴즈 카드 뒤집기 이벤트
+  // 퀴즈 플래시카드 뒤집기
   document.getElementById('quiz-card-container')?.addEventListener('click', () => {
     const cardInner = document.getElementById('quiz-card-inner');
     isCardFlipped = !isCardFlipped;
@@ -1670,17 +1679,16 @@
     }
   }
 
-  // 다음 문제 버튼 이벤트
+  // 다음 문제 버튼
   document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
     currentQuizIndex++;
     renderQuizIndex(currentQuizIndex);
   });
 
-  // 대시보드 퀴즈 버튼 이벤트 연결
+  // 대시보드 퀴즈 버튼
   document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
     startDashboardQuiz();
   });
-
   
   // ==========================================
   // VIEW 5: 주간 성과 데이터 동적 연동 로직
