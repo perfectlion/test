@@ -333,7 +333,7 @@
         <a id="nav-review-mode" 
            class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
            href="javascript:void(0);" 
-           onclick="document.getElementById('view-dashboard').classList.add('hidden-view'); document.getElementById('view-review').classList.remove('hidden-view'); if(typeof renderReviewScreen === 'function') renderReviewScreen();">
+           onclick="openReviewMode()">
           <span class="material-symbols-outlined text-[24px] mb-0.5">replay</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">復習モード</span>
         </a>
@@ -342,7 +342,7 @@
         <a id="nav-weekly-stats" 
            class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer" 
            href="javascript:void(0);" 
-           onclick="document.getElementById('view-dashboard').classList.add('hidden-view'); document.getElementById('view-weekly-stats').classList.remove('hidden-view');">
+           >
           <span class="material-symbols-outlined text-[24px] mb-0.5">monitoring</span>
           <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">学習記録</span>
         </a>
@@ -926,7 +926,11 @@
 
   // 복습 모드 및 화면 상태
   let currentSelectedLevel = '1a';
-  let previousView = 'view-dashboard';
+  // JSON 진도와 복습 선택은 별개입니다. 기존 currentLesson* 변수는 열린 콘텐츠만 나타냅니다.
+  let userProgress = null;
+  let reviewSelection = null;
+  let activeViewId = 'view-login';
+  const viewHistory = [];
 
   // Gemini API 설정
   const GEMINI_MODEL = "gemini-1.5-flash";
@@ -996,24 +1000,66 @@
   const practiceEvalText = document.getElementById('practice-eval-text');
 
   // ==================== 뷰 전환 공통 함수 ====================
-  function showView(targetViewId) {
+  function showView(targetViewId, recordHistory = true) {
     const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats', 'view-review'];
-    views.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden-view');
-    });
-
     const target = document.getElementById(targetViewId);
-    if (target) {
-      target.classList.remove('hidden-view');
-      window.scrollTo(0, 0);
-    } else {
-      console.error(`VIEW ID를 찾을 수 없습니다: ${targetViewId}`);
-    }
+    if (!views.includes(targetViewId) || !target) return;
 
-    if (targetViewId === 'view-review') {
-      renderReviewScreen();
+    if (targetViewId === 'view-login' || activeViewId === 'view-login') {
+      viewHistory.length = 0;
+    } else if (recordHistory && activeViewId !== targetViewId) {
+      viewHistory.push(activeViewId);
     }
+    if (activeViewId === 'view-practice' && targetViewId !== activeViewId) {
+      stopPracticeRecordingUI();
+      practiceStartTime = null;
+    }
+    if (activeViewId === 'view-quiz' && targetViewId !== activeViewId) quizStartTime = null;
+    if (targetViewId !== activeViewId && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+
+    views.forEach(id => document.getElementById(id)?.classList.add('hidden-view'));
+    target.classList.remove('hidden-view');
+    activeViewId = targetViewId;
+    if (targetViewId === 'view-dashboard' && currentUser) setupDashboardUI(currentUser);
+    if (targetViewId === 'view-review') renderReviewScreen();
+    window.scrollTo(0, 0);
+  }
+
+  function goBackView() {
+    const targetViewId = viewHistory.pop();
+    if (targetViewId) showView(targetViewId, false);
+  }
+
+  // 현재 열람 콘텐츠의 표시 정보를 만듭니다. JSON에는 값을 추가하거나 쓰지 않습니다.
+  function getContentSelection(lessonId) {
+    const id = Number(lessonId);
+    const level = reviewLevels.find(l => id >= l.minId && id <= l.maxId) || reviewLevels[0];
+    const { bookName, lessonNum } = getBookAndLessonTitle(level.id, id);
+    const item = curriculumData.find(c => Number(c.lesson_id) === id);
+    return {
+      lessonId: id,
+      course: level.id,
+      title: `${bookName} • 제 ${lessonNum}과${item?.title ? ` (${item.title})` : ''}`,
+      sentence: item?.title_sentences || '오늘의 한국어 문장을 연습해보세요.'
+    };
+  }
+
+  function selectContent(selection) {
+    currentLessonId = selection.lessonId;
+    currentLessonDisplayTitle = selection.title;
+  }
+
+  function resolveContentSelection(levelOrLessonId, lessonNum) {
+    if (activeViewId === 'view-review') {
+      const lessonId = typeof lessonNum !== 'undefined'
+        ? getActualLessonId(levelOrLessonId, lessonNum)
+        : Number(levelOrLessonId);
+      reviewSelection = getContentSelection(lessonId);
+      return reviewSelection;
+    }
+    // 대시보드에서는 복습에서 사용했던 값을 참조하지 않습니다.
+    setupDashboardUI(currentUser);
+    return userProgress;
   }
 
   // ==================== 주간 데이터 및 학습 진행상태 저장 헬퍼 함수 ====================
@@ -1122,36 +1168,6 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
-  function showView(targetViewId) {
-    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats'];
-    views.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden-view');
-    });
-
-    const target = document.getElementById(targetViewId);
-    if (target) {
-      target.classList.remove('hidden-view');
-      window.scrollTo(0, 0);
-    } else {
-      console.error(`VIEW ID를 찾을 수 없습니다: ${targetViewId}`);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('back-to-dashboard')?.addEventListener('click', () => {
-      returnToDashboard(false); // 미완료로 복귀
-    });
-
-    document.getElementById('back-from-stats')?.addEventListener('click', () => {
-      showView('view-dashboard');
-    });
-    
-    document.getElementById('back-from-quiz')?.addEventListener('click', () => {
-      stopQuizAndReturn(false); // 미완료로 복귀
-    });
-  });
-
   async function loadAllDatabases() {
     try {
       const [uRes, sRes, lRes, cRes] = await Promise.all([
@@ -1171,13 +1187,15 @@
       console.error("JSON 로드 중 오류 발생:", err);
     }
   }
-  loadAllDatabases();
 
   function checkAutoLogin() {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       try {
-        currentUser = JSON.parse(savedUser);
+        const saved = JSON.parse(savedUser);
+        currentUser = usersData.find(u => String(u.ID).toLowerCase() === String(saved.ID).toLowerCase());
+        if (!currentUser) throw new Error('사용자 정보가 없습니다.');
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
         setupDashboardUI(currentUser);
         showView('view-dashboard');
       } catch (e) {
@@ -1238,20 +1256,10 @@
       userProfileImgs.forEach(img => { img.src = photoUrl; });
     }
 
-    currentLessonId = getLessonIdForUser(user.course || "1a");
-    const currItem = curriculumData.find(c => c.lesson_id === currentLessonId);
-    const { bookName, lessonNum } = getBookAndLessonTitle(user.course || "1a", currentLessonId);
-
-    if (currItem) {
-      currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과 (${currItem.title})`;
-      currentTargetSentence = currItem.title_sentences || "학습 문장이 준비되어 있습니다.";
-    } else {
-      currentLessonDisplayTitle = `${bookName} · 제 ${lessonNum}과`;
-      currentTargetSentence = "오늘의 한국어 문장을 연습해보세요.";
-    }
-
-    if (cardLessonTag) cardLessonTag.innerText = currentLessonDisplayTitle;
-    if (targetSentenceElem) targetSentenceElem.innerText = currentTargetSentence;
+    userProgress = getContentSelection(getLessonIdForUser(user.course || '1a'));
+    currentTargetSentence = userProgress.sentence;
+    if (cardLessonTag) cardLessonTag.innerText = userProgress.title;
+    if (targetSentenceElem) targetSentenceElem.innerText = userProgress.sentence;
   }
 
   loginForm?.addEventListener('submit', (e) => {
@@ -1282,6 +1290,8 @@
 
   logoutBtn?.addEventListener('click', () => {
     currentUser = null;
+    userProgress = null;
+    reviewSelection = null;
     localStorage.removeItem('currentUser');
     if (userIdInput) userIdInput.value = '';
     if (userPwInput) userPwInput.value = '';
@@ -1289,36 +1299,7 @@
   });
 
   // ==================== VIEW 3: 읽기학습 ====================
-  goPracticeBtn?.addEventListener('click', () => {
-    const targetId = Number(currentLessonId);
-
-    lessonSentencesList = lessonsData
-      .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
-      .map(l => ({
-        sentence: l.sentence_kr,
-        translation: l.sentence_jp || "자연스러운 회화를 연습합니다."
-      }));
-
-    if (lessonSentencesList.length === 0) {
-      lessonSentencesList = [{ 
-        sentence: currentTargetSentence || "저는 한국 사람이에요.", 
-        translation: "자연스러운 회화를 연습합니다." 
-      }];
-    }
-
-    practiceStartTime = Date.now();
-
-    // 이전에 풀다 만 진행 상태 확인
-    const savedProgress = getLearningProgress('reading', targetId);
-    if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
-      currentSentenceIndex = savedProgress.currentIndex;
-    } else {
-      currentSentenceIndex = 0;
-    }
-
-    loadPracticeSentenceAtIndex(currentSentenceIndex);
-    showView('view-practice');
-  });
+  goPracticeBtn?.addEventListener('click', () => startReadingPractice());
 
   function loadPracticeSentenceAtIndex(index) {
     if (index < lessonSentencesList.length) {
@@ -1390,7 +1371,7 @@
     }
 
     practiceStartTime = null;
-    showView('view-dashboard');
+    goBackView();
   }
 
   btnNextSentence?.addEventListener('click', () => {
@@ -1519,7 +1500,7 @@ function generateQuizProblem(targetItem, allLessons) {
       clearLearningProgress('quiz', currentLessonId); // 진행 데이터 제거
 
       quizStartTime = null;
-      showView('view-dashboard');
+      goBackView();
       return;
     }
 
@@ -1594,7 +1575,7 @@ function generateQuizProblem(targetItem, allLessons) {
       // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
       quizStartTime = null;
     }
-    showView('view-dashboard');
+    goBackView();
   }
 
   document.getElementById('quiz-card-container')?.addEventListener('click', () => {
@@ -1622,49 +1603,14 @@ function generateQuizProblem(targetItem, allLessons) {
   });
 
   // 퀴즈 시작 버튼 클릭 로직 보완
-  document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-    try {
-      const selectedLessonId = Number(currentLessonId || 1);
+  document.getElementById('go-quiz-btn')?.addEventListener('click', () => startQuizForLesson());
 
-      const lessonItems = (lessonsData || []).filter(
-        l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
-      );
-
-      if (lessonItems.length === 0) {
-        alert(`제 ${selectedLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
-        return;
-      }
-
-      currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
-      
-      quizStartTime = Date.now();
-
-      // 저장된 진행 기록 확인
-      const savedProgress = getLearningProgress('quiz', selectedLessonId);
-      if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
-        currentQuizIndex = savedProgress.currentIndex;
-      } else {
-        currentQuizIndex = 0;
-      }
-
-      const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
-      currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
-
-      renderQuizIndex(currentQuizIndex);
-      showView('view-quiz');
-
-    } catch (err) {
-      console.error("퀴즈 진입 도중 오류 발생:", err);
-    }
-  });
-
- 
   // =========================== VIEW 5: 주간성과======================
   function renderWeeklyStatsView() {
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
       const userCourse = currentUser?.course || "1a";
-      const { bookName } = getBookAndLessonTitle(userCourse, currentLessonId || 1);
+      const { bookName } = getBookAndLessonTitle(userCourse, userProgress?.lessonId || getLessonIdForUser(userCourse));
       courseTag.innerText = `${bookName} · 주간 성취도 (週間達成度)`;
     }
 
@@ -1900,12 +1846,11 @@ function generateQuizProblem(targetItem, allLessons) {
 
   // 대시보드(메인 화면)로 돌아가는 함수
   function goBackToDashboard() {
-    showView('view-dashboard');
+    goBackView();
   }
   
   function openReviewMode() {
     showView('view-review');
-    renderReviewScreen();
   }
 
   function changeReviewLevel(levelId) {
@@ -1964,23 +1909,9 @@ function generateQuizProblem(targetItem, allLessons) {
   }
 
   function startReadingPractice(levelOrLessonId, lessonNum) {
-    let targetLessonId;
-
-    if (typeof lessonNum !== 'undefined') {
-      previousView = 'view-review';
-      targetLessonId = getActualLessonId(levelOrLessonId, lessonNum);
-    } else if (typeof levelOrLessonId === 'number' || (typeof levelOrLessonId === 'string' && !isNaN(Number(levelOrLessonId)))) {
-      const reviewView = document.getElementById('view-review');
-      if (reviewView && !reviewView.classList.contains('hidden-view')) {
-        previousView = 'view-review';
-      } else {
-        previousView = 'view-dashboard';
-      }
-      targetLessonId = Number(levelOrLessonId);
-    } else {
-      previousView = 'view-dashboard';
-      targetLessonId = Number(currentUser?.lesson_id || 1);
-    }
+    const selection = resolveContentSelection(levelOrLessonId, lessonNum);
+    if (!selection) return;
+    const targetLessonId = selection.lessonId;
 
     const allLessons = lessonsData || [];
     lessonSentencesList = allLessons
@@ -1991,15 +1922,18 @@ function generateQuizProblem(targetItem, allLessons) {
       }));
 
     if (lessonSentencesList.length === 0) {
-      alert(`제 ${targetLessonId}과에 해당하는 읽기 데이터가 없습니다.`);
-      return;
+      if (activeViewId === 'view-review') {
+        alert(`제 ${targetLessonId}과에 해당하는 읽기 데이터가 없습니다.`);
+        return;
+      }
+      lessonSentencesList = [{ sentence: selection.sentence, translation: '자연스러운 회화를 연습합니다.' }];
     }
 
-    currentLessonId = targetLessonId;
+    selectContent(selection);
     practiceStartTime = Date.now();
 
     const savedProgress = getLearningProgress('reading', targetLessonId);
-    if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
+    if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < lessonSentencesList.length) {
       currentSentenceIndex = savedProgress.currentIndex;
     } else {
       currentSentenceIndex = 0;
@@ -2010,23 +1944,9 @@ function generateQuizProblem(targetItem, allLessons) {
   }
 
   function startQuizForLesson(levelOrLessonId, lessonNum) {
-    let targetLessonId;
-
-    if (typeof lessonNum !== 'undefined') {
-      previousView = 'view-review';
-      targetLessonId = getActualLessonId(levelOrLessonId, lessonNum);
-    } else if (typeof levelOrLessonId === 'number' || (typeof levelOrLessonId === 'string' && !isNaN(Number(levelOrLessonId)))) {
-      const reviewView = document.getElementById('view-review');
-      if (reviewView && !reviewView.classList.contains('hidden-view')) {
-        previousView = 'view-review';
-      } else {
-        previousView = 'view-dashboard';
-      }
-      targetLessonId = Number(levelOrLessonId);
-    } else {
-      previousView = 'view-dashboard';
-      targetLessonId = Number(currentUser?.lesson_id || 1);
-    }
+    const selection = resolveContentSelection(levelOrLessonId, lessonNum);
+    if (!selection) return;
+    const targetLessonId = selection.lessonId;
 
     const allLessons = lessonsData || [];
     const lessonItems = allLessons.filter(
@@ -2039,18 +1959,15 @@ function generateQuizProblem(targetItem, allLessons) {
     }
 
     currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
-    currentLessonId = targetLessonId;
+    selectContent(selection);
     quizStartTime = Date.now();
 
     const savedProgress = getLearningProgress('quiz', targetLessonId);
-    if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
+    if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
       currentQuizIndex = savedProgress.currentIndex;
     } else {
       currentQuizIndex = 0;
     }
-
-    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", targetLessonId);
-    currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
 
     renderQuizIndex(currentQuizIndex);
     showView('view-quiz');
@@ -2428,7 +2345,7 @@ micRecordBtn?.addEventListener('click', () => {
     });
 
     document.getElementById('back-from-stats')?.addEventListener('click', () => {
-      showView('view-dashboard');
+      goBackView();
     });
     
     document.getElementById('back-from-quiz')?.addEventListener('click', () => {
@@ -2444,7 +2361,6 @@ micRecordBtn?.addEventListener('click', () => {
       showView('view-weekly-stats');
     });
 
-    document.getElementById('submit-report-btn')?.addEventListener('click', handleReportSubmit);
 
     renderWeeklyStatsView();
   });
