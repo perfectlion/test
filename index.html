@@ -1978,32 +1978,35 @@ function getUnplayedRandomLessonId(userId, maxLessonId) {
 function startQuizForLesson(levelOrLessonId, lessonNum) {
   const selection = resolveContentSelection(levelOrLessonId, lessonNum);
   if (!selection) return;
+  
+  // 1. 현재 열람/클릭한 과 ID (상단 UI 및 선택 기준)
   const targetLessonId = selection.lessonId;
 
-  // ① 현재 스케줄 이전 과 중 무작위로 1개 과 선택
-  const targetLessonId = getUnplayedRandomLessonId(userId, currentScheduleLessonId);
+  // 2. 퀴즈 문제 추출용 무작위 과 ID 계산 (1과 ~ targetLessonId - 1과 중 중복 없이 선택)
+  const userId = currentUser?.ID || 'default';
+  const quizLessonId = getUnplayedRandomLessonId(userId, targetLessonId);
 
   const allLessons = lessonsData || [];
+  
+  // 3. 필터링 대상만 targetLessonId 대신 무작위로 결정된 quizLessonId로 변경
   const lessonItems = allLessons.filter(
-    l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== ""
+    l => Number(l.lesson_id) === quizLessonId && l.word_kr && l.word_kr.trim() !== ""
   );
 
   if (lessonItems.length === 0) {
-    alert(`제 ${targetLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+    alert(`제 ${quizLessonId}과(복습 대상)에 해당하는 퀴즈 데이터가 없습니다.`);
     return;
   }
 
-  // ② 무작위로 선택된 과의 문제 생성
+  // 4. 무작위 과(quizLessonId)의 데이터로 퀴즈 리스트 생성
   currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
   
-  // 선택된 과 정보로 화면 타이틀/선택 정보 업데이트
-  const updatedSelection = resolveContentSelection(targetLessonId);
-  selectContent(updatedSelection || selection);
-  
+  // 5. 상단 UI 변경은 기존처럼 현재 보고 있는 과(selection) 기준으로 진행
+  selectContent(selection);
   quizStartTime = Date.now();
 
-  // ③ 선택된 과 기준 이어풀기 진행 상태 확인
-  const savedProgress = getLearningProgress('quiz', targetLessonId);
+  // 6. 진행 상태 저장/불러오기만 복습 대상 과(quizLessonId) 기준으로 관리
+  const savedProgress = getLearningProgress('quiz', quizLessonId);
   if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
     currentQuizIndex = savedProgress.currentIndex;
   } else {
