@@ -1943,35 +1943,78 @@ function generateQuizProblem(targetItem, allLessons) {
     showView('view-practice');
   }
 
-  function startQuizForLesson(levelOrLessonId, lessonNum) {
-    const selection = resolveContentSelection(levelOrLessonId, lessonNum);
-    if (!selection) return;
-    const targetLessonId = selection.lessonId;
-
-    const allLessons = lessonsData || [];
-    const lessonItems = allLessons.filter(
-      l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== ""
-    );
-
-    if (lessonItems.length === 0) {
-      alert(`제 ${targetLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
-      return;
-    }
-
-    currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
-    selectContent(selection);
-    quizStartTime = Date.now();
-
-    const savedProgress = getLearningProgress('quiz', targetLessonId);
-    if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
-      currentQuizIndex = savedProgress.currentIndex;
-    } else {
-      currentQuizIndex = 0;
-    }
-
-    renderQuizIndex(currentQuizIndex);
-    showView('view-quiz');
+// 중복 방지 무작위 과 선택 헬퍼 함수
+function getUnplayedRandomLessonId(userId, maxLessonId) {
+  const candidateLessons = [];
+  for (let i = 1; i < maxLessonId; i++) {
+    candidateLessons.push(i);
   }
+
+  // 1과이거나 이전 과가 없는 경우 1과 반환
+  if (candidateLessons.length === 0) return 1;
+
+  const storageKey = `completed_quiz_lessons_${userId}`;
+  let completedLessons = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+  // 아직 안 푼 과 필터링
+  let remainingLessons = candidateLessons.filter(id => !completedLessons.includes(id));
+
+  // 모든 과를 다 풀었으면 기록 초기화 후 재시작
+  if (remainingLessons.length === 0) {
+    completedLessons = [];
+    localStorage.removeItem(storageKey);
+    remainingLessons = [...candidateLessons];
+  }
+
+  // 무작위 1개 선택 및 풀었던 목록 업데이트
+  const selectedLessonId = remainingLessons[Math.floor(Math.random() * remainingLessons.length)];
+  completedLessons.push(selectedLessonId);
+  localStorage.setItem(storageKey, JSON.stringify(completedLessons));
+
+  return selectedLessonId;
+}
+
+// 대시보드에서 어떤 퀴즈를 낼 것인가에 대한 startQuizForLesson 함수
+function startQuizForLesson(levelOrLessonId, lessonNum) {
+  const selection = resolveContentSelection(levelOrLessonId, lessonNum);
+  if (!selection) return;
+
+  const userId = currentUser?.ID || 'default';
+  const currentScheduleLessonId = selection.lessonId; // 회원의 현재 스케줄 과
+
+  // ① 현재 스케줄 이전 과 중 무작위로 1개 과 선택
+  const targetLessonId = getUnplayedRandomLessonId(userId, currentScheduleLessonId);
+
+  const allLessons = lessonsData || [];
+  const lessonItems = allLessons.filter(
+    l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== ""
+  );
+
+  if (lessonItems.length === 0) {
+    alert(`제 ${targetLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+    return;
+  }
+
+  // ② 무작위로 선택된 과의 문제 생성
+  currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
+  
+  // 선택된 과 정보로 화면 타이틀/선택 정보 업데이트
+  const updatedSelection = resolveContentSelection(targetLessonId);
+  selectContent(updatedSelection || selection);
+  
+  quizStartTime = Date.now();
+
+  // ③ 선택된 과 기준 이어풀기 진행 상태 확인
+  const savedProgress = getLearningProgress('quiz', targetLessonId);
+  if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
+    currentQuizIndex = savedProgress.currentIndex;
+  } else {
+    currentQuizIndex = 0;
+  }
+
+  renderQuizIndex(currentQuizIndex);
+  showView('view-quiz');
+}
 
   // ==================== TTS 및 음성 인식(STT) ====================
   function playTTS(text, rate = 0.8) {
