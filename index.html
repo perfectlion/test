@@ -1439,16 +1439,11 @@ function generateQuizProblem(targetItem, allLessons) {
 
         // 조건 A: 어간으로 직접 시작함 (예: "만나"서)
         // 조건 B: 첫 글자의 초성이 같고 음절 유효 범위 내에 있음 (예: "가"다 -> "갑"니다, "하"다 -> "합"니다)
-        // 조건 C: 첫 글자 초성이 같음 (활용 변형 고려)
-        if (
-                (stem && cleanWord.startsWith(stem)) ||
-                (cleanTargetWord && cleanWord.startsWith(cleanTargetWord)) ||
-                (stemInitial && stemInitial === wordInitial)
-              ) {
-                matchedIndex = i;
-                break;
-              }
-            }
+        if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
+          matchedIndex = i;
+          break;
+        }
+      }
 
       if (matchedIndex !== -1) {
         const targetToken = words[matchedIndex];
