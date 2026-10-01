@@ -151,7 +151,7 @@
 <body class="bg-surface text-on-surface flex flex-col min-h-screen">
 
 
-  <!-- ==================== VIEW 1: 로그인 화면 ==================== -->
+  <!-- ==================== VIEW 1: 로그인 ==================== -->
 <main id="view-login" class="flex flex-col relative w-full bg-surface min-h-screen items-center justify-center">
   <!-- py-space-xl을 py-space-md로 변경하여 작은 화면에서 상하 여백 축소 -->
   <div class="flex flex-col w-full px-space-md py-space-md items-center justify-center">
@@ -215,7 +215,7 @@
   </main>
 
 
-<!-- ==================== VIEW 2: 대시보드 화면 ==================== -->
+<!-- ==================== VIEW 2: 대시보드 ==================== -->
   <div id="view-dashboard" class="hidden-view flex flex-col min-h-screen w-full">
     
     <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
@@ -351,7 +351,7 @@
   </div>
 
 
-  <!-- ==================== VIEW 3: 읽기 학습 화면 ==================== -->
+  <!-- ==================== VIEW 3: 읽기학습 ==================== -->
   <div id="view-practice" class="hidden-view flex flex-col min-h-screen w-full bg-surface">
     <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
       <div class="h-16 px-gutter flex items-center justify-between">
@@ -468,7 +468,7 @@
   </div>
       
 
-<!-- ==================== VIEW 4: 퀴즈 학습 화면 ==================== -->
+<!-- ==================== VIEW 4: 퀴즈학습 ==================== -->
 <div id="view-quiz" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
   <!-- Header -->
@@ -588,7 +588,7 @@
 
 </div>
 
-<!-- ==================== VIEW 5: 주간 성과 화면 ==================== -->
+<!-- ==================== VIEW 5: 주간성과 ==================== -->
 <div id="view-weekly-stats" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
   <!-- Header (VIEW 3, VIEW 4와 동일한 구조) -->
@@ -860,7 +860,7 @@
 
 </div>
 
-<!-- ==================== VIEW 6: 전체 복습 화면 ==================== -->
+<!-- ==================== VIEW 6: 전체복습 ==================== -->
 <div id="view-review" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
   <!-- Header (VIEW 5와 동일한 fixed 구조) -->
@@ -1288,7 +1288,7 @@
     showView('view-login');
   });
 
-  // ==================== 1. 읽기 학습 모드 ====================
+  // ==================== VIEW 3: 읽기학습 ====================
   goPracticeBtn?.addEventListener('click', () => {
     const targetId = Number(currentLessonId);
 
@@ -1405,7 +1405,7 @@
 
   closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-  // ==================== 2. 퀴즈 학습 모드 ====================
+  // ==================== VIEW 4: 퀴즈학습 ====================
   let currentQuizList = [];
   let currentQuizIndex = 0;
   let isCardFlipped = false;
@@ -1659,7 +1659,7 @@ function generateQuizProblem(targetItem, allLessons) {
   });
 
  
-  // =========================== VIEW 5: 주간 성과 모드======================
+  // =========================== VIEW 5: 주간성과======================
   function renderWeeklyStatsView() {
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
@@ -1892,7 +1892,7 @@ function generateQuizProblem(targetItem, allLessons) {
   }
 
 
-  // ================ View6 복습 모드 ================
+  // ================ VIEW 6: 전체복습 ================
   function getActualLessonId(levelId, lessonNum) {
     const lvl = reviewLevels.find(l => l.id === levelId) || reviewLevels[0];
     return lvl.minId + (Number(lessonNum) - 1);
