@@ -1978,9 +1978,7 @@ function getUnplayedRandomLessonId(userId, maxLessonId) {
 function startQuizForLesson(levelOrLessonId, lessonNum) {
   const selection = resolveContentSelection(levelOrLessonId, lessonNum);
   if (!selection) return;
-
-  const userId = currentUser?.ID || 'default';
-  const currentScheduleLessonId = selection.lessonId; // 회원의 현재 스케줄 과
+  const targetLessonId = selection.lessonId;
 
   // ① 현재 스케줄 이전 과 중 무작위로 1개 과 선택
   const targetLessonId = getUnplayedRandomLessonId(userId, currentScheduleLessonId);
