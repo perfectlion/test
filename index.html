@@ -2000,12 +2000,16 @@ function startQuizForLesson(levelOrLessonId, lessonNum) {
 
   // 4. 무작위 과(quizLessonId)의 데이터로 퀴즈 리스트 생성
   currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
-  
-  // 5. 상단 UI 변경은 기존처럼 현재 보고 있는 과(selection) 기준으로 진행
   selectContent(selection);
   quizStartTime = Date.now();
 
-  // 6. 진행 상태 저장/불러오기만 복습 대상 과(quizLessonId) 기준으로 관리
+  const quizCourseTag = document.getElementById('quiz-course-tag');
+  if (quizCourseTag) {
+    // 읽기 연습과 동일하게 현재 화면 기준 타이틀(currentLessonDisplayTitle)을 반영
+    quizCourseTag.innerText = currentLessonDisplayTitle;
+  }
+
+  // 5. 진행 상태 저장/불러오기만 복습 대상 과(quizLessonId) 기준으로 관리
   const savedProgress = getLearningProgress('quiz', quizLessonId);
   if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
     currentQuizIndex = savedProgress.currentIndex;
