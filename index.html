@@ -10,8 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script id="tailwind-config">
@@ -151,6 +150,7 @@
 </head>
 <body class="bg-surface text-on-surface flex flex-col min-h-screen">
 
+
   <!-- ==================== VIEW 1: 로그인 화면 ==================== -->
 <main id="view-login" class="flex flex-col relative w-full bg-surface min-h-screen items-center justify-center">
   <!-- py-space-xl을 py-space-md로 변경하여 작은 화면에서 상하 여백 축소 -->
@@ -213,6 +213,7 @@
       </div>
     </div>
   </main>
+
 
 <!-- ==================== VIEW 2: 대시보드 화면 ==================== -->
   <div id="view-dashboard" class="hidden-view flex flex-col min-h-screen w-full">
@@ -286,14 +287,11 @@
               </h4>
             </div>
 
-              <button id="go-practice-btn" 
-                      onclick="startDashboardReadingPractice()" 
-                      class="group relative w-full h-13 py-3 px-4 rounded-xl bg-secondary text-on-secondary font-headline-sm text-headline-sm flex items-center justify-center gap-2 shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-[0_0_0_0_transparent] transition-all cursor-pointer mt-2" 
-                      type="button">
-                <span class="material-symbols-outlined text-[20px]">mic</span>
-                <span>읽기 연습 (音読練習)</span>
-                <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-              </button>
+            <button id="go-practice-btn" class="group relative w-full h-13 py-3 px-4 rounded-xl bg-secondary text-on-secondary font-headline-sm text-headline-sm flex items-center justify-center gap-2 shadow-[0_4px_0_0_#005137] active:translate-y-1 active:shadow-[0_0_0_0_transparent] transition-all cursor-pointer mt-2" type="button">
+              <span class="material-symbols-outlined text-[20px]">mic</span>
+              <span>읽기 연습 (音読練習)</span>
+              <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
           </div>
           
           <!-- Card 2: Daily Quiz -->
@@ -314,14 +312,11 @@
               </div>
             </div>
           
-              <button id="go-quiz-btn" 
-                      onclick="startDashboardQuiz()" 
-                      class="group relative w-full h-13 py-3 px-4 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 shadow-[0_4px_0_0_#001551] active:translate-y-1 active:shadow-[0_0_0_0_transparent] transition-all cursor-pointer" 
-                      type="button">
-                <span class="material-symbols-outlined text-[20px]">quiz</span>
-                <span>퀴즈 풀기 (挑戦する)</span>
-                <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">bolt</span>
-              </button>
+           <button id="go-quiz-btn" class="group relative w-full h-13 py-3 px-4 rounded-xl bg-primary text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-2 shadow-[0_4px_0_0_#001551] active:translate-y-1 active:shadow-[0_0_0_0_transparent] transition-all cursor-pointer" type="button">
+            <span class="material-symbols-outlined text-[20px]">quiz</span>
+            <span>퀴즈 풀기 (挑戦する)</span>
+            <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">bolt</span>
+          </button>
           </div>
         </section>
 
@@ -355,7 +350,8 @@
     </nav>
   </div>
 
-  <!-- ==================== VIEW 3: 말하기 학습 화면 ==================== -->
+
+  <!-- ==================== VIEW 3: 읽기 학습 화면 ==================== -->
   <div id="view-practice" class="hidden-view flex flex-col min-h-screen w-full bg-surface">
     <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
       <div class="h-16 px-gutter flex items-center justify-between">
@@ -471,7 +467,8 @@
     </main>
   </div>
       
-<!-- ==================== VIEW 4: 데일리 퀴즈 학습 화면 ==================== -->
+
+<!-- ==================== VIEW 4: 퀴즈 학습 화면 ==================== -->
 <div id="view-quiz" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
   
   <!-- Header -->
@@ -656,211 +653,211 @@
         <div class="col-span-4">✍️ 퀴즈 (Quiz)</div>
       </div>
       
-      <!-- Matrix Rows -->
-      <div class="divide-y divide-slate-100 text-xs">
-      <!-- Row 1: 월요일 (Both Completed) -->
-        <div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
-          <div class="col-span-4">
-          <span class="font-bold text-slate-800 text-[13px] block">5월 13일 (월)</span>
-          <span class="text-[10px] text-slate-400">05/13 月曜日</span>
-          </div>
-          <!-- Reading: Completed -->
-          <div class="col-span-4 flex flex-col items-center justify-center">
-            <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-              <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-          <span class="text-[10px] font-semibold text-emerald-800">14분 소요</span>
-          </div>
-          <!-- Quiz: Completed -->
-          <div class="col-span-4 flex flex-col items-center justify-center">
-            <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-              <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </div>
-            <span class="text-[10px] font-semibold text-emerald-800">10분 소요</span>
-          </div>
-        </div>
-        <!-- Row 2: 화요일 (Reading Completed, Quiz Not Done) -->
-        <div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
-        <div class="col-span-4">
-        <span class="font-bold text-slate-800 text-[13px] block">5월 14일 (화)</span>
-        <span class="text-[10px] text-slate-400">05/14 火曜日</span>
-        </div>
-        <!-- Reading: Completed -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-semibold text-emerald-800">16분 소요</span>
-        </div>
-        <!-- Quiz: Crying Mascot (Incomplete) -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <!-- Cute Crying Mascot Illustration -->
-        <div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center relative mb-0.5 shadow-xs">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
-        <circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
-        <circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
-        <!-- Sad mouth -->
-        <path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
-        <!-- Teardrop -->
-        <path d="M16 11.5C16 12.5 15.3 13.5 14.8 13.5C14.3 13.5 14 12.8 14.5 11.8C14.9 11.2 16 11 16 11.5Z" fill="#38BDF8"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
-        </div>
-        </div>
-        <!-- Row 3: 수요일 (Both Completed) -->
-        <div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
-        <div class="col-span-4">
-        <span class="font-bold text-slate-800 text-[13px] block">5월 15일 (수)</span>
-        <span class="text-[10px] text-slate-400">05/15 水曜日</span>
-        </div>
-        <!-- Reading: Completed -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-semibold text-emerald-800">12분 소요</span>
-        </div>
-        <!-- Quiz: Completed -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-semibold text-emerald-800">15분 소요</span>
-        </div>
-        </div>
-        <!-- Row 4: 목요일 (Both Incomplete - Crying Mascots) -->
-        <div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors bg-amber-50/20">
-        <div class="col-span-4">
-        <span class="font-bold text-slate-800 text-[13px] block">5월 16일 (목)</span>
-        <span class="text-[10px] text-slate-400">05/16 木曜日</span>
-        </div>
-        <!-- Reading: Crying Mascot -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
-        <circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
-        <circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
-        <path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
-        <path d="M8 11.5C8 12.5 8.7 13.5 9.2 13.5C9.7 13.5 10 12.8 9.5 11.8C9.1 11.2 8 11 8 11.5Z" fill="#38BDF8"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
-        </div>
-        <!-- Quiz: Crying Mascot -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
-        <circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
-        <circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
-        <path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
-        <path d="M16 11.5C16 12.5 15.3 13.5 14.8 13.5C14.3 13.5 14 12.8 14.5 11.8C14.9 11.2 16 11 16 11.5Z" fill="#38BDF8"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
-        </div>
-        </div>
-        <!-- Row 5: 금요일 (Both Completed) -->
-        <div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
-        <div class="col-span-4">
-        <span class="font-bold text-slate-800 text-[13px] block">5월 17일 (금)</span>
-        <span class="text-[10px] text-slate-400">05/17 金曜日</span>
-        </div>
-        <!-- Reading: Completed -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-semibold text-emerald-800">20분 소요</span>
-        </div>
-        <!-- Quiz: Completed -->
-        <div class="col-span-4 flex flex-col items-center justify-center">
-        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
-        <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-        </div>
-        <span class="text-[10px] font-semibold text-emerald-800">18분 소요</span>
-        </div>
-        </div>
-      </div>
-    </section>
+<!-- Matrix Rows -->
+<div class="divide-y divide-slate-100 text-xs">
+<!-- Row 1: 월요일 (Both Completed) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 13일 (월)</span>
+<span class="text-[10px] text-slate-400">05/13 月曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">14분 소요</span>
+</div>
+<!-- Quiz: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">10분 소요</span>
+</div>
+</div>
+<!-- Row 2: 화요일 (Reading Completed, Quiz Not Done) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 14일 (화)</span>
+<span class="text-[10px] text-slate-400">05/14 火曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">16분 소요</span>
+</div>
+<!-- Quiz: Crying Mascot (Incomplete) -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<!-- Cute Crying Mascot Illustration -->
+<div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center relative mb-0.5 shadow-xs">
+<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
+<circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
+<circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
+<!-- Sad mouth -->
+<path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
+<!-- Teardrop -->
+<path d="M16 11.5C16 12.5 15.3 13.5 14.8 13.5C14.3 13.5 14 12.8 14.5 11.8C14.9 11.2 16 11 16 11.5Z" fill="#38BDF8"></path>
+</svg>
+</div>
+<span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
+</div>
+</div>
+<!-- Row 3: 수요일 (Both Completed) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 15일 (수)</span>
+<span class="text-[10px] text-slate-400">05/15 水曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">12분 소요</span>
+</div>
+<!-- Quiz: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">15분 소요</span>
+</div>
+</div>
+<!-- Row 4: 목요일 (Both Incomplete - Crying Mascots) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors bg-amber-50/20">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 16일 (목)</span>
+<span class="text-[10px] text-slate-400">05/16 木曜日</span>
+</div>
+<!-- Reading: Crying Mascot -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
+<circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
+<circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
+<path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
+<path d="M8 11.5C8 12.5 8.7 13.5 9.2 13.5C9.7 13.5 10 12.8 9.5 11.8C9.1 11.2 8 11 8 11.5Z" fill="#38BDF8"></path>
+</svg>
+</div>
+<span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
+</div>
+<!-- Quiz: Crying Mascot -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+<circle cx="12" cy="12" fill="#FEF3C7" r="10" stroke="#F59E0B" stroke-width="1.5"></circle>
+<circle cx="9" cy="10" fill="#78350F" r="1.2"></circle>
+<circle cx="15" cy="10" fill="#78350F" r="1.2"></circle>
+<path d="M9.5 16C10.5 14.5 13.5 14.5 14.5 16" stroke="#78350F" stroke-linecap="round" stroke-width="1.3"></path>
+<path d="M16 11.5C16 12.5 15.3 13.5 14.8 13.5C14.3 13.5 14 12.8 14.5 11.8C14.9 11.2 16 11 16 11.5Z" fill="#38BDF8"></path>
+</svg>
+</div>
+<span class="text-[10px] font-medium text-slate-400">미학습 (未学習)</span>
+</div>
+</div>
+<!-- Row 5: 금요일 (Both Completed) -->
+<div class="grid grid-cols-12 px-3 py-3 items-center hover:bg-slate-50/50 transition-colors">
+<div class="col-span-4">
+<span class="font-bold text-slate-800 text-[13px] block">5월 17일 (금)</span>
+<span class="text-[10px] text-slate-400">05/17 金曜日</span>
+</div>
+<!-- Reading: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">20분 소요</span>
+</div>
+<!-- Quiz: Completed -->
+<div class="col-span-4 flex flex-col items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-0.5 shadow-xs">
+<svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-semibold text-emerald-800">18분 소요</span>
+</div>
+</div>
+</div>
+</section>
 <!-- END: WeeklyAchievementTable -->
 <!-- BEGIN: WeeklyInsightCard -->
 <section class="bg-white rounded-2xl p-4 shadow-xs border border-slate-100 space-y-3" data-purpose="summary-card">
-  <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-  <span class="text-xs font-semibold text-slate-500">주간 학습 통계 (週間統計)</span>
-  </div>
+<div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+<span class="text-xs font-semibold text-slate-500">주간 학습 통계 (週間統計)</span>
+</div>
 <!-- Metrics Grid -->
 <div class="grid grid-cols-2 gap-2.5">
 <!-- Metric 1: 총 학습 시간 -->
-  <div class="bg-slate-50/80 rounded-xl p-3">
-  <span class="text-[11px] text-slate-400 block mb-0.5">총 학습 시간 (総時間)</span>
-    <div class="flex items-baseline space-x-1">
-    <span class="text-lg font-bold text-slate-800 tracking-tight">1시간 45분</span>
-    </div>
-  </div>
+<div class="bg-slate-50/80 rounded-xl p-3">
+<span class="text-[11px] text-slate-400 block mb-0.5">총 학습 시간 (総時間)</span>
+<div class="flex items-baseline space-x-1">
+<span class="text-lg font-bold text-slate-800 tracking-tight">1시간 45분</span>
+</div>
+</div>
 <!-- Metric 2: 스트릭 -->
-  <div class="bg-slate-50/80 rounded-xl p-3">
-  <span class="text-[11px] text-slate-400 block mb-0.5">연속 학습 스트릭</span>
-    <div class="flex items-center space-x-1">
-    <span class="text-lg font-bold text-amber-600 tracking-tight">3일 달성</span>
-    <span class="text-sm">🔥</span>
-    </div>
-  </div>
+<div class="bg-slate-50/80 rounded-xl p-3">
+<span class="text-[11px] text-slate-400 block mb-0.5">연속 학습 스트릭</span>
+<div class="flex items-center space-x-1">
+<span class="text-lg font-bold text-amber-600 tracking-tight">3일 달성</span>
+<span class="text-sm">🔥</span>
+</div>
+</div>
 </div>
 </section>
 <!-- END: WeeklyInsightCard -->
 </main>
 <!-- END: MainContentSection -->
 <!-- BEGIN: BottomActionSection -->
-  <footer class="p-4 bg-white/95 backdrop-blur-xs border-t border-slate-100 sticky bottom-0 z-20" data-purpose="bottom-action-container">
-    <button id="submit-report-btn" onclick="handleReportSubmit()" class="w-full h-13 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all rounded-2xl flex items-center justify-center space-x-2 shadow-sm text-white font-bold text-[15px]" type="button">
-    <span class="text-lg leading-tight">📸</span>
-    <span id="btn-label" class="">레포트 제출 (レポート提出)</span>
-      <svg id="btn-arrow-icon" class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
-      </svg>
-    </button>
-  </footer>
+<footer class="p-4 bg-white/95 backdrop-blur-xs border-t border-slate-100 sticky bottom-0 z-20" data-purpose="bottom-action-container">
+<button id="submit-report-btn" onclick="handleReportSubmit()" class="w-full h-13 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all rounded-2xl flex items-center justify-center space-x-2 shadow-sm text-white font-bold text-[15px]" type="button">
+<span class="text-lg leading-tight">📸</span>
+<span id="btn-label" class="">레포트 제출 (レポート提出)</span>
+<svg id="btn-arrow-icon" class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</footer>
 <!-- END: BottomActionSection -->
 <!-- Camera Shutter Flash Overlay -->
 <div id="camera-flash" class="pointer-events-none fixed inset-0 z-50 bg-white opacity-0 transition-opacity duration-200"></div>
 
 <!-- Submission Toast / Modal Notification -->
-  <div id="submission-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm bg-white/95 backdrop-blur-md border border-emerald-200/80 rounded-2xl shadow-xl p-4 flex items-start space-x-3 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none">
-    <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0 flex items-center justify-center font-bold text-lg">
-    ✓
-    </div>
-    <div class="flex-1 text-left">
-      <div class="flex items-center space-x-1.5">
-        <span class="text-xs font-bold text-emerald-800">📸 캡처 &amp; 완료!</span>
-        <span class="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-700 font-semibold rounded-full">전송 성공</span>
-      </div>
-      <p class="text-[12px] font-semibold text-slate-800 mt-1 leading-snug">
-      학습 레포트가 캡처되었어요. 선생님께 보내주세요!
-      </p>
-      <p class="text-[10.5px] text-slate-500 mt-0.5">
-      画面が保存され、先生に送ってください ✨
-      </p>
-    </div>
-  </div>
-  
+<div id="submission-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm bg-white/95 backdrop-blur-md border border-emerald-200/80 rounded-2xl shadow-xl p-4 flex items-start space-x-3 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none">
+<div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0 flex items-center justify-center font-bold text-lg">
+✓
+</div>
+<div class="flex-1 text-left">
+<div class="flex items-center space-x-1.5">
+<span class="text-xs font-bold text-emerald-800">📸 캡처 &amp; 완료!</span>
+<span class="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-700 font-semibold rounded-full">전송 성공</span>
+</div>
+<p class="text-[12px] font-semibold text-slate-800 mt-1 leading-snug">
+학습 레포트가 캡처되었어요. 선생님께 보내주세요!
+</p>
+<p class="text-[10.5px] text-slate-500 mt-0.5">
+画面が保存され、先生に送ってください ✨
+</p>
+</div>
+</div>
+
 </div>
 
 <!-- ==================== VIEW 6: 전체 복습 화면 ==================== -->
@@ -1020,6 +1017,8 @@
   }
 
   // ==================== 주간 데이터 및 학습 진행상태 저장 헬퍼 함수 ====================
+  
+  // 1. 학습 완료 시 주간 통계 기록
   function saveTodayLearningData(type, timeSpentMinutes = 10) {
     const today = new Date();
     const year = today.getFullYear();
@@ -1030,7 +1029,12 @@
     const storedData = JSON.parse(localStorage.getItem('weeklyLearningData') || '{}');
 
     if (!storedData[dateKey]) {
-      storedData[dateKey] = { readingDone: false, readingTime: 0, quizDone: false, quizTime: 0 };
+      storedData[dateKey] = {
+        readingDone: false,
+        readingTime: 0,
+        quizDone: false,
+        quizTime: 0
+      };
     }
 
     if (type === 'reading') {
@@ -1048,6 +1052,7 @@
     }
   }
 
+  // 2. 학습 진행 상태 (이어풀기 정보) 저장
   function saveLearningProgress(type, lessonId, currentIndex) {
     const userId = currentUser?.ID || 'default';
     const progressKey = `progress_${type}_${userId}_${lessonId}`;
@@ -1057,6 +1062,7 @@
     }));
   }
 
+  // 3. 저장된 진행 상태 불러오기
   function getLearningProgress(type, lessonId) {
     const userId = currentUser?.ID || 'default';
     const progressKey = `progress_${type}_${userId}_${lessonId}`;
@@ -1064,6 +1070,7 @@
     return data ? JSON.parse(data) : null;
   }
 
+  // 4. 완료 시 진행 상태 삭제
   function clearLearningProgress(type, lessonId) {
     const userId = currentUser?.ID || 'default';
     const progressKey = `progress_${type}_${userId}_${lessonId}`;
@@ -1115,6 +1122,36 @@
     if (togglePwIcon) togglePwIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
   });
 
+  function showView(targetViewId) {
+    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats'];
+    views.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden-view');
+    });
+
+    const target = document.getElementById(targetViewId);
+    if (target) {
+      target.classList.remove('hidden-view');
+      window.scrollTo(0, 0);
+    } else {
+      console.error(`VIEW ID를 찾을 수 없습니다: ${targetViewId}`);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('back-to-dashboard')?.addEventListener('click', () => {
+      returnToDashboard(false); // 미완료로 복귀
+    });
+
+    document.getElementById('back-from-stats')?.addEventListener('click', () => {
+      showView('view-dashboard');
+    });
+    
+    document.getElementById('back-from-quiz')?.addEventListener('click', () => {
+      stopQuizAndReturn(false); // 미완료로 복귀
+    });
+  });
+
   async function loadAllDatabases() {
     try {
       const [uRes, sRes, lRes, cRes] = await Promise.all([
@@ -1134,6 +1171,7 @@
       console.error("JSON 로드 중 오류 발생:", err);
     }
   }
+  loadAllDatabases();
 
   function checkAutoLogin() {
     const savedUser = localStorage.getItem('currentUser');
@@ -1250,50 +1288,11 @@
     showView('view-login');
   });
 
-// ==================== 1. 읽기 학습 모드 ====================
+  // ==================== 1. 읽기 학습 모드 ====================
+  goPracticeBtn?.addEventListener('click', () => {
+    const targetId = Number(currentLessonId);
 
-  // 현재 유저의 정확한 lesson_id를 가져오는 통합 헬퍼 함수
-  function getValidUserLessonId() {
-    let rawId = null;
-
-    // 1. currentUser 객체 내 가능한 모든 필드명 탐색
-    if (currentUser) {
-      rawId = currentUser.lesson_id ?? currentUser.current_lesson_id ?? currentUser.lesson ?? currentUser.currentLesson;
-    }
-
-    // 2. 객체에 없을 경우 localStorage 백업 데이터 확인
-    if (!rawId) {
-      const savedUser = localStorage.getItem('currentUser');
-      if (savedUser) {
-        try {
-          const parsed = JSON.parse(savedUser);
-          rawId = parsed.lesson_id ?? parsed.current_lesson_id ?? parsed.lesson ?? parsed.currentLesson;
-        } catch(e) {}
-      }
-    }
-
-    // 3. 숫자로 변환 (변환 불가 시 기본값 1)
-    const numericId = parseInt(rawId, 10);
-    const finalId = (isNaN(numericId) || numericId <= 0) ? 1 : numericId;
-    
-    console.log(`[진도 확인 디버그] 감지된 유저 레슨 ID: ${finalId} (원본값: ${rawId})`);
-    return finalId;
-  }
-
-  // 대시보드 전용: 무조건 유저의 최신 진도로 시작
-  function startDashboardReadingPractice() {
-    previousView = 'view-dashboard';
-    const myLessonId = getValidUserLessonId();
-    startReadingPractice(myLessonId);
-  }
-
-  // 읽기 연습 시작 함수
-  function startReadingPractice(targetLessonId) {
-    const allLessons = lessonsData || [];
-    const targetId = Number(targetLessonId);
-
-    // lessonsData의 lesson_id와 targetId를 모두 Number로 변환하여 비교
-    lessonSentencesList = allLessons
+    lessonSentencesList = lessonsData
       .filter(l => Number(l.lesson_id) === targetId && l.sentence_kr && l.sentence_kr.trim() !== "")
       .map(l => ({
         sentence: l.sentence_kr,
@@ -1301,31 +1300,25 @@
       }));
 
     if (lessonSentencesList.length === 0) {
-      alert(`제 ${targetId}과에 해당하는 읽기 데이터가 없습니다.`);
-      return;
+      lessonSentencesList = [{ 
+        sentence: currentTargetSentence || "저는 한국 사람이에요.", 
+        translation: "자연스러운 회화를 연습합니다." 
+      }];
     }
 
-    currentLessonId = targetId;
     practiceStartTime = Date.now();
 
-    // 저장된 읽기 진행도 복원
-    const savedProgress = getLearningProgress('reading', currentLessonId);
+    // 이전에 풀다 만 진행 상태 확인
+    const savedProgress = getLearningProgress('reading', targetId);
     if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < lessonSentencesList.length) {
       currentSentenceIndex = savedProgress.currentIndex;
     } else {
       currentSentenceIndex = 0;
     }
 
-    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
-    if (previousView === 'view-review') {
-      currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습)`;
-    } else {
-      currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과`;
-    }
-
     loadPracticeSentenceAtIndex(currentSentenceIndex);
     showView('view-practice');
-  }
+  });
 
   function loadPracticeSentenceAtIndex(index) {
     if (index < lessonSentencesList.length) {
@@ -1345,6 +1338,7 @@
       if (practiceMatchBadge) practiceMatchBadge.innerText = "🎯 발음 대기 중";
       if (practiceEvalText) practiceEvalText.innerText = "음성 버튼을 누르고 한국어로 말하면 발음을 분석해 줍니다.";
 
+      // 현재 진행 위치 저장
       saveLearningProgress('reading', currentLessonId, index);
 
       if (index < totalSentences - 1) {
@@ -1377,6 +1371,7 @@
     }
   }
 
+  // 대시보드로 복귀 (isCompleted가 true일 경우만 성적 반영)
   function returnToDashboard(isCompleted = false) {
     stopPracticeRecordingUI();
     if ('speechSynthesis' in window) {
@@ -1384,22 +1379,18 @@
     }
 
     if (isCompleted) {
+      // 100% 다 풀었을 경우 소요시간 계산 및 완료 저장
       let elapsedMinutes = 5;
       if (practiceStartTime) {
         const elapsedMs = Date.now() - practiceStartTime;
         elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       }
       saveTodayLearningData('reading', elapsedMinutes);
-      clearLearningProgress('reading', currentLessonId);
+      clearLearningProgress('reading', currentLessonId); // 진행 데이터 제거
     }
 
     practiceStartTime = null;
-
-    if (previousView === 'view-review') {
-      openReviewMode();
-    } else {
-      showView('view-dashboard');
-    }
+    showView('view-dashboard');
   }
 
   btnNextSentence?.addEventListener('click', () => {
@@ -1407,153 +1398,115 @@
       currentSentenceIndex++;
       loadPracticeSentenceAtIndex(currentSentenceIndex);
     } else {
+      // 마지막 문장에서 버튼을 클릭해 완료한 경우
       returnToDashboard(true);
     }
   });
 
   closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-// ==================== 2. 데일리 퀴즈 로직 ====================
+  // ==================== 2. 퀴즈 학습 모드 ====================
   let currentQuizList = [];
   let currentQuizIndex = 0;
   let isCardFlipped = false;
 
-  // 대시보드전용 퀴즈 시작
-  function startDashboardQuiz() {
-    previousView = 'view-dashboard';
-    const myLessonId = getValidUserLessonId();
-    startQuizForLessonRange(myLessonId);
-  }
+function generateQuizProblem(targetItem, allLessons) {
+  let rawWord = (targetItem.word_kr || '').trim();
+  let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
+  let sentenceKr = targetItem.sentence_kr || '';
 
-  function startQuizForLessonRange(maxLessonId) {
-    const allLessons = lessonsData || [];
-    const maxId = Number(maxLessonId);
+  const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
 
-    // 1. 기존에 풀다 만 퀴즈 데이터가 있는지 확인
-    const savedProgress = getLearningProgress('quiz', maxId);
+  let maskedSentence = sentenceKr;
 
-    if (savedProgress && Array.isArray(savedProgress.quizList) && savedProgress.quizList.length > 0 && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < savedProgress.quizList.length) {
-      // [풀던 퀴즈 이어풀기] 기존 문제 목록과 위치 그대로 복원
-      currentQuizList = savedProgress.quizList;
-      currentQuizIndex = savedProgress.currentIndex;
-    } else {
-      // [새로운 퀴즈 생성] 풀던 게 없거나 완수한 경우 -> 새로 랜덤 추출 (1과 ~ maxId 전체)
-      const eligibleItems = allLessons.filter(
-        l => Number(l.lesson_id) <= maxId && l.word_kr && l.word_kr.trim() !== ""
-      );
+  // 한글 첫 글자의 초성을 추출하는 헬퍼 함수 (예: '가' -> 'ㄱ', '갑' -> 'ㄱ')
+  const getInitialConsonant = (char) => {
+    if (!char) return '';
+    const code = char.charCodeAt(0) - 44032;
+    if (code < 0 || code > 11172) return char; // 한글이 아닌 경우 그대로 반환
+    const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    return initialList[Math.floor(code / 588)];
+  };
 
-      if (eligibleItems.length === 0) {
-        alert(`퀴즈에 사용할 학습 데이터가 없습니다.`);
-        return;
+  if (targetWord && sentenceKr) {
+    // 1. 단어가 문장에 그대로 포함된 경우 (명사, 조사 등)
+    if (sentenceKr.includes(targetWord)) {
+      maskedSentence = sentenceKr.replace(targetWord, maskHtml);
+    } 
+    else if (sentenceKr.includes(rawWord)) {
+      maskedSentence = sentenceKr.replace(rawWord, maskHtml);
+    } 
+    else {
+      // 2. 활용형(동사/형용사) 어간 추출 및 어절 매칭
+      let stem = targetWord;
+      if (targetWord.endsWith('다')) {
+        stem = targetWord.slice(0, -1); // "하다" -> "하", "가다" -> "가", "크다" -> "크"
       }
 
-      const shuffledItems = [...eligibleItems].sort(() => 0.5 - Math.random());
-      const selectedItems = shuffledItems.slice(0, 10);
-      currentQuizList = selectedItems.map(item => generateQuizProblem(item, allLessons));
-      currentQuizIndex = 0;
-    }
+      const stemFirstChar = stem.charAt(0);
+      const stemInitial = getInitialConsonant(stemFirstChar); // 어간의 첫 초성 (예: 'ㄱ', 'ㅎ')
 
-    currentLessonId = maxId;
-    quizStartTime = Date.now();
+      const words = sentenceKr.split(' ');
+      let matchedIndex = -1;
 
-    const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", currentLessonId);
-    if (previousView === 'view-review') {
-      currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
-    } else {
-      currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (데일리 퀴즈)`;
-    }
+      for (let i = 0; i < words.length; i++) {
+        const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
+        if (!cleanWord) continue;
 
-    renderQuizIndex(currentQuizIndex);
-    showView('view-quiz');
-  }
+        const wordFirstChar = cleanWord.charAt(0);
+        const wordInitial = getInitialConsonant(wordFirstChar);
 
-  function generateQuizProblem(targetItem, allLessons) {
-    let rawWord = (targetItem.word_kr || '').trim();
-    let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
-    let sentenceKr = targetItem.sentence_kr || '';
+        // 조건 A: 어간으로 직접 시작함 (예: "만나"서)
+        // 조건 B: 첫 글자의 초성이 같고 음절 유효 범위 내에 있음 (예: "가"다 -> "갑"니다, "하"다 -> "합"니다)
+        if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
+          matchedIndex = i;
+          break;
+        }
+      }
 
-    const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
-
-    let maskedSentence = sentenceKr;
-
-    const getInitialConsonant = (char) => {
-      if (!char) return '';
-      const code = char.charCodeAt(0) - 44032;
-      if (code < 0 || code > 11172) return char;
-      const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
-      return initialList[Math.floor(code / 588)];
-    };
-
-    if (targetWord && sentenceKr) {
-      if (sentenceKr.includes(targetWord)) {
-        maskedSentence = sentenceKr.replace(targetWord, maskHtml);
-      } else if (sentenceKr.includes(rawWord)) {
-        maskedSentence = sentenceKr.replace(rawWord, maskHtml);
+      if (matchedIndex !== -1) {
+        const targetToken = words[matchedIndex];
+        const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
+        words[matchedIndex] = maskHtml + punctuation;
+        maskedSentence = words.join(' ');
       } else {
-        let stem = targetWord;
-        if (targetWord.endsWith('다')) {
-          stem = targetWord.slice(0, -1);
-        }
-
-        const stemFirstChar = stem.charAt(0);
-        const stemInitial = getInitialConsonant(stemFirstChar);
-
-        const words = sentenceKr.split(' ');
-        let matchedIndex = -1;
-
-        for (let i = 0; i < words.length; i++) {
-          const cleanWord = words[i].replace(/[.,?!]/g, '').trim();
-          if (!cleanWord) continue;
-
-          const wordFirstChar = cleanWord.charAt(0);
-          const wordInitial = getInitialConsonant(wordFirstChar);
-
-          if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
-            matchedIndex = i;
-            break;
-          }
-        }
-
-        if (matchedIndex !== -1) {
-          const targetToken = words[matchedIndex];
-          const punctuation = targetToken.match(/[.,?!]+$/)?.[0] || '';
-          words[matchedIndex] = maskHtml + punctuation;
-          maskedSentence = words.join(' ');
-        }
+        console.warn(`[Quiz Warning] 빈칸 매칭 실패: Word("${targetItem.word_kr}") / Sentence("${sentenceKr}")`);
       }
     }
-
-    const targetLen = rawWord.length;
-    const otherWords = Array.from(
-      new Set(
-        allLessons
-          .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
-          .map(l => l.word_kr.trim())
-      )
-    );
-
-    let candidates = otherWords.filter(w => w.length === targetLen);
-    if (candidates.length < 3) {
-      const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
-      candidates = [...candidates, ...backup];
-    }
-
-    const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
-    const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
-
-    return {
-      maskedSentence,
-      correctAnswer: rawWord,
-      choices,
-      hintJp: targetItem.word_jp,
-      sentenceJp: targetItem.sentence_jp
-    };
   }
+
+  // 보기(Choices) 생성
+  const targetLen = rawWord.length;
+  const otherWords = Array.from(
+    new Set(
+      allLessons
+        .filter(l => l.word_kr && l.word_kr.trim() !== "" && l.word_kr.trim() !== rawWord)
+        .map(l => l.word_kr.trim())
+    )
+  );
+
+  let candidates = otherWords.filter(w => w.length === targetLen);
+  if (candidates.length < 3) {
+    const backup = otherWords.filter(w => Math.abs(w.length - targetLen) === 1);
+    candidates = [...candidates, ...backup];
+  }
+
+  const shuffledWrong = candidates.sort(() => 0.5 - Math.random()).slice(0, 3);
+  const choices = [rawWord, ...shuffledWrong].sort(() => 0.5 - Math.random());
+
+  return {
+    maskedSentence,
+    correctAnswer: rawWord,
+    choices,
+    hintJp: targetItem.word_jp,
+    sentenceJp: targetItem.sentence_jp
+  };
+}
 
   function renderQuizIndex(index) {
     const total = currentQuizList.length;
 
-    // 퀴즈 문제 완수 시
+    // 모든 퀴즈를 다 완료했을 때만 성적 반영
     if (total > 0 && index >= total) {
       alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
       
@@ -1562,12 +1515,11 @@
         const elapsedMs = Date.now() - quizStartTime;
         elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
       }
-
       saveTodayLearningData('quiz', elapsedMinutes);
-      clearLearningProgress('quiz', currentLessonId);
+      clearLearningProgress('quiz', currentLessonId); // 진행 데이터 제거
 
       quizStartTime = null;
-      stopQuizAndReturn(true);
+      showView('view-dashboard');
       return;
     }
 
@@ -1608,7 +1560,8 @@
       if (hintBox) hintBox.classList.add('hidden');
     }
 
-    saveLearningProgressWithList('quiz', currentLessonId, index, currentQuizList);
+    // 현재 퀴즈 문제 진행 인덱스 저장
+    saveLearningProgress('quiz', currentLessonId, index);
 
     const choicesContainer = document.getElementById('quiz-choices-container');
     if (choicesContainer) {
@@ -1636,35 +1589,14 @@
     document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
   }
 
-  function saveLearningProgressWithList(type, lessonId, currentIndex, quizList) {
-    if (typeof saveLearningProgress === 'function') {
-      try {
-        const key = `learning_progress_${type}_${lessonId}`;
-        const data = {
-          currentIndex: currentIndex,
-          quizList: quizList,
-          updatedAt: Date.now()
-        };
-        localStorage.setItem(key, JSON.stringify(data));
-      } catch(e) {
-        saveLearningProgress(type, lessonId, currentIndex);
-      }
-    }
-  }
-
   function stopQuizAndReturn(isCompleted = false) {
     if (!isCompleted) {
+      // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
       quizStartTime = null;
     }
-
-    if (previousView === 'view-review') {
-      openReviewMode();
-    } else {
-      showView('view-dashboard');
-    }
+    showView('view-dashboard');
   }
 
-  // 퀴즈 카드 뒤집기
   document.getElementById('quiz-card-container')?.addEventListener('click', () => {
     const cardInner = document.getElementById('quiz-card-inner');
     isCardFlipped = !isCardFlipped;
@@ -1684,20 +1616,50 @@
     }
   }
 
-  // 다음 문제 버튼
   document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
     currentQuizIndex++;
     renderQuizIndex(currentQuizIndex);
   });
 
-  // 대시보드 버튼 이벤트 바인딩
+  // 퀴즈 시작 버튼 클릭 로직 보완
   document.getElementById('go-quiz-btn')?.addEventListener('click', () => {
-    startDashboardQuiz();
+    try {
+      const selectedLessonId = Number(currentLessonId || 1);
+
+      const lessonItems = (lessonsData || []).filter(
+        l => Number(l.lesson_id) === selectedLessonId && l.word_kr && l.word_kr.trim() !== ""
+      );
+
+      if (lessonItems.length === 0) {
+        alert(`제 ${selectedLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+        return;
+      }
+
+      currentQuizList = lessonItems.map(item => generateQuizProblem(item, lessonsData || []));
+      
+      quizStartTime = Date.now();
+
+      // 저장된 진행 기록 확인
+      const savedProgress = getLearningProgress('quiz', selectedLessonId);
+      if (savedProgress && typeof savedProgress.currentIndex === 'number' && savedProgress.currentIndex < currentQuizList.length) {
+        currentQuizIndex = savedProgress.currentIndex;
+      } else {
+        currentQuizIndex = 0;
+      }
+
+      const titleObj = getBookAndLessonTitle(currentUser?.course || "1a", selectedLessonId);
+      currentLessonDisplayTitle = `${titleObj.bookName} • 제 ${titleObj.lessonNum}과 (복습 퀴즈)`;
+
+      renderQuizIndex(currentQuizIndex);
+      showView('view-quiz');
+
+    } catch (err) {
+      console.error("퀴즈 진입 도중 오류 발생:", err);
+    }
   });
-  
-  // ==========================================
-  // VIEW 5: 주간 성과 데이터 동적 연동 로직
-  // ==========================================
+
+ 
+  // =========================== VIEW 5: 주간 성과 모드======================
   function renderWeeklyStatsView() {
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
@@ -1929,9 +1891,8 @@
     }
   }
 
-  // ==========================================
-  // 복습 모드 관련 로직
-  // ==========================================
+
+  // ================ View6 복습 모드 ================
   function getActualLessonId(levelId, lessonNum) {
     const lvl = reviewLevels.find(l => l.id === levelId) || reviewLevels[0];
     return lvl.minId + (Number(lessonNum) - 1);
@@ -2457,6 +2418,7 @@ micRecordBtn?.addEventListener('click', () => {
   }
 
 });
+ 
   // ==================== DOM 완료 초기화 이벤트 리스너 통합 ====================
   document.addEventListener('DOMContentLoaded', () => {
     loadAllDatabases();
@@ -2486,6 +2448,8 @@ micRecordBtn?.addEventListener('click', () => {
 
     renderWeeklyStatsView();
   });
+
+
 </script>
 
 </body>
