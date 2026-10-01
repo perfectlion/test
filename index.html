@@ -1386,42 +1386,47 @@
 
   closePracticeBtn?.addEventListener('click', () => returnToDashboard(false));
 
-// ==================== VIEW 4: 퀴즈학습 ====================
-let currentQuizList = [];
-let currentQuizIndex = 0;
-let currentQuizLessonId = null; // 현재 진행 중인 퀴즈의 실제 레슨 ID
-let isCardFlipped = false;
+  // ==================== VIEW 4: 퀴즈학습 ====================
+  let currentQuizList = [];
+  let currentQuizIndex = 0;
+  let isCardFlipped = false;
 
-// 1. 퀴즈 문제 생성 헬퍼 함수
 function generateQuizProblem(targetItem, allLessons) {
   let rawWord = (targetItem.word_kr || '').trim();
   let targetWord = rawWord.replace(/\(.*\)/g, '').trim();
   let sentenceKr = targetItem.sentence_kr || '';
 
   const maskHtml = `<span class="inline-flex items-center justify-center min-w-[68px] h-10 px-3 mx-1 bg-primary-container/40 text-primary font-headline-md text-headline-md rounded-xl border border-primary/30 shadow-sm align-middle tracking-wider">____</span>`;
+
   let maskedSentence = sentenceKr;
 
+  // 한글 첫 글자의 초성을 추출하는 헬퍼 함수 (예: '가' -> 'ㄱ', '갑' -> 'ㄱ')
   const getInitialConsonant = (char) => {
     if (!char) return '';
     const code = char.charCodeAt(0) - 44032;
-    if (code < 0 || code > 11172) return char;
+    if (code < 0 || code > 11172) return char; // 한글이 아닌 경우 그대로 반환
     const initialList = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
     return initialList[Math.floor(code / 588)];
   };
 
   if (targetWord && sentenceKr) {
+    // 1. 단어가 문장에 그대로 포함된 경우 (명사, 조사 등)
     if (sentenceKr.includes(targetWord)) {
       maskedSentence = sentenceKr.replace(targetWord, maskHtml);
-    } else if (sentenceKr.includes(rawWord)) {
+    } 
+    else if (sentenceKr.includes(rawWord)) {
       maskedSentence = sentenceKr.replace(rawWord, maskHtml);
-    } else {
+    } 
+    else {
+      // 2. 활용형(동사/형용사) 어간 추출 및 어절 매칭
       let stem = targetWord;
       if (targetWord.endsWith('다')) {
-        stem = targetWord.slice(0, -1);
+        stem = targetWord.slice(0, -1); // "하다" -> "하", "가다" -> "가", "크다" -> "크"
       }
 
       const stemFirstChar = stem.charAt(0);
-      const stemInitial = getInitialConsonant(stemFirstChar);
+      const stemInitial = getInitialConsonant(stemFirstChar); // 어간의 첫 초성 (예: 'ㄱ', 'ㅎ')
+
       const words = sentenceKr.split(' ');
       let matchedIndex = -1;
 
@@ -1432,6 +1437,8 @@ function generateQuizProblem(targetItem, allLessons) {
         const wordFirstChar = cleanWord.charAt(0);
         const wordInitial = getInitialConsonant(wordFirstChar);
 
+        // 조건 A: 어간으로 직접 시작함 (예: "만나"서)
+        // 조건 B: 첫 글자의 초성이 같고 음절 유효 범위 내에 있음 (예: "가"다 -> "갑"니다, "하"다 -> "합"니다)
         if (cleanWord.startsWith(stem) || (stemInitial && stemInitial === wordInitial && stemFirstChar.charCodeAt(0) <= wordFirstChar.charCodeAt(0) + 28)) {
           matchedIndex = i;
           break;
@@ -1477,184 +1484,126 @@ function generateQuizProblem(targetItem, allLessons) {
   };
 }
 
-// 2. 퀴즈 화면 렌더링 함수
-function renderQuizIndex(index) {
-  const total = currentQuizList.length;
+  function renderQuizIndex(index) {
+    const total = currentQuizList.length;
 
-  // 모든 퀴즈를 완료했을 때만 성적 반영 및 진행 기록 제거
-  if (total > 0 && index >= total) {
-    alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
-    
-    let elapsedMinutes = 5;
-    if (quizStartTime) {
-      const elapsedMs = Date.now() - quizStartTime;
-      elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
+    // 모든 퀴즈를 다 완료했을 때만 성적 반영
+    if (total > 0 && index >= total) {
+      alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
+      
+      let elapsedMinutes = 5;
+      if (quizStartTime) {
+        const elapsedMs = Date.now() - quizStartTime;
+        elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
+      }
+      saveTodayLearningData('quiz', elapsedMinutes);
+      clearLearningProgress('quiz', currentLessonId); // 진행 데이터 제거
+
+      quizStartTime = null;
+      goBackView();
+      return;
+    }
+
+    const problem = currentQuizList[index];
+    const currentStep = index + 1;
+    const percent = Math.round((currentStep / total) * 100);
+
+    const textElem = document.getElementById('quiz-progress-text');
+    const percentElem = document.getElementById('quiz-progress-percent');
+    const barElem = document.getElementById('quiz-progress-bar');
+
+    if (textElem) textElem.innerText = `Q ${currentStep} / ${total}`;
+    if (percentElem) percentElem.innerText = `${percent}%`;
+    if (barElem) barElem.style.width = `${percent}%`;
+
+    const courseTag = document.getElementById('quiz-course-tag');
+    if (courseTag && currentLessonDisplayTitle) {
+      courseTag.innerText = currentLessonDisplayTitle;
     }
     
-    // 주간 학습 성적 기록 및 이어풀기 기록 삭제
-    saveTodayLearningData('quiz', elapsedMinutes);
-    clearLearningProgress('quiz', currentQuizLessonId);
-
-    quizStartTime = null;
-    goBackView();
-    return;
-  }
-
-  const problem = currentQuizList[index];
-  const currentStep = index + 1;
-  const percent = Math.round((currentStep / total) * 100);
-
-  // 상단 진행률 바
-  const textElem = document.getElementById('quiz-progress-text');
-  const percentElem = document.getElementById('quiz-progress-percent');
-  const barElem = document.getElementById('quiz-progress-bar');
-
-  if (textElem) textElem.innerText = `Q ${currentStep} / ${total}`;
-  if (percentElem) percentElem.innerText = `${percent}%`;
-  if (barElem) barElem.style.width = `${percent}%`;
-
-  // 상단 과 타이틀 연동
-  const courseTag = document.getElementById('quiz-course-tag');
-  if (courseTag && currentLessonDisplayTitle) {
-    courseTag.innerText = currentLessonDisplayTitle;
-  }
-  
-  // 플립 카드 상태 초기화
-  const cardInner = document.getElementById('quiz-card-inner');
-  isCardFlipped = false;
-  cardInner?.classList.remove('rotate-y-180');
-
-  // 문장 바인딩
-  const sentenceKrElem = document.getElementById('quiz-sentence-kr');
-  const sentenceJpElem = document.getElementById('quiz-sentence-jp');
-  if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
-  if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
-
-  // 힌트 처리
-  const userCourse = currentUser?.course || "1a";
-  const hintBox = document.getElementById('quiz-hint-box');
-  const hintTextElem = document.getElementById('quiz-hint-text');
-
-  if (userCourse === "1a" || userCourse === "2a") {
-    if (hintBox) hintBox.classList.remove('hidden');
-    if (hintTextElem) hintTextElem.innerText = `힌트 : ${problem.hintJp}`;
-  } else {
-    if (hintBox) hintBox.classList.add('hidden');
-  }
-
-  // ★ 풀고 있는 정확한 과 ID(currentQuizLessonId)로 진행 위치 저장
-  saveLearningProgress('quiz', currentQuizLessonId, index);
-
-  // 보기 버튼 생성
-  const choicesContainer = document.getElementById('quiz-choices-container');
-  if (choicesContainer) {
-    choicesContainer.innerHTML = '';
-
-    problem.choices.forEach((choiceText, idx) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = "w-full flex items-center justify-between p-3.5 bg-surface-container-lowest rounded-xl shadow-sm hover:bg-surface-container-low active:scale-[0.99] transition-all text-left cursor-pointer";
-      btn.innerHTML = `
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm shadow-inner shrink-0">${idx + 1}</div>
-          <span class="font-hangul-tile text-hangul-tile text-on-surface">${choiceText}</span>
-        </div>
-        <div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-outline shrink-0">
-          <span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
-        </div>
-      `;
-
-      btn.addEventListener('click', () => handleChoiceSelect(choiceText, problem.correctAnswer));
-      choicesContainer.appendChild(btn);
-    });
-  }
-
-  document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
-}
-
-// 3. 퀴즈 진입 함수
-// isRandomMode: 명시적 랜덤 복습일 때만 true 전달 (기본값 false)
-function startQuizForLesson(levelOrLessonId, lessonNum, isRandomMode = false) {
-  const selection = resolveContentSelection(levelOrLessonId, lessonNum);
-  if (!selection) return;
-
-  const targetLessonId = selection.lessonId;
-  const userId = currentUser?.ID || 'default';
-
-  // ★ [핵심] 랜덤 옵션이 true일 때만 getUnplayedRandomLessonId 사용, 기본은 지정된 과(targetLessonId) 사용
-  if (isRandomMode && typeof getUnplayedRandomLessonId === 'function') {
-    currentQuizLessonId = getUnplayedRandomLessonId(userId, targetLessonId);
-  } else {
-    currentQuizLessonId = targetLessonId;
-  }
-
-  const allLessons = lessonsData || [];
-  const lessonItems = allLessons.filter(
-    l => Number(l.lesson_id) === currentQuizLessonId && l.word_kr && l.word_kr.trim() !== ""
-  );
-
-  if (lessonItems.length === 0) {
-    alert(`제 ${currentQuizLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
-    return;
-  }
-
-  // 퀴즈 문제 생성
-  currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
-  
-  // 상단 UI 세팅 및 선택 적용
-  selectContent(selection);
-  quizStartTime = Date.now();
-
-  const quizCourseTag = document.getElementById('quiz-course-tag');
-  if (quizCourseTag && currentLessonDisplayTitle) {
-    quizCourseTag.innerText = currentLessonDisplayTitle;
-  }
-
-  // ★ [이어풀기] 지정한 과의 기존 학습 상태를 정확히 복원
-  const savedProgress = getLearningProgress('quiz', currentQuizLessonId);
-  if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
-    currentQuizIndex = savedProgress.currentIndex;
-  } else {
-    currentQuizIndex = 0;
-  }
-
-  renderQuizIndex(currentQuizIndex);
-  showView('view-quiz');
-}
-
-// 4. 이벤트 리스너 및 액션 핸들러
-function handleChoiceSelect(selectedChoice, correctAnswer) {
-  const drawer = document.getElementById('quiz-bottom-drawer');
-  if (selectedChoice === correctAnswer) {
-    drawer?.classList.remove('hidden');
-  } else {
-    alert("아쉽네요! 다시 선택해보세요. (違います。もう一度選んでください)");
-  }
-}
-
-function stopQuizAndReturn(isCompleted = false) {
-  if (!isCompleted) {
-    quizStartTime = null;
-  }
-  goBackView();
-}
-
-document.getElementById('quiz-card-container')?.addEventListener('click', () => {
-  const cardInner = document.getElementById('quiz-card-inner');
-  isCardFlipped = !isCardFlipped;
-  if (isCardFlipped) {
-    cardInner?.classList.add('rotate-y-180');
-  } else {
+    const cardInner = document.getElementById('quiz-card-inner');
+    isCardFlipped = false;
     cardInner?.classList.remove('rotate-y-180');
+
+    const sentenceKrElem = document.getElementById('quiz-sentence-kr');
+    const sentenceJpElem = document.getElementById('quiz-sentence-jp');
+    if (sentenceKrElem) sentenceKrElem.innerHTML = problem.maskedSentence;
+    if (sentenceJpElem) sentenceJpElem.innerText = problem.sentenceJp;
+
+    const userCourse = currentUser?.course || "1a";
+    const hintBox = document.getElementById('quiz-hint-box');
+    const hintTextElem = document.getElementById('quiz-hint-text');
+
+    if (userCourse === "1a" || userCourse === "2a") {
+      if (hintBox) hintBox.classList.remove('hidden');
+      if (hintTextElem) hintTextElem.innerText = `힌트 : ${problem.hintJp}`;
+    } else {
+      if (hintBox) hintBox.classList.add('hidden');
+    }
+
+    // 현재 퀴즈 문제 진행 인덱스 저장
+    saveLearningProgress('quiz', currentLessonId, index);
+
+    const choicesContainer = document.getElementById('quiz-choices-container');
+    if (choicesContainer) {
+      choicesContainer.innerHTML = '';
+
+      problem.choices.forEach((choiceText, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = "w-full flex items-center justify-between p-3.5 bg-surface-container-lowest rounded-xl shadow-sm hover:bg-surface-container-low active:scale-[0.99] transition-all text-left cursor-pointer";
+        btn.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center font-headline-sm text-headline-sm shadow-inner shrink-0">${idx + 1}</div>
+            <span class="font-hangul-tile text-hangul-tile text-on-surface">${choiceText}</span>
+          </div>
+          <div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-outline shrink-0">
+            <span class="material-symbols-outlined text-[16px]">radio_button_unchecked</span>
+          </div>
+        `;
+
+        btn.addEventListener('click', () => handleChoiceSelect(choiceText, problem.correctAnswer, btn));
+        choicesContainer.appendChild(btn);
+      });
+    }
+
+    document.getElementById('quiz-bottom-drawer')?.classList.add('hidden');
   }
-});
 
-document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
-  currentQuizIndex++;
-  renderQuizIndex(currentQuizIndex);
-});
+  function stopQuizAndReturn(isCompleted = false) {
+    if (!isCompleted) {
+      // 완주하지 않고 그냥 나간 경우 성적을 저장하지 않음
+      quizStartTime = null;
+    }
+    goBackView();
+  }
 
-document.getElementById('go-quiz-btn')?.addEventListener('click', () => startQuizForLesson());
+  document.getElementById('quiz-card-container')?.addEventListener('click', () => {
+    const cardInner = document.getElementById('quiz-card-inner');
+    isCardFlipped = !isCardFlipped;
+    if (isCardFlipped) {
+      cardInner?.classList.add('rotate-y-180');
+    } else {
+      cardInner?.classList.remove('rotate-y-180');
+    }
+  });
+
+  function handleChoiceSelect(selectedChoice, correctAnswer, clickedBtn) {
+    const drawer = document.getElementById('quiz-bottom-drawer');
+    if (selectedChoice === correctAnswer) {
+      drawer?.classList.remove('hidden');
+    } else {
+      alert("아쉽네요! 다시 선택해보세요. (違います。もう一度選んでください)");
+    }
+  }
+
+  document.getElementById('btn-next-quiz')?.addEventListener('click', () => {
+    currentQuizIndex++;
+    renderQuizIndex(currentQuizIndex);
+  });
+
+  // 퀴즈 시작 버튼 클릭 로직 보완
+  document.getElementById('go-quiz-btn')?.addEventListener('click', () => startQuizForLesson());
 
   // =========================== VIEW 5: 주간성과======================
   function renderWeeklyStatsView() {
@@ -1994,82 +1943,35 @@ document.getElementById('go-quiz-btn')?.addEventListener('click', () => startQui
     showView('view-practice');
   }
 
-// 중복 방지 무작위 과 선택 헬퍼 함수
-function getUnplayedRandomLessonId(userId, maxLessonId) {
-  const candidateLessons = [];
-  for (let i = 1; i < maxLessonId; i++) {
-    candidateLessons.push(i);
-  }
+  function startQuizForLesson(levelOrLessonId, lessonNum) {
+    const selection = resolveContentSelection(levelOrLessonId, lessonNum);
+    if (!selection) return;
+    const targetLessonId = selection.lessonId;
 
-  // 1과이거나 이전 과가 없는 경우 1과 반환
-  if (candidateLessons.length === 0) return 1;
+    const allLessons = lessonsData || [];
+    const lessonItems = allLessons.filter(
+      l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== ""
+    );
 
-  const storageKey = `completed_quiz_lessons_${userId}`;
-  let completedLessons = JSON.parse(localStorage.getItem(storageKey) || '[]');
-
-  // 아직 안 푼 과 필터링
-  let remainingLessons = candidateLessons.filter(id => !completedLessons.includes(id));
-
-  // 모든 과를 다 풀었으면 기록 초기화 후 재시작
-  if (remainingLessons.length === 0) {
-    completedLessons = [];
-    localStorage.removeItem(storageKey);
-    remainingLessons = [...candidateLessons];
-  }
-
-  // 무작위 1개 선택 및 풀었던 목록 업데이트
-  const selectedLessonId = remainingLessons[Math.floor(Math.random() * remainingLessons.length)];
-  completedLessons.push(selectedLessonId);
-  localStorage.setItem(storageKey, JSON.stringify(completedLessons));
-
-  return selectedLessonId;
-}
-
-// 대시보드에서 어떤 퀴즈를 낼 것인가에 대한 startQuizForLesson 함수
-function startQuizForLesson(levelOrLessonId, lessonNum) {
-  const selection = resolveContentSelection(levelOrLessonId, lessonNum);
-  if (!selection) return;
-  
-  // 1. 현재 열람/클릭한 과 ID (상단 UI 및 선택 기준)
-  const targetLessonId = selection.lessonId;
-
-  // 2. 퀴즈 문제 추출용 무작위 과 ID 계산 (1과 ~ targetLessonId - 1과 중 중복 없이 선택)
-  const userId = currentUser?.ID || 'default';
-  const quizLessonId = getUnplayedRandomLessonId(userId, targetLessonId);
-
-  const allLessons = lessonsData || [];
-  
-  // 3. 필터링 대상만 targetLessonId 대신 무작위로 결정된 quizLessonId로 변경
-  const lessonItems = allLessons.filter(
-    l => Number(l.lesson_id) === quizLessonId && l.word_kr && l.word_kr.trim() !== ""
-  );
-
-  if (lessonItems.length === 0) {
-    alert(`제 ${quizLessonId}과(복습 대상)에 해당하는 퀴즈 데이터가 없습니다.`);
-    return;
-  }
-
-  // 4. 무작위 과(quizLessonId)의 데이터로 퀴즈 리스트 생성
-  currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
-  selectContent(selection);
-  quizStartTime = Date.now();
-
-  const quizCourseTag = document.getElementById('quiz-course-tag');
-    if (quizCourseTag && currentLessonDisplayTitle) {
-      quizCourseTag.innerText = currentLessonDisplayTitle;
+    if (lessonItems.length === 0) {
+      alert(`제 ${targetLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+      return;
     }
 
-  // 5. 진행 상태 저장/불러오기만 복습 대상 과(quizLessonId) 기준으로 관리
-  const savedProgress = getLearningProgress('quiz', quizLessonId);
-  if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
-    currentQuizIndex = savedProgress.currentIndex;
-  } else {
-    currentQuizIndex = 0;
-  }
+    currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
+    selectContent(selection);
+    quizStartTime = Date.now();
 
-  renderQuizIndex(currentQuizIndex);
-  showView('view-quiz');
-}
+    const savedProgress = getLearningProgress('quiz', targetLessonId);
+    if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
+      currentQuizIndex = savedProgress.currentIndex;
+    } else {
+      currentQuizIndex = 0;
+    }
+
+    renderQuizIndex(currentQuizIndex);
+    showView('view-quiz');
+  }
 
   // ==================== TTS 및 음성 인식(STT) ====================
   function playTTS(text, rate = 0.8) {
