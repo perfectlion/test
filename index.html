@@ -1481,7 +1481,7 @@ function generateQuizProblem(targetItem, allLessons) {
 function renderQuizIndex(index) {
   const total = currentQuizList.length;
 
-  // 모든 퀴즈를 완료했을 때만 성적 반영 및 상태 초기화
+  // 모든 퀴즈를 완료했을 때만 성적 반영 및 진행 기록 제거
   if (total > 0 && index >= total) {
     alert("오늘의 퀴즈를 모두 완료했습니다! 🎉");
     
@@ -1491,9 +1491,9 @@ function renderQuizIndex(index) {
       elapsedMinutes = Math.max(1, Math.round(elapsedMs / 1000 / 60));
     }
     
-    // 주간 학습 성적 및 완성 기록 저장
+    // 주간 학습 성적 기록 및 이어풀기 기록 삭제
     saveTodayLearningData('quiz', elapsedMinutes);
-    clearLearningProgress('quiz', currentQuizLessonId); // 풀던 진행 기록 제거
+    clearLearningProgress('quiz', currentQuizLessonId);
 
     quizStartTime = null;
     goBackView();
@@ -1513,7 +1513,7 @@ function renderQuizIndex(index) {
   if (percentElem) percentElem.innerText = `${percent}%`;
   if (barElem) barElem.style.width = `${percent}%`;
 
-  // 상단 과 타이틀
+  // 상단 과 타이틀 연동
   const courseTag = document.getElementById('quiz-course-tag');
   if (courseTag && currentLessonDisplayTitle) {
     courseTag.innerText = currentLessonDisplayTitle;
@@ -1542,7 +1542,7 @@ function renderQuizIndex(index) {
     if (hintBox) hintBox.classList.add('hidden');
   }
 
-  // ★ 현재 풀고 있는 문제 번호(index) 저장 (이어풀기용)
+  // ★ 풀고 있는 정확한 과 ID(currentQuizLessonId)로 진행 위치 저장
   saveLearningProgress('quiz', currentQuizLessonId, index);
 
   // 보기 버튼 생성
@@ -1573,43 +1573,45 @@ function renderQuizIndex(index) {
 }
 
 // 3. 퀴즈 진입 함수
-function startQuizForLesson(levelOrLessonId, lessonNum) {
+// isRandomMode: 명시적 랜덤 복습일 때만 true 전달 (기본값 false)
+function startQuizForLesson(levelOrLessonId, lessonNum, isRandomMode = false) {
   const selection = resolveContentSelection(levelOrLessonId, lessonNum);
   if (!selection) return;
 
   const targetLessonId = selection.lessonId;
   const userId = currentUser?.ID || 'default';
 
-  // 복습 모드 무작위 과 추출 (또는 현재 지정 과)
-  const quizLessonId = typeof getUnplayedRandomLessonId === 'function' 
-    ? getUnplayedRandomLessonId(userId, targetLessonId) 
-    : targetLessonId;
-
-  currentQuizLessonId = quizLessonId;
+  // ★ [핵심] 랜덤 옵션이 true일 때만 getUnplayedRandomLessonId 사용, 기본은 지정된 과(targetLessonId) 사용
+  if (isRandomMode && typeof getUnplayedRandomLessonId === 'function') {
+    currentQuizLessonId = getUnplayedRandomLessonId(userId, targetLessonId);
+  } else {
+    currentQuizLessonId = targetLessonId;
+  }
 
   const allLessons = lessonsData || [];
   const lessonItems = allLessons.filter(
-    l => Number(l.lesson_id) === quizLessonId && l.word_kr && l.word_kr.trim() !== ""
+    l => Number(l.lesson_id) === currentQuizLessonId && l.word_kr && l.word_kr.trim() !== ""
   );
 
   if (lessonItems.length === 0) {
-    alert(`제 ${quizLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
+    alert(`제 ${currentQuizLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
     return;
   }
 
-  // 퀴즈 데이터 세트 생성
+  // 퀴즈 문제 생성
   currentQuizList = lessonItems.map(item => generateQuizProblem(item, allLessons));
+  
+  // 상단 UI 세팅 및 선택 적용
   selectContent(selection);
   quizStartTime = Date.now();
 
-  // 상단 UI 업데이트
   const quizCourseTag = document.getElementById('quiz-course-tag');
   if (quizCourseTag && currentLessonDisplayTitle) {
     quizCourseTag.innerText = currentLessonDisplayTitle;
   }
 
-  // ★ [이어풀기 핵심] 저장된 마지막 위치 불러오기
-  const savedProgress = getLearningProgress('quiz', quizLessonId);
+  // ★ [이어풀기] 지정한 과의 기존 학습 상태를 정확히 복원
+  const savedProgress = getLearningProgress('quiz', currentQuizLessonId);
   if (savedProgress && Number.isInteger(savedProgress.currentIndex) && savedProgress.currentIndex >= 0 && savedProgress.currentIndex < currentQuizList.length) {
     currentQuizIndex = savedProgress.currentIndex;
   } else {
@@ -1620,7 +1622,7 @@ function startQuizForLesson(levelOrLessonId, lessonNum) {
   showView('view-quiz');
 }
 
-// 4. 이벤트 리스너 모음
+// 4. 이벤트 리스너 및 액션 핸들러
 function handleChoiceSelect(selectedChoice, correctAnswer) {
   const drawer = document.getElementById('quiz-bottom-drawer');
   if (selectedChoice === correctAnswer) {
