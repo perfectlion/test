@@ -2052,15 +2052,54 @@ function generateQuizProblem(targetItem, allLessons) {
   }
 
   // ==================== TTS 및 음성 인식(STT) ====================
+  // ---------- 듣기(TTS) : 아이폰 대응 버전 ----------
+  // 아이폰은 마이크(음성 인식)를 쓴 뒤에 소리 재생이 막히는 일이 있어서,
+  //  1) 마이크가 켜져 있으면 먼저 끄고, 2) 한국어 목소리를 직접 지정하고,
+  //  3) 멈춰 있던 소리 엔진을 깨운 뒤(resume) 재생합니다.
+  let currentUtterance = null;   // 재생 중 문장을 붙잡아 둠 (아이폰에서 중간에 끊기는 현상 방지)
+  let ttsTimer = null;
+
+  function getKoreanVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    return voices.find(v => v.lang === 'ko-KR')
+        || voices.find(v => (v.lang || '').replace('_', '-').toLowerCase().startsWith('ko'))
+        || null;
+  }
+
   function playTTS(text, rate = 0.8) {
-    if ('speechSynthesis' in window && text) {
-      window.speechSynthesis.cancel();
-      
+    if (!('speechSynthesis' in window) || !text) return;
+    const synth = window.speechSynthesis;
+
+    if (ttsTimer) { clearTimeout(ttsTimer); ttsTimer = null; }
+
+    const speakNow = () => {
+      try { synth.resume(); } catch (e) {}
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ko-KR';
       utterance.rate = rate;
-     
-      window.speechSynthesis.speak(utterance);
+      const koVoice = getKoreanVoice();
+      if (koVoice) utterance.voice = koVoice;
+      utterance.onerror = (e) => console.error('🔊 TTS 오류:', e.error);
+      currentUtterance = utterance;
+      synth.speak(utterance);
+    };
+
+    // 마이크가 켜져 있으면 먼저 끄고 잠시 기다린 뒤 재생
+    if (isRecording) {
+      try { recognition?.abort(); } catch (e) {}
+      resetMicUI();
+      synth.cancel();
+      ttsTimer = setTimeout(speakNow, 300);
+      return;
+    }
+
+    // 이미 소리가 나는 중이면 끄고 잠시 뒤 재생, 아니면 바로 재생
+    if (synth.speaking || synth.pending) {
+      synth.cancel();
+      ttsTimer = setTimeout(speakNow, 150);
+    } else {
+      speakNow();
     }
   }
 
@@ -2311,3 +2350,4 @@ function generateQuizProblem(targetItem, allLessons) {
 
 </body>
 </html>
+
