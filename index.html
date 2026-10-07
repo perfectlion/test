@@ -220,6 +220,13 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     /* 복습 화면 레벨 탭: 가운데 정렬 (칸이 넘치면 좌우 스크롤) */
     #review-level-tabs > :first-child{margin-left:auto}
     #review-level-tabs > :last-child{margin-right:auto}
+      /* 성과 화면 하단 '레포트 제출' 버튼 영역도 같은 폭(720px)으로 */
+    #view-weekly-stats > footer{
+      max-width: var(--app-w);
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
   </style>
 </head>
 <body class="bg-surface text-on-surface flex flex-col min-h-screen">
