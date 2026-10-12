@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>세종학당 봉센세 - 한국어 학습 앱</title>
   <meta name="theme-color" content="#F4F6FC">
+  <!-- Firebase (로그인 + 학습기록 서버 저장) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script>
+    // ★★★ 여기에 Firebase 콘솔에서 복사한 설정값을 붙여 넣으세요 ★★★
+    // (비워 두면 예전 방식(users.json 로그인)으로 동작합니다)
+    const FIREBASE_CONFIG = {
+ apiKey: "AIzaSyDswrzNI7X0HqYS3N2Ha25xbVI6I6UvYhU",
+  authDomain: "bongsense-c837d.firebaseapp.com",
+  projectId: "bongsense-c837d",
+  storageBucket: "bongsense-c837d.firebasestorage.app",
+  messagingSenderId: "832712243789",
+  appId: "1:832712243789:web:23d32ed8a9d0f8cd907a04"
+    };
+  </script>
   <script>(function(){try{var t=localStorage.getItem("theme");if(!t){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.classList.toggle("dark",t==="dark");}catch(e){}})();</script>
   
 <!-- Google Fonts & Material Symbols -->
@@ -906,6 +922,21 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
 </div>
 </section>
 <!-- END: WeeklyInsightCard -->
+<!-- BEGIN: LeaderboardSection (친구들 이번 주 현황) -->
+<section id="leaderboard-section" class="hidden mt-6">
+<div class="bg-surface-container-lowest rounded-2xl shadow-md p-4">
+<div class="flex items-center justify-between mb-3">
+<div>
+<h3 class="text-base font-bold text-on-surface">이번 주 친구들 현황</h3>
+<p class="text-xs text-on-surface-variant">今週のみんなの学習状況 (읽기+퀴즈 10칸 중)</p>
+</div>
+<button id="leaderboard-refresh" type="button" aria-label="새로고침" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all cursor-pointer"><span class="material-symbols-outlined text-[22px]">refresh</span></button>
+</div>
+<ol id="leaderboard-list" class="space-y-2"></ol>
+<p id="leaderboard-msg" class="text-xs text-on-surface-variant text-center mt-2"></p>
+</div>
+</section>
+<!-- END: LeaderboardSection -->
 </main>
 <!-- END: MainContentSection -->
 <!-- BEGIN: BottomActionSection -->
@@ -1175,6 +1206,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     }
 
     localStorage.setItem('weeklyLearningData', JSON.stringify(storedData));
+    cloudSyncSoon(false);
     
     if (typeof renderWeeklyStatsView === 'function') {
       renderWeeklyStatsView();
@@ -1189,6 +1221,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
       currentIndex: currentIndex,
       timestamp: new Date().toISOString()
     }));
+    cloudSyncSoon(true);
   }
 
   // 3. 저장된 진행 상태 불러오기
@@ -1204,7 +1237,310 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     const userId = currentUser?.ID || 'default';
     const progressKey = `progress_${type}_${userId}_${lessonId}`;
     localStorage.removeItem(progressKey);
+    cloudSyncSoon(true);
   }
+
+  // ==================== ☁️ 서버 연동 (Firebase 로그인 + 학습기록 저장 + 친구 비교) ====================
+  // 위쪽 <head>의 FIREBASE_CONFIG 에 설정값을 넣으면 자동으로 켜집니다. (비어 있으면 기존 방식 그대로 동작)
+  const FIREBASE_ENABLED = !!(typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
+  const FIREBASE_EMAIL_DOMAIN = '@bongsense.example.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
+  const WEEKLY_OWNER_KEY = 'weeklyLearningDataOwner';
+  let fbAuth = null, fbDb = null;
+  if (FIREBASE_ENABLED && typeof firebase !== 'undefined') {
+    try {
+      firebase.initializeApp(FIREBASE_CONFIG);
+      fbAuth = firebase.auth();
+      fbDb = firebase.firestore();
+    } catch (e) { console.error('Firebase 초기화 실패:', e); }
+  }
+
+  const idToEmail = (id) => String(id || '').trim().toLowerCase() + FIREBASE_EMAIL_DOMAIN;
+  const emailToId = (email) => String(email || '').split('@')[0];
+  const toDateKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+  function readWeeklyLocal() {
+    try { return JSON.parse(localStorage.getItem('weeklyLearningData') || '{}') || {}; } catch (e) { return {}; }
+  }
+
+  // 두 기기의 주간 기록 합치기: 완료는 OR, 시간은 큰 값
+  function mergeWeekly(a, b) {
+    const out = {};
+    const days = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
+    days.forEach(k => {
+      const x = (a && a[k]) || {}, y = (b && b[k]) || {};
+      out[k] = {
+        readingDone: !!(x.readingDone || y.readingDone),
+        readingTime: Math.max(x.readingTime || 0, y.readingTime || 0),
+        quizDone: !!(x.quizDone || y.quizDone),
+        quizTime: Math.max(x.quizTime || 0, y.quizTime || 0)
+      };
+    });
+    return out;
+  }
+
+  // 이번 주(월~금) 요약
+  function computeWeekSummary(weekly) {
+    const today = new Date();
+    const dow = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + (dow === 0 ? -6 : 1 - dow));
+    let done = 0, minutes = 0;
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const e = (weekly || {})[toDateKey(d)];
+      if (e) {
+        if (e.readingDone) done++;
+        if (e.quizDone) done++;
+        minutes += (e.readingTime || 0) + (e.quizTime || 0);
+      }
+    }
+    return { weekKey: toDateKey(monday), weekDone: done, weekMinutes: Math.round(minutes) };
+  }
+
+  // 이어풀기 정보(progress_*, quizPick_*, quizUsed_*) 모으기/되돌리기 (해당 학생 ID 것만)
+  function isUserKvKey(key, id) {
+    if (key === `quizPick_${id}` || key === `quizUsed_${id}`) return true;
+    if (!key.startsWith('progress_')) return false;
+    const p = key.split('_');
+    return p.length === 4 && p[2] === id;
+  }
+  function collectKv(id) {
+    const kv = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && isUserKvKey(k, id)) kv[k] = localStorage.getItem(k);
+    }
+    return kv;
+  }
+  function replaceKv(id, kv) {
+    const del = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && isUserKvKey(k, id)) del.push(k);
+    }
+    del.forEach(k => localStorage.removeItem(k));
+    Object.keys(kv || {}).forEach(k => { if (isUserKvKey(k, id)) localStorage.setItem(k, String(kv[k])); });
+  }
+  const cloudMetaKey = (id) => `cloudMeta_${id}`;
+  function getCloudMeta(id) { try { return JSON.parse(localStorage.getItem(cloudMetaKey(id)) || '{}') || {}; } catch (e) { return {}; } }
+  function setCloudMeta(id, m) { localStorage.setItem(cloudMetaKey(id), JSON.stringify(m)); }
+
+  // 로그인 직후: 서버 기록과 이 기기 기록을 합친다
+  async function cloudPullAndMerge() {
+    if (!fbAuth || !fbDb || !fbAuth.currentUser || !currentUser) return;
+    const me = currentUser, uid = fbAuth.currentUser.uid, id = me.ID;
+    const snap = await fbDb.collection('progress').doc(uid).get();
+    const server = snap.exists ? snap.data() : null;
+    let serverWeekly = {}, serverKv = {};
+    if (server) {
+      try { serverWeekly = JSON.parse(server.weeklyJson || '{}') || {}; } catch (e) {}
+      try { serverKv = JSON.parse(server.kvJson || '{}') || {}; } catch (e) {}
+    }
+    // 이 기기의 주간 기록이 '이 학생 것'일 때만 합침 (공용 기기에서 다른 학생 기록이 섞이지 않게)
+    const owner = localStorage.getItem(WEEKLY_OWNER_KEY);
+    const localUsable = owner ? owner === uid : !server; // 예전(소유자 표시 없음) 기록은 서버가 비어 있을 때만 이 학생 것으로 인정
+    const merged = mergeWeekly(localUsable ? readWeeklyLocal() : {}, serverWeekly);
+    localStorage.setItem('weeklyLearningData', JSON.stringify(merged));
+    localStorage.setItem(WEEKLY_OWNER_KEY, uid);
+
+    const meta = getCloudMeta(id);
+    const serverAt = (server && server.kvUpdatedAt) || 0;
+    if (serverAt > (meta.kvUpdatedAt || 0)) {
+      replaceKv(id, serverKv);
+      meta.kvUpdatedAt = serverAt;
+    } else if (!meta.kvUpdatedAt && Object.keys(collectKv(id)).length) {
+      meta.kvUpdatedAt = Date.now();
+    }
+    setCloudMeta(id, meta);
+    await cloudSaveNow();
+  }
+
+  // 서버에 저장 (주간 기록은 서버 것과 합쳐서 저장, 비교용 요약도 함께 저장)
+  let cloudSaveTimer = null;
+  async function cloudSaveNow() {
+    if (!fbAuth || !fbDb || !fbAuth.currentUser || !currentUser) return;
+    const me = currentUser, uid = fbAuth.currentUser.uid, id = me.ID;
+    if (cloudSaveTimer) { clearTimeout(cloudSaveTimer); cloudSaveTimer = null; }
+
+    const ref = fbDb.collection('progress').doc(uid);
+    const snap = await ref.get();
+    const server = snap.exists ? snap.data() : {};
+    let serverWeekly = {};
+    try { serverWeekly = JSON.parse(server.weeklyJson || '{}') || {}; } catch (e) {}
+    const merged = mergeWeekly(readWeeklyLocal(), serverWeekly);
+    localStorage.setItem('weeklyLearningData', JSON.stringify(merged));
+
+    const meta = getCloudMeta(id);
+    const payload = {
+      weeklyJson: JSON.stringify(merged),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if ((meta.kvUpdatedAt || 0) >= (server.kvUpdatedAt || 0)) {
+      payload.kvJson = JSON.stringify(collectKv(id));
+      payload.kvUpdatedAt = meta.kvUpdatedAt || 0;
+    }
+    await ref.set(payload, { merge: true });
+
+    const sum = computeWeekSummary(merged);
+    await fbDb.collection('leaderboard').doc(uid).set({
+      id: String(id),
+      name: String(me.Name || id),
+      weekKey: sum.weekKey,
+      weekDone: sum.weekDone,
+      weekMinutes: sum.weekMinutes,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+
+  // 기록이 바뀔 때 호출: 1.5초 뒤 한 번에 저장
+  function cloudSyncSoon(kvChanged) {
+    if (!FIREBASE_ENABLED || !fbAuth || !fbAuth.currentUser || !currentUser) return;
+    if (kvChanged) {
+      const m = getCloudMeta(currentUser.ID);
+      m.kvUpdatedAt = Date.now();
+      setCloudMeta(currentUser.ID, m);
+    }
+    if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => {
+      cloudSaveNow().catch(e => console.warn('☁️ 저장 실패 (다음 기회에 다시 시도):', e));
+    }, 1500);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && cloudSaveTimer) cloudSaveNow().catch(() => {});
+  });
+
+  // 로그인 (Firebase)
+  async function firebaseLogin(inputId, inputPw) {
+    try {
+      if (!fbAuth) throw { code: 'app/no-sdk' };
+      const profile = usersData.find(u => String(u.ID || '').toLowerCase() === inputId.toLowerCase());
+      if (!profile) throw { code: 'auth/user-not-found' };
+      await fbAuth.signInWithEmailAndPassword(idToEmail(profile.ID), inputPw);
+      currentUser = Object.assign({}, profile);
+      delete currentUser.PW;
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      try { await withTimeout(cloudPullAndMerge(), 8000); } catch (e) { console.warn('☁️ 기록 불러오기 실패 (이 기기 기록으로 진행):', e); }
+      setupDashboardUI(currentUser);
+      showView('view-dashboard');
+      showWelcomePopup(currentUser, true);
+    } catch (err) {
+      console.error('로그인 오류:', err && err.code, err);
+      const code = err && err.code;
+      if (code === 'auth/network-request-failed' || code === 'app/no-sdk') {
+        alert('서버에 연결할 수 없습니다. 인터넷 연결을 확인해 주세요.\nサーバーに接続できません。インターネット接続を確認してください。');
+      } else if (code === 'auth/too-many-requests') {
+        alert('로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.\nログイン試行回数が多すぎます。しばらくしてからもう一度お試しください。');
+      } else {
+        loginErrorMsg?.classList.remove('hidden');
+      }
+      if (!currentUser && fbAuth && fbAuth.currentUser) { try { await fbAuth.signOut(); } catch (e) {} }
+    } finally {
+      loginSpinner?.classList.add('hidden');
+    }
+  }
+
+  // 자동 로그인 (Firebase가 로그인 상태를 기억하고 있을 때)
+  function firebaseAutoLogin() {
+    if (!fbAuth) { showView('view-login'); return; }
+    const unsub = fbAuth.onAuthStateChanged(async (fbUser) => {
+      unsub();
+      try {
+        if (!fbUser) throw new Error('저장된 로그인 없음');
+        const id = emailToId(fbUser.email);
+        const profile = usersData.find(u => String(u.ID || '').toLowerCase() === id.toLowerCase());
+        if (!profile) throw new Error('사용자 정보가 없습니다.');
+        currentUser = Object.assign({}, profile);
+        delete currentUser.PW;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        try { await withTimeout(cloudPullAndMerge(), 8000); } catch (e) { console.warn('☁️ 기록 불러오기 실패 (이 기기 기록으로 진행):', e); }
+        setupDashboardUI(currentUser);
+        showView('view-dashboard');
+        showWelcomePopup(currentUser, false);
+      } catch (e) {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        if (fbUser) { try { await fbAuth.signOut(); } catch (x) {} }
+        showView('view-login');
+      }
+    });
+  }
+
+  // 로그아웃 직전: 마지막 저장 후 Firebase 로그아웃
+  function cloudLogoutFlush() {
+    if (!FIREBASE_ENABLED || !fbAuth) return;
+    const p = (fbAuth.currentUser && currentUser) ? withTimeout(cloudSaveNow(), 5000).catch(() => {}) : Promise.resolve();
+    p.then(() => fbAuth.signOut()).catch(() => {});
+  }
+
+  // 친구들 이번 주 현황
+  let leaderboardLoadedAt = 0;
+  async function loadLeaderboard(force) {
+    const section = document.getElementById('leaderboard-section');
+    if (!section) return;
+    if (!FIREBASE_ENABLED || !fbDb || !fbAuth || !fbAuth.currentUser) { section.classList.add('hidden'); return; }
+    section.classList.remove('hidden');
+    if (!force && Date.now() - leaderboardLoadedAt < 20000) return;
+    leaderboardLoadedAt = Date.now();
+
+    const list = document.getElementById('leaderboard-list');
+    const msg = document.getElementById('leaderboard-msg');
+    try {
+      const snap = await fbDb.collection('leaderboard').get();
+      const wk = computeWeekSummary({}).weekKey;
+      const myUid = fbAuth.currentUser.uid;
+      const rows = [];
+      snap.forEach(d => {
+        const v = d.data() || {};
+        const cur = v.weekKey === wk;
+        rows.push({ uid: d.id, name: v.name || v.id || '?', done: cur ? (v.weekDone || 0) : 0, minutes: cur ? (v.weekMinutes || 0) : 0 });
+      });
+      rows.sort((a, b) => b.done - a.done || b.minutes - a.minutes || String(a.name).localeCompare(String(b.name)));
+      list.innerHTML = '';
+      rows.forEach((r, i) => {
+        const mine = r.uid === myUid;
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-3 p-3 rounded-xl ' + (mine ? 'bg-primary/10 ring-1 ring-primary' : 'bg-surface-container-low');
+        const rank = document.createElement('span');
+        rank.className = 'w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ' + (i === 0 ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-surface-container text-on-surface-variant');
+        rank.textContent = String(i + 1);
+        const body = document.createElement('div');
+        body.className = 'flex-1 min-w-0';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'text-sm font-bold text-on-surface truncate';
+        nameEl.textContent = r.name + (mine ? ' (나 / 私)' : '');
+        const track = document.createElement('div');
+        track.className = 'mt-1.5 h-2 rounded-full bg-surface-container overflow-hidden';
+        const fill = document.createElement('div');
+        fill.className = 'h-full rounded-full bg-secondary transition-all duration-500';
+        fill.style.width = Math.min(100, Math.round((r.done / 10) * 100)) + '%';
+        track.appendChild(fill);
+        body.appendChild(nameEl);
+        body.appendChild(track);
+        const score = document.createElement('div');
+        score.className = 'text-right shrink-0';
+        const s1 = document.createElement('div');
+        s1.className = 'text-sm font-bold text-secondary';
+        s1.textContent = r.done + ' / 10';
+        const s2 = document.createElement('div');
+        s2.className = 'text-[11px] text-on-surface-variant';
+        s2.textContent = r.minutes + '분';
+        score.appendChild(s1);
+        score.appendChild(s2);
+        li.appendChild(rank);
+        li.appendChild(body);
+        li.appendChild(score);
+        list.appendChild(li);
+      });
+      if (msg) msg.textContent = rows.length ? '' : '아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!';
+    } catch (e) {
+      console.warn('☁️ 친구 현황 불러오기 실패:', e);
+      leaderboardLoadedAt = 0;
+      if (msg) msg.textContent = '불러오지 못했어요. 잠시 후 새로고침해 주세요. (読み込めませんでした)';
+    }
+  }
+  document.getElementById('leaderboard-refresh')?.addEventListener('click', () => loadLeaderboard(true));
 
   // ==================== 유틸리티: 레벤슈타인 거리 및 유사도 ====================
   function getLevenshteinDistance(str1, str2) {
@@ -1354,6 +1690,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   }
 
   function checkAutoLogin() {
+    if (FIREBASE_ENABLED) { firebaseAutoLogin(); return; } // ☁️ Firebase 자동 로그인
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       try {
@@ -1436,6 +1773,8 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     loginSpinner?.classList.remove('hidden');
     loginErrorMsg?.classList.add('hidden');
 
+    if (FIREBASE_ENABLED) { firebaseLogin(inputId, inputPw); return; } // ☁️ Firebase 로그인
+
     setTimeout(() => {
       const foundUser = usersData.find(u => 
         (u.ID || "").toString().toLowerCase() === inputId.toLowerCase() &&
@@ -1456,6 +1795,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   });
 
   logoutBtn?.addEventListener('click', () => {
+    cloudLogoutFlush(); // ☁️ 마지막 저장 후 Firebase 로그아웃
     currentUser = null;
     userProgress = null;
     reviewSelection = null;
@@ -1776,6 +2116,7 @@ function generateQuizProblem(targetItem, allLessons) {
 
   // =========================== VIEW 5: 주간성과======================
   function renderWeeklyStatsView() {
+    if (typeof loadLeaderboard === 'function') loadLeaderboard();
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
       const userCourse = currentUser?.course || "1a";
@@ -1950,7 +2291,7 @@ function generateQuizProblem(targetItem, allLessons) {
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        onclone: (doc) => { doc.documentElement.classList.remove('dark'); },
+        onclone: (doc) => { doc.documentElement.classList.remove('dark'); const lb = doc.getElementById('leaderboard-section'); if (lb) lb.remove(); },
         windowWidth: targetArea.scrollWidth,
         windowHeight: targetArea.scrollHeight,
         ignoreElements: (element) => {
@@ -2157,6 +2498,7 @@ function generateQuizProblem(targetItem, allLessons) {
 
     const pick = remaining[Math.floor(Math.random() * remaining.length)];
     localStorage.setItem(pickKey, String(pick));
+    cloudSyncSoon(true);
     return pick;
   }
 
@@ -2170,6 +2512,7 @@ function generateQuizProblem(targetItem, allLessons) {
     if (!used.includes(Number(lessonId))) used.push(Number(lessonId));
     localStorage.setItem(usedKey, JSON.stringify(used));
     localStorage.removeItem(`quizPick_${userId}`);
+    cloudSyncSoon(true);
   }
 
   function startQuizForLesson(levelOrLessonId, lessonNum) {
