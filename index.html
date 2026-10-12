@@ -1203,7 +1203,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   // ==================== ☁️ 서버 연동 (Firebase 로그인 + 학습기록 저장 + 친구 비교) ====================
   // 위쪽 <head>의 FIREBASE_CONFIG 에 설정값을 넣으면 자동으로 켜집니다. (비어 있으면 기존 방식 그대로 동작)
   const FIREBASE_ENABLED = !!(typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
-  const FIREBASE_EMAIL_DOMAIN = '@bongsense.example.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
+  const FIREBASE_EMAIL_DOMAIN = '@bongsense.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
   const WEEKLY_OWNER_KEY = 'weeklyLearningDataOwner';
   let fbAuth = null, fbDb = null;
   if (FIREBASE_ENABLED && typeof firebase !== 'undefined') {
