@@ -11,7 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script>
     // ★★★ 여기에 Firebase 콘솔에서 복사한 설정값을 붙여 넣으세요 ★★★
-    // (비워 두면 예전 방식(users.json 로그인)으로 동작합니다)
     const FIREBASE_CONFIG = {
  apiKey: "AIzaSyDswrzNI7X0HqYS3N2Ha25xbVI6I6UvYhU",
   authDomain: "bongsense-c837d.firebaseapp.com",
@@ -126,8 +125,6 @@
     }
   </script>
 
-<!-- html2canvas 라이브러리 (head 태그 상단에 필수 위치) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   
 <style>
     /* Material Symbols 기본 클래스 설정 */
@@ -236,13 +233,6 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     /* 복습 화면 레벨 탭: 가운데 정렬 (칸이 넘치면 좌우 스크롤) */
     #review-level-tabs > :first-child{margin-left:auto}
     #review-level-tabs > :last-child{margin-right:auto}
-      /* 성과 화면 하단 '레포트 제출' 버튼 영역도 같은 폭(720px)으로 */
-    #view-weekly-stats > footer{
-      max-width: var(--app-w);
-      margin-left: auto;
-      margin-right: auto;
-      width: 100%;
-    }
   </style>
 </head>
 <body class="bg-surface text-on-surface flex flex-col min-h-screen">
@@ -711,7 +701,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   </header>
 
   <!-- Main Content (고정 헤더 아래에서 시작하도록 pt-20 설정) -->
-  <main class="flex flex-col relative w-full pt-20 pb-28 px-gutter bg-surface flex-grow">
+  <main class="flex flex-col relative w-full pt-20 pb-12 px-gutter bg-surface flex-grow">
     
     <!-- Progress Header Deck -->
     <div class="w-full flex items-center justify-between gap-space-sm pt-space-xs pb-space-sm">
@@ -922,56 +912,26 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
 </div>
 </section>
 <!-- END: WeeklyInsightCard -->
-<!-- BEGIN: LeaderboardSection (친구들 이번 주 현황) -->
-<section id="leaderboard-section" class="hidden mt-6">
-<div class="bg-surface-container-lowest rounded-2xl shadow-md p-4">
+<!-- BEGIN: MyRankSection (같은 반 / 전체 순위) -->
+<section id="rank-section" class="hidden mt-6">
+<div class="bg-surface-container-lowest rounded-2xl shadow-md p-5">
 <div class="flex items-center justify-between mb-3">
 <div>
-<h3 class="text-base font-bold text-on-surface">이번 주 친구들 현황</h3>
-<p class="text-xs text-on-surface-variant">今週のみんなの学習状況 (읽기+퀴즈 10칸 중)</p>
+<h3 class="text-base font-bold text-on-surface">이번 주 나의 순위</h3>
+<p class="text-xs text-on-surface-variant">今週の順位 (읽기 1점 + 퀴즈 1점 · 주 10점 만점)</p>
 </div>
-<button id="leaderboard-refresh" type="button" aria-label="새로고침" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all cursor-pointer"><span class="material-symbols-outlined text-[22px]">refresh</span></button>
+<button id="rank-refresh" type="button" aria-label="새로고침" class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all cursor-pointer"><span class="material-symbols-outlined text-[22px]">refresh</span></button>
 </div>
-<ol id="leaderboard-list" class="space-y-2"></ol>
-<p id="leaderboard-msg" class="text-xs text-on-surface-variant text-center mt-2"></p>
+<div class="rounded-xl bg-primary/10 p-4 text-center">
+<div id="rank-line-ko" class="text-lg font-extrabold text-primary leading-snug"></div>
+<div id="rank-line-ja" class="text-sm text-on-surface-variant mt-1 leading-snug"></div>
+</div>
+<p id="rank-detail" class="text-xs text-on-surface-variant text-center mt-3"></p>
 </div>
 </section>
-<!-- END: LeaderboardSection -->
+<!-- END: MyRankSection -->
 </main>
 <!-- END: MainContentSection -->
-<!-- BEGIN: BottomActionSection -->
-<footer class="p-4 bg-white/95 backdrop-blur-xs border-t border-slate-100 sticky bottom-0 z-20" data-purpose="bottom-action-container">
-<button id="submit-report-btn" onclick="handleReportSubmit()" class="w-full h-13 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition-all rounded-2xl flex items-center justify-center space-x-2 shadow-sm text-white font-bold text-[15px]" type="button">
-<span class="text-lg leading-tight">📸</span>
-<span id="btn-label" class="">레포트 제출 (レポート提出)</span>
-<svg id="btn-arrow-icon" class="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
-</svg>
-</button>
-</footer>
-<!-- END: BottomActionSection -->
-<!-- Camera Shutter Flash Overlay -->
-<div id="camera-flash" class="pointer-events-none fixed inset-0 z-50 bg-white opacity-0 transition-opacity duration-200"></div>
-
-<!-- Submission Toast / Modal Notification -->
-<div id="submission-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm bg-white/95 backdrop-blur-md border border-emerald-200/80 rounded-2xl shadow-xl p-4 flex items-start space-x-3 transition-all duration-300 transform -translate-y-20 opacity-0 pointer-events-none">
-<div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex-shrink-0 flex items-center justify-center font-bold text-lg">
-✓
-</div>
-<div class="flex-1 text-left">
-<div class="flex items-center space-x-1.5">
-<span class="text-xs font-bold text-emerald-800">📸 캡처 &amp; 완료!</span>
-<span class="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-700 font-semibold rounded-full">전송 성공</span>
-</div>
-<p class="text-[12px] font-semibold text-slate-800 mt-1 leading-snug">
-학습 레포트가 캡처되었어요. 선생님께 보내주세요!
-</p>
-<p class="text-[10.5px] text-slate-500 mt-0.5">
-画面が保存され、先生に送ってください ✨
-</p>
-</div>
-</div>
-
 </div>
 
 <!-- ==================== VIEW 6: 전체복습 ==================== -->
@@ -1243,7 +1203,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   // ==================== ☁️ 서버 연동 (Firebase 로그인 + 학습기록 저장 + 친구 비교) ====================
   // 위쪽 <head>의 FIREBASE_CONFIG 에 설정값을 넣으면 자동으로 켜집니다. (비어 있으면 기존 방식 그대로 동작)
   const FIREBASE_ENABLED = !!(typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
-  const FIREBASE_EMAIL_DOMAIN = '@bongsense.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
+  const FIREBASE_EMAIL_DOMAIN = '@bongsense.example.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
   const WEEKLY_OWNER_KEY = 'weeklyLearningDataOwner';
   let fbAuth = null, fbDb = null;
   if (FIREBASE_ENABLED && typeof firebase !== 'undefined') {
@@ -1326,6 +1286,12 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   const cloudMetaKey = (id) => `cloudMeta_${id}`;
   function getCloudMeta(id) { try { return JSON.parse(localStorage.getItem(cloudMetaKey(id)) || '{}') || {}; } catch (e) { return {}; } }
   function setCloudMeta(id, m) { localStorage.setItem(cloudMetaKey(id), JSON.stringify(m)); }
+  // 이어풀기 정보의 '서버 쪽 버전 번호' (기기 시계를 쓰지 않고 번호로만 비교)
+  function cloudServerVersion(server) {
+    if (!server) return 0;
+    if (typeof server.kvVersion === 'number') return server.kvVersion;
+    return server.kvJson !== undefined ? 1 : 0; // 예전 방식으로 저장된 서버 기록
+  }
 
   // 로그인 직후: 서버 기록과 이 기기 기록을 합친다
   async function cloudPullAndMerge() {
@@ -1346,12 +1312,19 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     localStorage.setItem(WEEKLY_OWNER_KEY, uid);
 
     const meta = getCloudMeta(id);
-    const serverAt = (server && server.kvUpdatedAt) || 0;
-    if (serverAt > (meta.kvUpdatedAt || 0)) {
+    const serverVer = cloudServerVersion(server);
+    const hasLocalKv = Object.keys(collectKv(id)).length > 0;
+    if (!server) {
+      // 서버가 비어 있음 → 이 기기의 이어풀기 정보를 올린다
+      if (hasLocalKv) { meta.dirty = true; meta.seq = (meta.seq || 0) + 1; }
+    } else if (meta.dirty) {
+      // 이 기기에 아직 서버로 못 올린 변경이 있음 → 이 기기 것을 우선해서 올린다
+    } else if (serverVer === 0) {
+      if (hasLocalKv) { meta.dirty = true; meta.seq = (meta.seq || 0) + 1; }
+    } else if (serverVer !== (meta.baseVersion || 0)) {
+      // 다른 기기에서 서버 기록이 바뀜 → 서버 것을 받는다
       replaceKv(id, serverKv);
-      meta.kvUpdatedAt = serverAt;
-    } else if (!meta.kvUpdatedAt && Object.keys(collectKv(id)).length) {
-      meta.kvUpdatedAt = Date.now();
+      meta.baseVersion = serverVer;
     }
     setCloudMeta(id, meta);
     await cloudSaveNow();
@@ -1373,15 +1346,25 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     localStorage.setItem('weeklyLearningData', JSON.stringify(merged));
 
     const meta = getCloudMeta(id);
+    const serverVer = cloudServerVersion(snap.exists ? server : null);
+    const seqAtStart = meta.seq || 0;
+    const pushKv = !!meta.dirty;
     const payload = {
       weeklyJson: JSON.stringify(merged),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-    if ((meta.kvUpdatedAt || 0) >= (server.kvUpdatedAt || 0)) {
+    if (pushKv) {
       payload.kvJson = JSON.stringify(collectKv(id));
-      payload.kvUpdatedAt = meta.kvUpdatedAt || 0;
+      payload.kvVersion = serverVer + 1;
     }
     await ref.set(payload, { merge: true });
+    if (pushKv) {
+      const m2 = getCloudMeta(id);
+      m2.baseVersion = serverVer + 1;
+      if ((m2.seq || 0) === seqAtStart) m2.dirty = false; // 저장하는 사이에 또 바뀌었으면 표시 유지
+      setCloudMeta(id, m2);
+      console.log('☁️ 이어풀기 정보 서버 저장 완료 (버전 ' + (serverVer + 1) + ')');
+    }
 
     const sum = computeWeekSummary(merged);
     await fbDb.collection('leaderboard').doc(uid).set({
@@ -1399,7 +1382,8 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     if (!FIREBASE_ENABLED || !fbAuth || !fbAuth.currentUser || !currentUser) return;
     if (kvChanged) {
       const m = getCloudMeta(currentUser.ID);
-      m.kvUpdatedAt = Date.now();
+      m.dirty = true;
+      m.seq = (m.seq || 0) + 1;
       setCloudMeta(currentUser.ID, m);
     }
     if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
@@ -1409,6 +1393,9 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden' && cloudSaveTimer) cloudSaveNow().catch(() => {});
+  });
+  window.addEventListener('pagehide', () => {
+    if (cloudSaveTimer) cloudSaveNow().catch(() => {});
   });
 
   // 로그인 (Firebase)
@@ -1474,73 +1461,128 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     p.then(() => fbAuth.signOut()).catch(() => {});
   }
 
-  // 친구들 이번 주 현황
-  let leaderboardLoadedAt = 0;
-  async function loadLeaderboard(force) {
-    const section = document.getElementById('leaderboard-section');
-    if (!section) return;
-    if (!FIREBASE_ENABLED || !fbDb || !fbAuth || !fbAuth.currentUser) { section.classList.add('hidden'); return; }
-    section.classList.remove('hidden');
-    if (!force && Date.now() - leaderboardLoadedAt < 20000) return;
-    leaderboardLoadedAt = Date.now();
+  // 반(코스) 이름: users.json 의 course 값 → 화면에 보여줄 이름
+  const COURSE_LABELS = {
+    '1a': { ko: '초급 1반', ja: '初級1クラス' },
+    '2a': { ko: '초급 2반', ja: '初級2クラス' },
+    '3a': { ko: '중급 1반', ja: '中級1クラス' },
+    '4a': { ko: '중급 2반', ja: '中級2クラス' }
+  };
+  const courseLabel = (c) => COURSE_LABELS[String(c || '').toLowerCase()] || null;
+  const courseOfId = (id) => {
+    const u = (usersData || []).find(x => String(x.ID || '').toLowerCase() === String(id || '').toLowerCase());
+    return u ? u.course : undefined;
+  };
 
-    const list = document.getElementById('leaderboard-list');
-    const msg = document.getElementById('leaderboard-msg');
-    try {
-      const snap = await fbDb.collection('leaderboard').get();
-      const wk = computeWeekSummary({}).weekKey;
-      const myUid = fbAuth.currentUser.uid;
-      const rows = [];
-      snap.forEach(d => {
-        const v = d.data() || {};
-        const cur = v.weekKey === wk;
-        rows.push({ uid: d.id, name: v.name || v.id || '?', done: cur ? (v.weekDone || 0) : 0, minutes: cur ? (v.weekMinutes || 0) : 0 });
+  // ---- 이번 주 순위 계산 (읽기 1점 + 퀴즈 1점, 하루 2점, 주 최대 10점) ----
+  // 같은 점수는 같은 등수(공동)로 처리합니다. 점수가 높은 사람 수 + 1 = 내 등수
+  function computeMyRank(me, roster, docs, myScore, weekKey) {
+    const myId = String(me.ID).toLowerCase();
+    const scores = {};
+    (docs || []).forEach(v => {
+      const id = String((v && v.id) || '').toLowerCase();
+      if (id) scores[id] = (v.weekKey === weekKey) ? (Number(v.weekDone) || 0) : 0; // 지난주 기록은 0점
+    });
+    scores[myId] = myScore; // 내 점수는 이 기기의 최신 값 사용
+    let members = (roster || []).filter(u => u && u.ID).map(u => ({ id: String(u.ID).toLowerCase(), course: u.course }));
+    if (!members.some(m => m.id === myId)) members.push({ id: myId, course: me.course });
+    const calc = (group) => {
+      let higher = 0, tied = 0;
+      group.forEach(m => {
+        if (m.id === myId) return;
+        const s = scores[m.id] || 0;
+        if (s > myScore) higher++; else if (s === myScore) tied++;
       });
-      rows.sort((a, b) => b.done - a.done || b.minutes - a.minutes || String(a.name).localeCompare(String(b.name)));
-      list.innerHTML = '';
-      rows.forEach((r, i) => {
-        const mine = r.uid === myUid;
-        const li = document.createElement('li');
-        li.className = 'flex items-center gap-3 p-3 rounded-xl ' + (mine ? 'bg-primary/10 ring-1 ring-primary' : 'bg-surface-container-low');
-        const rank = document.createElement('span');
-        rank.className = 'w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ' + (i === 0 ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-surface-container text-on-surface-variant');
-        rank.textContent = String(i + 1);
-        const body = document.createElement('div');
-        body.className = 'flex-1 min-w-0';
-        const nameEl = document.createElement('div');
-        nameEl.className = 'text-sm font-bold text-on-surface truncate';
-        nameEl.textContent = r.name + (mine ? ' (나 / 私)' : '');
-        const track = document.createElement('div');
-        track.className = 'mt-1.5 h-2 rounded-full bg-surface-container overflow-hidden';
-        const fill = document.createElement('div');
-        fill.className = 'h-full rounded-full bg-secondary transition-all duration-500';
-        fill.style.width = Math.min(100, Math.round((r.done / 10) * 100)) + '%';
-        track.appendChild(fill);
-        body.appendChild(nameEl);
-        body.appendChild(track);
-        const score = document.createElement('div');
-        score.className = 'text-right shrink-0';
-        const s1 = document.createElement('div');
-        s1.className = 'text-sm font-bold text-secondary';
-        s1.textContent = r.done + ' / 10';
-        const s2 = document.createElement('div');
-        s2.className = 'text-[11px] text-on-surface-variant';
-        s2.textContent = r.minutes + '분';
-        score.appendChild(s1);
-        score.appendChild(s2);
-        li.appendChild(rank);
-        li.appendChild(body);
-        li.appendChild(score);
-        list.appendChild(li);
-      });
-      if (msg) msg.textContent = rows.length ? '' : '아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!';
-    } catch (e) {
-      console.warn('☁️ 친구 현황 불러오기 실패:', e);
-      leaderboardLoadedAt = 0;
-      if (msg) msg.textContent = '불러오지 못했어요. 잠시 후 새로고침해 주세요. (読み込めませんでした)';
+      return { rank: higher + 1, tied: tied, total: group.length };
+    };
+    const sameLevel = me.course ? members.filter(m => m.course && String(m.course).toLowerCase() === String(me.course).toLowerCase()) : [];
+    return { score: myScore, level: sameLevel.length ? calc(sameLevel) : null, all: calc(members) };
+  }
+
+  // ---- 오늘 로그인 순서 기록/조회 (오늘 처음 로그인한 순서) ----
+  async function cloudLoginOrderToday() {
+    if (!FIREBASE_ENABLED || !fbAuth || !fbDb || !fbAuth.currentUser || !currentUser) return null;
+    const me = currentUser, uid = fbAuth.currentUser.uid;
+    const col = fbDb.collection('loginLog').doc(toDateKey(new Date())).collection('users');
+    const mine = col.doc(uid);
+    const mySnap = await mine.get();
+    if (!mySnap.exists) {
+      await mine.set({ id: String(me.ID), at: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    const snap = await col.orderBy('at').get();
+    const rows = [];
+    snap.forEach(d => { const v = d.data() || {}; rows.push({ uid: d.id, id: v.id }); });
+    const total = rows.findIndex(r => r.uid === uid) + 1;
+    if (total <= 0) return null;
+    let level = 0;
+    if (me.course) {
+      const same = rows.filter(r => { const c = courseOfId(r.id); return c && String(c).toLowerCase() === String(me.course).toLowerCase(); });
+      level = same.findIndex(r => r.uid === uid) + 1;
+    }
+    return { total: total, level: level > 0 ? level : 0, course: me.course };
+  }
+
+  // 로그인 순서 문구 (한국어 / 일본어)
+  function buildLoginOrderText(res) {
+    const lab = courseLabel(res.course);
+    const ordKo = (n) => n === 1 ? '첫번째' : n + '번째';
+    let ko = '', ja = '';
+    if (res.level && lab) {
+      ko = `오늘 ${lab.ko} 학생들 중 ${ordKo(res.level)} 로그인이에요! 그리고 전체 학생들 중 ${ordKo(res.total)}로 로그인했어요!`;
+      ja = `今日、${lab.ja}の学生の中で${res.level}番目のログインです!そして全体では${res.total}番目にログインしました!`;
+    } else {
+      ko = `오늘 전체 학생들 중 ${ordKo(res.total)}로 로그인했어요!`;
+      ja = `今日、全体で${res.total}番目にログインしました!`;
+    }
+    return { ko: ko, ja: ja };
+  }
+
+  // 성과 화면: 나의 순위 (같은 반 / 전체)
+  let rankDocsCache = null, rankLoadedAt = 0;
+  function renderMyRank() {
+    const koEl = document.getElementById('rank-line-ko');
+    const jaEl = document.getElementById('rank-line-ja');
+    const detailEl = document.getElementById('rank-detail');
+    if (!koEl || !currentUser) return;
+    const wk = computeWeekSummary({}).weekKey;
+    const myScore = computeWeekSummary(readWeeklyLocal()).weekDone;
+    const r = computeMyRank(currentUser, usersData, rankDocsCache || [], myScore, wk);
+    const lab = courseLabel(currentUser.course);
+    if (myScore === 0) {
+      koEl.textContent = '아직 이번 주 점수가 없어요. 읽기와 퀴즈를 시작해 보세요!';
+      jaEl.textContent = '今週のポイントはまだありません。音読とクイズを始めましょう!';
+    } else {
+      const koPart = (x) => `${x.tied > 0 ? '공동 ' : ''}${x.rank}등`;
+      const jaPart = (x) => `${x.rank}位${x.tied > 0 ? 'タイ' : ''}`;
+      koEl.textContent = (r.level && lab ? `${lab.ko}에서 ${koPart(r.level)}! ` : '') + `전체에서 ${koPart(r.all)}!`;
+      jaEl.textContent = (r.level && lab ? `${lab.ja}で${jaPart(r.level)}! ` : '') + `全体で${jaPart(r.all)}!`;
+    }
+    if (detailEl) {
+      detailEl.textContent = `내 점수 ${myScore}/10점 (あなたの得点) · ` + (r.level && lab ? `${lab.ko} ${r.level.total}명 · ` : '') + `전체 ${r.all.total}명`;
     }
   }
-  document.getElementById('leaderboard-refresh')?.addEventListener('click', () => loadLeaderboard(true));
+  async function loadMyRank(force) {
+    const section = document.getElementById('rank-section');
+    if (!section) return;
+    if (!FIREBASE_ENABLED || !fbDb || !fbAuth || !fbAuth.currentUser || !currentUser) { section.classList.add('hidden'); return; }
+    section.classList.remove('hidden');
+    renderMyRank(); // 먼저 가진 정보로 바로 표시
+    if (!force && rankDocsCache && Date.now() - rankLoadedAt < 20000) return;
+    rankLoadedAt = Date.now();
+    try {
+      const snap = await fbDb.collection('leaderboard').get();
+      const docs = [];
+      snap.forEach(d => docs.push(d.data() || {}));
+      rankDocsCache = docs;
+      renderMyRank();
+    } catch (e) {
+      console.warn('☁️ 순위 불러오기 실패:', e);
+      rankLoadedAt = 0;
+      const detailEl = document.getElementById('rank-detail');
+      if (detailEl) detailEl.textContent = '순위를 불러오지 못했어요. 잠시 후 새로고침해 주세요. (読み込めませんでした)';
+    }
+  }
+  document.getElementById('rank-refresh')?.addEventListener('click', () => loadMyRank(true));
 
   // ==================== 유틸리티: 레벤슈타인 거리 및 유사도 ====================
   function getLevenshteinDistance(str1, str2) {
@@ -1626,6 +1668,8 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   // force=false: 자동 로그인일 때 (하루에 한 번만 표시)
   function showWelcomePopup(user, force) {
     if (!user) return;
+    // 오늘의 로그인 순서 기록/조회 (팝업을 안 띄우는 자동 로그인에서도 기록은 남김)
+    const orderPromise = (typeof cloudLoginOrderToday === 'function') ? cloudLoginOrderToday().catch(() => null) : Promise.resolve(null);
     const shownKey = `welcomeShown_${user.ID || 'default'}`;
     const today = getTodayKey();
     try {
@@ -1662,6 +1706,10 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
           '<div data-wp="ko" style="font-size:15px;font-weight:700;color:rgb(var(--c-primary))"></div>' +
           '<div data-wp="ja" style="font-size:12px;color:rgb(var(--c-on-surface-variant));margin-top:4px"></div>' +
         '</div>' +
+        '<div data-wp="order" style="display:none;margin-top:12px;padding:12px 14px;border-radius:16px;background:rgb(var(--c-secondary) / .12);text-align:left">' +
+          '<div data-wp="orderKo" style="font-size:13px;font-weight:700;color:rgb(var(--c-secondary));line-height:1.5"></div>' +
+          '<div data-wp="orderJa" style="font-size:12px;color:rgb(var(--c-on-surface-variant));margin-top:3px;line-height:1.5"></div>' +
+        '</div>' +
         '<div data-wp="lesson" style="display:none;margin-top:12px;font-size:12px;font-weight:700;color:rgb(var(--c-secondary))"></div>' +
         '<button id="welcome-popup-close" type="button" style="margin-top:20px;width:100%;border:0;border-radius:16px;padding:15px 0;background:rgb(var(--c-primary));color:rgb(var(--c-on-primary));font-size:16px;font-weight:700;cursor:pointer;touch-action:manipulation">시작하기 / はじめる</button>' +
       '</div>';
@@ -1671,6 +1719,13 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     set('titleJa', `ようこそ、${name}さん!`);
     set('ko', msg.ko);
     set('ja', msg.ja);
+    orderPromise.then((res) => {
+      if (!res || !overlay.isConnected) return;
+      const txt = buildLoginOrderText(res);
+      set('orderKo', txt.ko);
+      set('orderJa', txt.ja);
+      overlay.querySelector('[data-wp="order"]').style.display = 'block';
+    });
     if (lessonTitle) {
       set('lesson', `이번 주 학습 / 今週の学習: ${lessonTitle}`);
       overlay.querySelector('[data-wp="lesson"]').style.display = 'block';
@@ -2116,7 +2171,7 @@ function generateQuizProblem(targetItem, allLessons) {
 
   // =========================== VIEW 5: 주간성과======================
   function renderWeeklyStatsView() {
-    if (typeof loadLeaderboard === 'function') loadLeaderboard();
+    if (typeof loadMyRank === 'function') loadMyRank();
     const courseTag = document.getElementById('achievement-course-tag');
     if (courseTag) {
       const userCourse = currentUser?.course || "1a";
@@ -2246,108 +2301,6 @@ function generateQuizProblem(targetItem, allLessons) {
     const streakElement = document.querySelector('[data-purpose="summary-card"] .text-lg.font-bold.text-amber-600');
     if (streakElement) streakElement.innerText = `${streakCount}일 달성`;
   }
-
-  // 스크린샷 생성 및 레포트 제출
-  async function handleReportSubmit() {
-    if (typeof html2canvas === 'undefined') {
-      alert("화면 캡처 라이브러리가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.");
-      return;
-    }
-
-    const btn = document.getElementById('submit-report-btn');
-    const btnLabel = document.getElementById('btn-label');
-    const flash = document.getElementById('camera-flash');
-    const toast = document.getElementById('submission-toast');
-    const targetArea = document.getElementById('view-weekly-stats');
-    
-    if (!targetArea) {
-      alert("캡처할 화면 영역을 찾을 수 없습니다.");
-      return;
-    }
-
-    if (btn && btn.dataset.submitting === 'true') return;
-    if (btn) btn.dataset.submitting = 'true';
-    
-    if (btnLabel) btnLabel.innerText = '화면 캡처 중... (撮影中)';
-    if (btn) {
-      btn.classList.add('bg-slate-700');
-      btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-    }
-    
-    if (flash) {
-      flash.classList.remove('opacity-0');
-      flash.classList.add('opacity-90');
-      setTimeout(() => {
-        flash.classList.remove('opacity-90');
-        flash.classList.add('opacity-0');
-      }, 120);
-    }
-
-    try {
-      window.scrollTo(0, 0);
-
-      const canvas = await html2canvas(targetArea, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        onclone: (doc) => { doc.documentElement.classList.remove('dark'); const lb = doc.getElementById('leaderboard-section'); if (lb) lb.remove(); },
-        windowWidth: targetArea.scrollWidth,
-        windowHeight: targetArea.scrollHeight,
-        ignoreElements: (element) => {
-          return element.id === 'submit-report-btn' || 
-                 element.id === 'submission-toast' || 
-                 element.id === 'camera-flash' ||
-                 element.tagName === 'FOOTER';
-        }
-      });
-
-      const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      const today = new Date().toISOString().slice(0, 10);
-      
-      link.href = image;
-      link.download = `세종학당_주간학습레포트_${today}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      if (btnLabel) btnLabel.innerText = '캡처 완료! (撮影完了)';
-      if (btn) {
-        btn.classList.remove('bg-slate-700');
-        btn.classList.add('bg-emerald-700');
-      }
-      
-      if (toast) {
-        toast.classList.remove('-translate-y-20', 'opacity-0', 'pointer-events-none');
-        toast.classList.add('translate-y-0', 'opacity-100');
-      }
-      
-      setTimeout(() => {
-        if (toast) {
-          toast.classList.add('-translate-y-20', 'opacity-0', 'pointer-events-none');
-          toast.classList.remove('translate-y-0', 'opacity-100');
-        }
-        if (btnLabel) btnLabel.innerText = '레포트 다시 제출 (再提出)';
-        if (btn) {
-          btn.classList.remove('bg-emerald-700');
-          btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-          btn.dataset.submitting = 'false';
-        }
-      }, 3200);
-
-    } catch (error) {
-      console.error("스크린샷 생성 실패:", error);
-      alert("화면 캡처 중 오류가 발생했습니다. 직접 스크린샷을 찍어 제출해 주세요.");
-      if (btnLabel) btnLabel.innerText = '레포트 제출 (レポート提出)';
-      if (btn) {
-        btn.classList.remove('bg-slate-700');
-        btn.classList.add('bg-emerald-600');
-        btn.dataset.submitting = 'false';
-      }
-    }
-  }
-
 
   // ================ VIEW 6: 전체복습 ================
   function getActualLessonId(levelId, lessonNum) {
