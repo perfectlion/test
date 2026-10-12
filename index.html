@@ -11,6 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script>
     // ★★★ 여기에 Firebase 콘솔에서 복사한 설정값을 붙여 넣으세요 ★★★
+    // (비워 두면 예전 방식(users.json 로그인)으로 동작합니다)
     const FIREBASE_CONFIG = {
  apiKey: "AIzaSyDswrzNI7X0HqYS3N2Ha25xbVI6I6UvYhU",
   authDomain: "bongsense-c837d.firebaseapp.com",
@@ -233,6 +234,11 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     /* 복습 화면 레벨 탭: 가운데 정렬 (칸이 넘치면 좌우 스크롤) */
     #review-level-tabs > :first-child{margin-left:auto}
     #review-level-tabs > :last-child{margin-right:auto}
+
+    /* 단어카드 설정 화면 선택 버튼 */
+    .flash-opt{background-color:rgb(var(--c-surface-container));color:rgb(var(--c-on-surface));transition:background-color .15s,transform .1s,box-shadow .15s;cursor:pointer}
+    .flash-opt:active{transform:scale(.97)}
+    .flash-opt[aria-pressed="true"]{background-color:rgb(var(--c-primary));color:rgb(var(--c-on-primary));box-shadow:0 6px 16px -6px rgb(var(--c-primary) / .6)}
   </style>
 </head>
 <body class="bg-surface text-on-surface flex flex-col min-h-screen">
@@ -414,9 +420,13 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
 
     <nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.05)]">
       <div class="h-16 px-gutter flex justify-around items-center">
-        <a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-primary font-bold transition-colors group" href="#">
-          <span class="material-symbols-outlined text-[24px] mb-0.5" style="font-variation-settings: 'FILL' 1;">school</span>
-          <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">今日の学習</span>
+        <!-- 単語学習 (단어학습 → 단어카드) -->
+        <a id="nav-flashcard"
+           class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-20 text-on-surface-variant transition-colors group cursor-pointer"
+           href="javascript:void(0);"
+           onclick="openFlashcardSetup()">
+          <span class="material-symbols-outlined text-[24px] mb-0.5">style</span>
+          <span class="font-kana-subtext text-[11px] leading-tight text-center tracking-tight">単語学習</span>
         </a>
         <!-- 復習モード (복습 모드) -->
         <a id="nav-review-mode" 
@@ -975,6 +985,121 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
 
 </div>
 
+<!-- ==================== VIEW 7: 단어카드 설정 ==================== -->
+<div id="view-flashcard-setup" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
+  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
+    <div class="h-16 px-gutter flex items-center justify-between">
+      <div class="flex items-center gap-space-sm">
+        <button id="back-from-flash-setup" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+        </button>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span></div>
+          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Flash Card Mode</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-sm">
+        <img class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
+      </div>
+    </div>
+  </header>
+  <main class="flex flex-col relative w-full pt-20 pb-12 px-4 flex-grow gap-4">
+    <section class="bg-surface-container-lowest rounded-2xl shadow-md p-4">
+      <h3 class="text-base font-bold text-on-surface">레벨 선택 <span class="text-xs font-normal text-on-surface-variant">レベル選択</span></h3>
+      <div class="flex flex-wrap justify-center gap-2 mt-3">
+        <button type="button" data-flash-level="1a" class="flash-opt flex-1 min-w-[88px] py-3 rounded-xl font-bold text-sm">초급 1<span class="block text-[11px] font-normal opacity-80">初級1</span></button>
+        <button type="button" data-flash-level="2a" class="flash-opt flex-1 min-w-[88px] py-3 rounded-xl font-bold text-sm">초급 2<span class="block text-[11px] font-normal opacity-80">初級2</span></button>
+        <button type="button" data-flash-level="3a" class="flash-opt flex-1 min-w-[88px] py-3 rounded-xl font-bold text-sm">중급 1<span class="block text-[11px] font-normal opacity-80">中級1</span></button>
+        <button type="button" data-flash-level="4a" class="flash-opt flex-1 min-w-[88px] py-3 rounded-xl font-bold text-sm">중급 2<span class="block text-[11px] font-normal opacity-80">中級2</span></button>
+        <button type="button" data-flash-level="random" class="flash-opt flex-1 min-w-[88px] py-3 rounded-xl font-bold text-sm">랜덤<span class="block text-[11px] font-normal opacity-80">ランダム</span></button>
+      </div>
+      <p id="flash-stats-level" class="text-xs text-on-surface-variant text-center mt-3"></p>
+    </section>
+    <section class="bg-surface-container-lowest rounded-2xl shadow-md p-4">
+      <h3 class="text-base font-bold text-on-surface">언어 선택 <span class="text-xs font-normal text-on-surface-variant">言語選択</span></h3>
+      <p class="text-xs text-on-surface-variant mt-1">선택한 언어의 단어가 먼저 나와요 / 選んだ言語の単語が先に出ます</p>
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <button type="button" data-flash-lang="kr" class="flash-opt py-3 rounded-xl font-bold text-sm">한국어<span class="block text-[11px] font-normal opacity-80">韓国語</span></button>
+        <button type="button" data-flash-lang="ja" class="flash-opt py-3 rounded-xl font-bold text-sm">일본어<span class="block text-[11px] font-normal opacity-80">日本語</span></button>
+      </div>
+    </section>
+    <section class="bg-surface-container-lowest rounded-2xl shadow-md p-4">
+      <h3 class="text-base font-bold text-on-surface">문제 수 <span class="text-xs font-normal text-on-surface-variant">問題数</span></h3>
+      <div class="grid grid-cols-3 gap-2 mt-3">
+        <button type="button" data-flash-count="10" class="flash-opt py-3 rounded-xl font-bold text-sm">10개</button>
+        <button type="button" data-flash-count="20" class="flash-opt py-3 rounded-xl font-bold text-sm">20개</button>
+        <button type="button" data-flash-count="30" class="flash-opt py-3 rounded-xl font-bold text-sm">30개</button>
+      </div>
+    </section>
+    <section class="mt-auto">
+      <p id="flash-stats-all" class="text-xs text-on-surface-variant text-center mb-3"></p>
+      <button id="flash-start-btn" type="button" class="w-full h-14 rounded-2xl bg-primary text-on-primary font-bold text-base shadow-lg active:scale-[0.98] transition-transform cursor-pointer flex items-center justify-center gap-2">
+        <span>시작하기 (スタート)</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+      </button>
+    </section>
+  </main>
+</div>
+
+<!-- ==================== VIEW 8: 단어카드 ==================== -->
+<div id="view-flashcard" class="hidden-view relative z-10 flex flex-col min-h-screen w-full bg-surface">
+  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe">
+    <div class="h-16 px-gutter flex items-center justify-between">
+      <div class="flex items-center gap-space-sm">
+        <button id="back-from-flash" aria-label="戻る" class="min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 rounded-full active:scale-95 text-on-surface transition-transform cursor-pointer" type="button">
+          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+        </button>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">세종학당 봉센세</span></div>
+          <span class="font-kana-subtext text-kana-subtext text-on-surface-variant line-clamp-1 leading-tight">Flash Card Mode</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-sm">
+        <img class="user-profile-img-all w-9 h-9 rounded-full object-cover ring-2 ring-primary-fixed" src="./images/default-avatar.png" alt="Profile" />
+      </div>
+    </div>
+  </header>
+  <main class="flex flex-col relative w-full pt-20 pb-8 px-4 flex-grow gap-3">
+    <div class="flex items-center justify-between gap-2">
+      <span id="flash-progress" class="text-xs font-bold text-primary bg-primary/10 rounded-full px-3 py-1.5"></span>
+      <span id="flash-title" class="flex-1 text-center text-xs text-on-surface-variant truncate"></span>
+      <button id="flash-lang-toggle" type="button" class="text-xs font-bold text-on-surface-variant bg-surface-container rounded-full px-3 py-1.5 active:scale-95 transition-transform cursor-pointer flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">swap_horiz</span><span id="flash-lang-toggle-label">韓↔日</span></button>
+    </div>
+    <div class="h-1.5 rounded-full bg-surface-container overflow-hidden"><div id="flash-bar" class="h-full rounded-full bg-primary transition-all duration-300" style="width:0%"></div></div>
+
+    <section id="flash-card-area" class="flex flex-col gap-3 flex-grow">
+      <div class="bg-surface-container-lowest rounded-3xl shadow-md p-6 min-h-[150px] flex flex-col items-center justify-center text-center">
+        <span id="flash-side-tag" class="text-[11px] font-bold text-on-surface-variant bg-surface-container rounded-full px-2.5 py-0.5"></span>
+        <div id="flash-word" class="text-4xl font-extrabold text-on-surface mt-3 break-keep leading-snug"></div>
+      </div>
+      <button id="flash-sentence-box" type="button" class="bg-surface-container-lowest rounded-3xl shadow-md p-5 min-h-[130px] flex flex-col items-center justify-center text-center cursor-pointer active:scale-[0.99] transition-transform">
+        <div id="flash-sentence" class="text-xl font-bold text-on-surface leading-relaxed break-keep"></div>
+        <span class="mt-2 text-[11px] text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">volume_up</span>눌러서 듣기 / タップで音声</span>
+      </button>
+      <div id="flash-answer-row" class="grid grid-cols-2 gap-3 mt-auto pt-2">
+        <button id="flash-unknown-btn" type="button" class="h-16 rounded-2xl bg-tertiary-fixed text-on-tertiary-fixed font-bold text-base shadow-md active:scale-[0.98] transition-transform cursor-pointer">몰라요<span class="block text-[11px] font-normal opacity-80">わからない</span></button>
+        <button id="flash-known-btn" type="button" class="h-16 rounded-2xl bg-secondary text-on-secondary font-bold text-base shadow-md active:scale-[0.98] transition-transform cursor-pointer">알아요<span class="block text-[11px] font-normal opacity-80">わかる</span></button>
+      </div>
+      <button id="flash-next-btn" type="button" class="hidden w-full h-16 rounded-2xl bg-primary text-on-primary font-bold text-base shadow-lg active:scale-[0.98] transition-transform cursor-pointer mt-auto items-center justify-center gap-2"><span>다음 단어 (次の単語へ)</span><span class="material-symbols-outlined text-[20px]">arrow_forward</span></button>
+    </section>
+
+    <section id="flash-result" class="hidden flex-col gap-4 flex-grow justify-center">
+      <div class="bg-surface-container-lowest rounded-3xl shadow-md p-6 text-center">
+        <div class="text-3xl">🎉</div>
+        <h3 class="text-xl font-extrabold text-on-surface mt-2">수고했어요!<span class="block text-sm font-normal text-on-surface-variant">お疲れさまでした!</span></h3>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="rounded-2xl bg-secondary/15 p-3"><div class="text-2xl font-extrabold text-secondary" id="flash-result-known">0</div><div class="text-xs text-on-surface-variant">알아요 / わかる</div></div>
+          <div class="rounded-2xl bg-tertiary/15 p-3"><div class="text-2xl font-extrabold text-tertiary" id="flash-result-unknown">0</div><div class="text-xs text-on-surface-variant">몰라요 / わからない</div></div>
+        </div>
+        <p id="flash-result-total" class="text-xs text-on-surface-variant mt-4"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="flash-retry-btn" type="button" class="h-14 rounded-2xl bg-surface-container text-on-surface font-bold text-sm active:scale-[0.98] transition-transform cursor-pointer">다시 하기<span class="block text-[11px] font-normal opacity-80">もう一度</span></button>
+        <button id="flash-exit-btn" type="button" class="h-14 rounded-2xl bg-primary text-on-primary font-bold text-sm shadow-md active:scale-[0.98] transition-transform cursor-pointer">돌아가기<span class="block text-[11px] font-normal opacity-80">戻る</span></button>
+      </div>
+    </section>
+  </main>
+</div>
+
 <script>
   // ==================== 데이터 및 상태 관리 ====================
   let usersData = [];
@@ -1075,7 +1200,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
 
   // ==================== 뷰 전환 공통 함수 ====================
   function showView(targetViewId, recordHistory = true) {
-    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats', 'view-review'];
+    const views = ['view-login', 'view-dashboard', 'view-practice', 'view-quiz', 'view-weekly-stats', 'view-review', 'view-flashcard-setup', 'view-flashcard'];
     const target = document.getElementById(targetViewId);
     if (!views.includes(targetViewId) || !target) return;
 
@@ -1096,6 +1221,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
     activeViewId = targetViewId;
     if (targetViewId === 'view-dashboard' && currentUser) setupDashboardUI(currentUser);
     if (targetViewId === 'view-review') renderReviewScreen();
+    if (targetViewId === 'view-flashcard-setup') renderFlashSetup();
     window.scrollTo(0, 0);
   }
 
@@ -1203,7 +1329,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
   // ==================== ☁️ 서버 연동 (Firebase 로그인 + 학습기록 저장 + 친구 비교) ====================
   // 위쪽 <head>의 FIREBASE_CONFIG 에 설정값을 넣으면 자동으로 켜집니다. (비어 있으면 기존 방식 그대로 동작)
   const FIREBASE_ENABLED = !!(typeof FIREBASE_CONFIG !== 'undefined' && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
-  const FIREBASE_EMAIL_DOMAIN = '@bongsense.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
+  const FIREBASE_EMAIL_DOMAIN = '@bongsense.example.com'; // 학생 ID → 가짜 이메일로 바꿀 때 쓰는 뒷부분 (Firebase에 계정 만들 때도 똑같이!)
   const WEEKLY_OWNER_KEY = 'weeklyLearningDataOwner';
   let fbAuth = null, fbDb = null;
   if (FIREBASE_ENABLED && typeof firebase !== 'undefined') {
@@ -1261,7 +1387,7 @@ html.dark{--c-on-error:105 0 5;--c-primary-container:29 78 216;--c-on-error-cont
 
   // 이어풀기 정보(progress_*, quizPick_*, quizUsed_*) 모으기/되돌리기 (해당 학생 ID 것만)
   function isUserKvKey(key, id) {
-    if (key === `quizPick_${id}` || key === `quizUsed_${id}`) return true;
+    if (key === `quizPick_${id}` || key === `quizUsed_${id}` || key === `knownWords_${id}`) return true;
     if (!key.startsWith('progress_')) return false;
     const p = key.split('_');
     return p.length === 4 && p[2] === id;
@@ -2361,8 +2487,8 @@ function generateQuizProblem(targetItem, allLessons) {
               <span class="material-symbols-outlined text-[16px]">quiz</span>
               <span>단어퀴즈</span>
             </button>
-            <button type="button" onclick="alert('준비 중입니다.')" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-outline-variant/20 text-on-surface-variant/60 font-bold text-[12px] cursor-pointer">
-              <span class="material-symbols-outlined text-[16px]">campaign</span>
+            <button type="button" onclick="startFlashcardsForLesson('${currentSelectedLevel}', ${i})" class="flex items-center justify-center gap-1 py-2 px-1 rounded-lg bg-surface-container text-secondary font-bold text-[12px] cursor-pointer active:scale-95 transition-transform">
+              <span class="material-symbols-outlined text-[16px]">style</span>
               <span>단어연습</span>
             </button>
           </div>
@@ -2423,6 +2549,7 @@ function generateQuizProblem(targetItem, allLessons) {
     const lessonsWithQuiz = new Set(
       (lessonsData || [])
         .filter(l => l.word_kr && l.word_kr.trim() !== "")
+        .filter(l => !isWordKnownItem(l)) // 단어카드에서 '알아요'로 표시한 단어는 제외
         .map(l => Number(l.lesson_id))
     );
     const pool = [];
@@ -2479,7 +2606,7 @@ function generateQuizProblem(targetItem, allLessons) {
       isRandomQuizMode = true;
       const randomLessonId = getRandomQuizLessonId();
       if (!randomLessonId) {
-        alert("퀴즈 데이터가 없습니다.");
+        alert("퀴즈로 풀 단어가 없어요. (진도 범위의 단어를 모두 알고 있거나 데이터가 없어요)\n出題できる単語がありません。(範囲の単語をすべて覚えているか、データがありません)");
         return;
       }
       selection = getContentSelection(randomLessonId);
@@ -2488,9 +2615,10 @@ function generateQuizProblem(targetItem, allLessons) {
     const targetLessonId = selection.lessonId;
 
     const allLessons = lessonsData || [];
-    const lessonItems = allLessons.filter(
+    let lessonItems = allLessons.filter(
       l => Number(l.lesson_id) === targetLessonId && l.word_kr && l.word_kr.trim() !== ""
     );
+    if (isRandomQuizMode) lessonItems = lessonItems.filter(l => !isWordKnownItem(l)); // 랜덤 퀴즈: '알아요' 단어 제외
 
     if (lessonItems.length === 0) {
       alert(`제 ${targetLessonId}과에 해당하는 퀴즈 데이터가 없습니다.`);
@@ -2528,7 +2656,16 @@ function generateQuizProblem(targetItem, allLessons) {
         || null;
   }
 
-  function playTTS(text, rate = 0.8) {
+  function getVoiceForLang(lang) {
+    if (!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    const prefix = String(lang).slice(0, 2).toLowerCase();
+    return voices.find(v => v.lang === lang)
+        || voices.find(v => (v.lang || '').replace('_', '-').toLowerCase().startsWith(prefix))
+        || null;
+  }
+
+  function playTTS(text, rate = 0.8, lang = 'ko-KR') {
     if (!('speechSynthesis' in window) || !text) return;
     const synth = window.speechSynthesis;
 
@@ -2537,9 +2674,9 @@ function generateQuizProblem(targetItem, allLessons) {
     const speakNow = () => {
       try { synth.resume(); } catch (e) {}
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ko-KR';
+      utterance.lang = lang;
       utterance.rate = rate;
-      const koVoice = getKoreanVoice();
+      const koVoice = getVoiceForLang(lang);
       if (koVoice) utterance.voice = koVoice;
       utterance.onerror = (e) => console.error('🔊 TTS 오류:', e.error);
       currentUtterance = utterance;
@@ -2776,6 +2913,190 @@ function generateQuizProblem(targetItem, allLessons) {
     startRecognition();
   });
  
+
+  // ==================== 단어카드 (Flash Card) ====================
+  // 알고 있는 단어 목록은 학생별로 'knownWords_학생ID' 에 저장하고, 이어풀기 정보와 같은 방식으로 서버에 동기화됩니다.
+  // 단어 하나의 식별값 = "과번호|한국어 단어" (lessons.json 의 lesson_id, word_kr 사용)
+  const flashWordKey = (item) => `${Number(item.lesson_id)}|${String(item.word_kr || '').trim()}`;
+  const flashHasWord = (item) => !!(item && item.word_kr && String(item.word_kr).trim() !== '');
+  function flashShuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+
+  let knownCache = { raw: null, set: new Set(), id: null };
+  function knownStorageKey() { return `knownWords_${currentUser?.ID || 'default'}`; }
+  function getKnownSet() {
+    const key = knownStorageKey();
+    let raw = null;
+    try { raw = localStorage.getItem(key); } catch (e) {}
+    if (knownCache.id === key && knownCache.raw === raw) return knownCache.set;
+    let set = new Set();
+    try { const arr = JSON.parse(raw || '[]'); if (Array.isArray(arr)) set = new Set(arr); } catch (e) {}
+    knownCache = { raw: raw, set: set, id: key };
+    return set;
+  }
+  function isWordKnownItem(item) { return getKnownSet().has(flashWordKey(item)); }
+  function setWordKnown(key, isKnown) {
+    const set = new Set(getKnownSet());
+    const had = set.has(key);
+    if (isKnown === had) return; // 바뀐 게 없으면 저장하지 않음
+    if (isKnown) set.add(key); else set.delete(key);
+    try { localStorage.setItem(knownStorageKey(), JSON.stringify(Array.from(set))); } catch (e) {}
+    cloudSyncSoon(true); // 서버 저장 예약
+  }
+
+  function getWordsForLevel(levelId) {
+    const items = (lessonsData || []).filter(flashHasWord);
+    if (levelId === 'random') return items;
+    const lvl = reviewLevels.find(l => l.id === levelId);
+    if (!lvl) return items;
+    return items.filter(l => { const n = Number(l.lesson_id); return n >= lvl.minId && n <= lvl.maxId; });
+  }
+  const flashFrontOk = (item, lang) => lang === 'ja' ? !!(item.word_jp && String(item.word_jp).trim() !== '') : flashHasWord(item);
+  function buildFlashCard(item) {
+    return {
+      key: flashWordKey(item),
+      kr: { word: String(item.word_kr || '').trim(), sentence: String(item.sentence_kr || '').trim() },
+      ja: { word: String(item.word_jp || '').trim(), sentence: String(item.sentence_jp || '').trim() }
+    };
+  }
+
+  const flashSetup = { level: '1a', lang: 'kr', count: 10 };
+  let flashSession = null;
+  const flashEl = (id) => document.getElementById(id);
+
+  function openFlashcardSetup() { showView('view-flashcard-setup'); }
+
+  function renderFlashSetup() {
+    document.querySelectorAll('[data-flash-level]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flashLevel === flashSetup.level)));
+    document.querySelectorAll('[data-flash-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.flashLang === flashSetup.lang)));
+    document.querySelectorAll('[data-flash-count]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.flashCount) === flashSetup.count)));
+    const known = getKnownSet();
+    const countKnown = (arr) => arr.filter(i => known.has(flashWordKey(i))).length;
+    const all = getWordsForLevel('random');
+    const lv = getWordsForLevel(flashSetup.level);
+    const lvName = { '1a': '초급 1', '2a': '초급 2', '3a': '중급 1', '4a': '중급 2', 'random': '랜덤(전체)' }[flashSetup.level];
+    const lvEl = flashEl('flash-stats-level');
+    if (lvEl) lvEl.textContent = `${lvName}: 단어 ${lv.length}개 중 ${countKnown(lv)}개 알고 있어요 (${lv.length}語中${countKnown(lv)}語)`;
+    const allEl = flashEl('flash-stats-all');
+    if (allEl) allEl.textContent = `📚 전체 단어 ${all.length}개 중 ${countKnown(all)}개 알고 있어요 / 全${all.length}語中${countKnown(all)}語を覚えています`;
+  }
+
+  function startFlashcardsFromSetup() {
+    const lang = flashSetup.lang;
+    const pool = getWordsForLevel(flashSetup.level).filter(i => flashFrontOk(i, lang));
+    if (!pool.length) { alert('이 레벨에는 단어 데이터가 없습니다.\nこのレベルには単語データがありません。'); return; }
+    const known = getKnownSet();
+    // 아직 모르는 단어를 먼저 뽑고, 모자라면 아는 단어로 채웁니다
+    const picked = flashShuffle(flashShuffle(pool.filter(i => !known.has(flashWordKey(i)))).concat(flashShuffle(pool.filter(i => known.has(flashWordKey(i))))).slice(0, flashSetup.count));
+    const lvName = { '1a': '초급 1', '2a': '초급 2', '3a': '중급 1', '4a': '중급 2', 'random': '랜덤' }[flashSetup.level];
+    beginFlashSession(picked, lang, lvName, startFlashcardsFromSetup);
+    showView('view-flashcard');
+  }
+
+  // 복습 화면의 '단어연습' 버튼: 선택한 과의 단어만, 설정 화면 없이 바로 시작
+  function startFlashcardsForLesson(levelId, lessonNum) {
+    const lessonId = getActualLessonId(levelId, lessonNum);
+    const items = (lessonsData || []).filter(l => Number(l.lesson_id) === lessonId && flashHasWord(l));
+    if (!items.length) { alert(`제 ${lessonNum}과에 해당하는 단어 데이터가 없습니다.`); return; }
+    const t = getBookAndLessonTitle(levelId, lessonId);
+    beginFlashSession(items, 'kr', `${t.bookName} • 제 ${t.lessonNum}과`, () => startFlashcardsForLesson(levelId, lessonNum));
+    showView('view-flashcard');
+  }
+
+  function beginFlashSession(items, lang, title, restartFn) {
+    flashSession = { cards: items.map(buildFlashCard), index: 0, lang: lang, known: 0, unknown: 0, revealed: false, title: title, restart: restartFn };
+    renderFlashCard();
+  }
+
+  function renderFlashCard() {
+    const s = flashSession;
+    if (!s) return;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const total = s.cards.length;
+    flashEl('flash-title').textContent = s.title || '';
+    flashEl('flash-progress').textContent = `${Math.min(s.index + 1, total)} / ${total}`;
+    flashEl('flash-bar').style.width = Math.round((s.index / total) * 100) + '%';
+    flashEl('flash-lang-toggle-label').textContent = s.lang === 'kr' ? '韓国語' : '日本語';
+
+    if (s.index >= total) { showFlashResult(); return; }
+    flashEl('flash-card-area').classList.remove('hidden');
+    flashEl('flash-result').classList.add('hidden');
+    flashEl('flash-result').classList.remove('flex');
+
+    const card = s.cards[s.index];
+    const front = s.lang;                       // 처음 보여줄 언어
+    const side = s.revealed ? (front === 'kr' ? 'ja' : 'kr') : front;
+    const data = card[side];
+    flashEl('flash-word').textContent = data.word || '-';
+    flashEl('flash-sentence').textContent = data.sentence || '(예문이 없어요 / 例文なし)';
+    flashEl('flash-side-tag').textContent = s.revealed ? '뜻 / 意味' : (front === 'kr' ? '한국어 / 韓国語' : '일본어 / 日本語');
+    flashEl('flash-answer-row').classList.toggle('hidden', s.revealed);
+    const nextBtn = flashEl('flash-next-btn');
+    nextBtn.classList.toggle('hidden', !s.revealed);
+    nextBtn.classList.toggle('flex', s.revealed);
+  }
+
+  function flashAnswerKnown() {
+    const s = flashSession; if (!s || s.revealed || s.index >= s.cards.length) return;
+    setWordKnown(s.cards[s.index].key, true);
+    s.known++; s.index++; s.revealed = false;
+    renderFlashCard();
+  }
+  function flashAnswerUnknown() {
+    const s = flashSession; if (!s || s.revealed || s.index >= s.cards.length) return;
+    setWordKnown(s.cards[s.index].key, false);
+    s.unknown++; s.revealed = true;       // 뜻(번역)을 보여주고, '다음 단어'를 누르면 넘어감
+    renderFlashCard();
+  }
+  function flashNext() {
+    const s = flashSession; if (!s || !s.revealed) return;
+    s.index++; s.revealed = false;
+    renderFlashCard();
+  }
+  function flashToggleLang() {
+    const s = flashSession; if (!s || s.index >= s.cards.length) return;
+    s.lang = s.lang === 'kr' ? 'ja' : 'kr';
+    s.revealed = false;
+    renderFlashCard();
+  }
+  function flashReadSentence() {
+    const s = flashSession; if (!s || s.index >= s.cards.length) return;
+    const card = s.cards[s.index];
+    const side = s.revealed ? (s.lang === 'kr' ? 'ja' : 'kr') : s.lang;
+    const text = card[side].sentence || card[side].word;
+    playTTS(text, 0.85, side === 'ja' ? 'ja-JP' : 'ko-KR');
+  }
+
+  function showFlashResult() {
+    const s = flashSession;
+    flashEl('flash-card-area').classList.add('hidden');
+    const r = flashEl('flash-result');
+    r.classList.remove('hidden'); r.classList.add('flex');
+    flashEl('flash-result-known').textContent = String(s.known);
+    flashEl('flash-result-unknown').textContent = String(s.unknown);
+    const known = getKnownSet();
+    const all = getWordsForLevel('random');
+    const n = all.filter(i => known.has(flashWordKey(i))).length;
+    flashEl('flash-result-total').textContent = `전체 단어 ${all.length}개 중 ${n}개 알고 있어요 / 全${all.length}語中${n}語を覚えています`;
+  }
+
+  // 버튼 연결
+  document.querySelectorAll('[data-flash-level]').forEach(b => b.addEventListener('click', () => { flashSetup.level = b.dataset.flashLevel; renderFlashSetup(); }));
+  document.querySelectorAll('[data-flash-lang]').forEach(b => b.addEventListener('click', () => { flashSetup.lang = b.dataset.flashLang; renderFlashSetup(); }));
+  document.querySelectorAll('[data-flash-count]').forEach(b => b.addEventListener('click', () => { flashSetup.count = Number(b.dataset.flashCount); renderFlashSetup(); }));
+  flashEl('flash-start-btn')?.addEventListener('click', startFlashcardsFromSetup);
+  flashEl('flash-known-btn')?.addEventListener('click', flashAnswerKnown);
+  flashEl('flash-unknown-btn')?.addEventListener('click', flashAnswerUnknown);
+  flashEl('flash-next-btn')?.addEventListener('click', flashNext);
+  flashEl('flash-lang-toggle')?.addEventListener('click', flashToggleLang);
+  flashEl('flash-sentence-box')?.addEventListener('click', flashReadSentence);
+  flashEl('flash-retry-btn')?.addEventListener('click', () => { if (flashSession && flashSession.restart) flashSession.restart(); });
+  flashEl('flash-exit-btn')?.addEventListener('click', () => goBackView());
+  flashEl('back-from-flash-setup')?.addEventListener('click', () => goBackView());
+  flashEl('back-from-flash')?.addEventListener('click', () => goBackView());
 
   // ==================== DOM 완료 초기화 이벤트 리스너 통합 ====================
   document.addEventListener('DOMContentLoaded', () => {
