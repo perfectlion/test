@@ -27,25 +27,25 @@
     "schedule_id": "26-42",
     "start_date": "2026-10-12",
     "end_date": "2026-10-16",
-    "lessons": [3, 26, 46]
+    "lessons": [3, 26, 46, 58]
   },
   {
     "schedule_id": "26-43",
     "start_date": "2026-10-19",
     "end_date": "2026-10-23",
-    "lessons": [4, 27, 47]
+    "lessons": [4, 27, 47, 58]
   },
   {
     "schedule_id": "26-44",
     "start_date": "2026-10-26",
     "end_date": "2026-10-30",
-    "lessons": [5, 28, 48]
+    "lessons": [5, 28, 48, 59]
   },
   {
     "schedule_id": "26-45",
     "start_date": "2026-11-02",
     "end_date": "2026-11-06",
-    "lessons": [6, 29, 49]
+    "lessons": [6, 29, 49, 60]
   },
   {
     "schedule_id": "26-46",
